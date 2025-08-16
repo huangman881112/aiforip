@@ -1,0 +1,48 @@
+/* 引入公共样式组件 */
+@import './common-sort-styles.css';
+
+/* 归并排序容器样式 */
+.merge-sort-detail {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 32px;
+  padding: 24px;
+  position: relative;
+}
+
+/* 归并排序特有的样式 */
+.bar.merged {
+  background-color: #10b981;
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.bar.left-part {
+  background-color: #60a5fa;
+}
+
+.bar.right-part {
+  background-color: #93c5fd;
+}
+
+.step-item.split {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.step-item.merge {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+/* 归并排序特有的样式 */
+.step-item.split {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.step-item.merge {
+  background-color: #dcfce7;
+  color: #15803d;
+}

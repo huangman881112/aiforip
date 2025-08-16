@@ -1,0 +1,30 @@
+/* 引入公共样式 */
+@import './common-sort-styles.css';
+
+/* 冒泡排序容器样式 */
+.bubble-sort-detail {
+  /* 继承公共样式，实际项目中可能需要使用CSS预处理器或手动复制样式 */
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 32px;
+  padding: 24px;
+  position: relative;
+}
+
+/* 冒泡排序特有的样式 */
+.step-item.compare {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.step-item.swap {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.step-item.finish {
+  background-color: #ede9fe;
+  color: #6b21a8;
+  font-weight: bold;
+}

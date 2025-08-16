@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数组显示测试</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        .data-set-display {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f8fafc;
+            border-radius: 6px;
+            border-left: 4px solid #3b82f6;
+        }
+        .data-label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .data-items {
+            display: flex;
+            gap: 8px;
+        }
+        .data-item {
+            padding: 8px 12px;
+            background-color: #e0f2fe;
+            border-radius: 4px;
+            border-left: 3px solid #0ea5e9;
+            white-space: nowrap;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>数组显示测试</h1>
+        <div class="data-set-display">
+            <span class="data-label">要查找的数据集：</span>
+            <div class="data-items">
+                <div v-for="(item, index) in array" :key="index" class="data-item">
+                    {{ item }}
+                </div>
+            </div>
+        </div>
+        <button @click="generateRandomArray">生成随机数组</button>
+    </div>
+
+    <script>
+        const { createApp, ref } = Vue
+
+        createApp({
+            setup() {
+                const array = ref([5, 2, 9, 1, 7, 6, 3])
+
+                const generateRandomArray = () => {
+                    const length = Math.floor(Math.random() * 5) + 5 // 5-10个元素
+                    const newArray = Array.from({ length }, () => Math.floor(Math.random() * 100) + 1)
+                    array.value = newArray
+                }
+
+                return {
+                    array,
+                    generateRandomArray
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>

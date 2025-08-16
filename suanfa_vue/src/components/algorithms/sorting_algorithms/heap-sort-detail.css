@@ -1,0 +1,46 @@
+/* 引入公共样式组件 */
+@import './common-sort-styles.css';
+
+/* 堆排序容器样式 */
+.heap-sort-detail {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 32px;
+  padding: 24px;
+  position: relative;
+}
+
+/* 堆排序特有的样式 */
+.bar.heapified {
+  background-color: #8b5cf6;
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+}
+
+.bar.root {
+  background-color: #ec4899;
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+}
+
+.step-item.heapify {
+  background-color: #f3e8ff;
+  color: #7e22ce;
+}
+
+.step-item.extract {
+  background-color: #ffedd5;
+  color: #c2410c;
+}
+
+/* 堆排序特有的样式 */
+.step-item.heapify {
+  background-color: #f3e8ff;
+  color: #7e22ce;
+}
+
+.step-item.extract {
+  background-color: #ffedd5;
+  color: #c2410c;
+}

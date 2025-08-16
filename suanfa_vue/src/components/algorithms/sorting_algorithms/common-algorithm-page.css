@@ -1,0 +1,164 @@
+.algorithm-page-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* 子页面容器样式 */
+.detail-container {
+  width: 100%;
+  min-width: 900px;
+  max-width: 1200px;
+  min-height: 600px;
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 确保标签栏宽度稳定 */
+.category-tabs {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.page-description {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #666;
+  margin-bottom: 24px;
+}
+
+.category-tabs button {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: none;
+  background-color: #f0f0f0;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.category-tabs button.active {
+  background-color: #42b983;
+  color: white;
+}
+
+.algorithms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.algorithm-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.algorithm-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.algorithm-card.selected {
+  background-color: #e6f7ff;
+  border: 1px solid #1890ff;
+}
+
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.card-header h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.difficulty-tag {
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+
+.category-tag {
+  background-color: #fff7e6;
+  color: #faad14;
+}
+
+.stable-tag {
+  background-color: #e6ffed;
+  color: #52c41a;
+}
+
+.unstable-tag {
+  background-color: #fff1f0;
+  color: #ff4d4f;
+}
+
+.card-description {
+  padding: 20px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #666;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: #fafafa;
+  border-top: 1px solid #f0f0f0;
+}
+
+.complexity {
+  font-size: 14px;
+  font-weight: 500;
+  color: #999;
+}
+
+.detail-btn {
+  padding: 6px 12px;
+  background-color: #42b983;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.detail-btn:hover {
+  background-color: #389e70;
+}

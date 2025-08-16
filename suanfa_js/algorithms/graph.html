@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图算法 - 算法学习网站</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 自定义样式 -->
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-code text-blue-600 text-2xl"></i>
+                <h1 class="text-xl font-bold text-gray-800">算法学习</h1>
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <a href="../index.html" class="text-gray-600 hover:text-blue-600 transition-colors">首页</a>
+                <a href="sorting.html" class="text-gray-600 hover:text-blue-600 transition-colors">排序算法</a>
+                <a href="searching.html" class="text-gray-600 hover:text-blue-600 transition-colors">搜索算法</a>
+                <a href="graph.html" class="text-blue-600 font-medium">图算法</a>
+                <a href="dynamic.html" class="text-gray-600 hover:text-blue-600 transition-colors">动态规划</a>
+                <a href="greedy.html" class="text-gray-600 hover:text-blue-600 transition-colors">贪心算法</a>
+                <a href="other.html" class="text-gray-600 hover:text-blue-600 transition-colors">更多分类</a>
+            </nav>
+            <!-- 移动端菜单按钮 -->
+            <button class="md:hidden text-gray-600 focus:outline-none" id="menuBtn">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </div>
+        <!-- 移动端菜单 -->
+        <div class="md:hidden hidden bg-white absolute w-full shadow-lg" id="mobileMenu">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="../index.html" class="text-gray-600 hover:text-blue-600 transition-colors py-2">首页</a>
+                <a href="sorting.html" class="text-gray-600 hover:text-blue-600 transition-colors py-2">排序算法</a>
+                <a href="searching.html" class="text-gray-600 hover:text-blue-600 transition-colors py-2">搜索算法</a>
+                <a href="graph.html" class="text-blue-600 font-medium py-2">图算法</a>
+                <a href="dynamic.html" class="text-gray-600 hover:text-blue-600 transition-colors py-2">动态规划</a>
+                <a href="greedy.html" class="text-gray-600 hover:text-blue-600 transition-colors py-2">贪心算法</a>
+                <a href="other.html" class="text-gray-600 hover:text-blue-600 transition-colors py-2">更多分类</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="container mx-auto px-4 py-8">
+        <section class="mb-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-project-diagram text-purple-600 mr-2"></i> 图算法
+            </h2>
+            <p class="text-gray-600 mb-6">图算法是处理图结构数据的算法，广泛应用于网络分析、路径规划、社交网络、电路设计等领域。以下是常见的图算法。</p>
+
+            <!-- 算法分类标签 -->
+            <div class="mb-8 flex flex-wrap gap-2">
+                <span class="algorithm-tag tag-medium bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">遍历算法</span>
+                <span class="algorithm-tag tag-medium bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">最短路径</span>
+                <span class="algorithm-tag tag-hard bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">最小生成树</span>
+                <span class="algorithm-tag tag-hard bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">网络流</span>
+                <span class="algorithm-tag tag-medium bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">拓扑结构</span>
+            </div>
+
+            <!-- 算法列表 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+                <!-- 深度优先搜索 -->
+                <div class="card bg-white rounded-lg shadow-md p-6 transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">深度优先搜索 (DFS)</h3>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="algorithm-tag tag-medium bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs font-medium">中等</span>
+                        <span class="algorithm-tag bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-medium">遍历</span>
+                        <span class="algorithm-tag bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">递归/栈</span>
+                    </div>
+                    <p class="text-gray-600 mb-4 line-clamp-3">深度优先搜索是一种图遍历算法，它尽可能深地搜索图的分支，直到达到叶节点或回溯到其他路径。</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm"><i class="fas fa-clock mr-1"></i> O(V+E)</span>
+                        <button class="view-algorithm-btn text-blue-600 hover:text-blue-800 font-medium flex items-center" data-algorithm="dfs">
+                            查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 广度优先搜索 -->
+                <div class="card bg-white rounded-lg shadow-md p-6 transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">广度优先搜索 (BFS)</h3>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="algorithm-tag tag-medium bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs font-medium">中等</span>
+                        <span class="algorithm-tag bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-medium">遍历</span>
+                        <span class="algorithm-tag bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">队列</span>
+                    </div>
+                    <p class="text-gray-600 mb-4 line-clamp-3">广度优先搜索是一种图遍历算法，它从起始节点开始，先访问其所有邻居节点，然后再访问这些邻居的邻居，以此类推。</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm"><i class="fas fa-clock mr-1"></i> O(V+E)</span>
+                        <button class="view-algorithm-btn text-blue-600 hover:text-blue-800 font-medium flex items-center" data-algorithm="bfs">
+                            查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dijkstra算法 -->
+                <div class="card bg-white rounded-lg shadow-md p-6 transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Dijkstra 算法</h3>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="algorithm-tag tag-hard bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-xs font-medium">较难</span>
+                        <span class="algorithm-tag bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">最短路径</span>
+                        <span class="algorithm-tag bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-xs font-medium">贪心</span>
+                    </div>
+                    <p class="text-gray-600 mb-4 line-clamp-3">Dijkstra算法用于寻找带权图中单源最短路径问题，要求图中不存在负权边。</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm"><i class="fas fa-clock mr-1"></i> O((V+E)log V)</span>
+                        <button class="view-algorithm-btn text-blue-600 hover:text-blue-800 font-medium flex items-center" data-algorithm="dijkstra">
+                            查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bellman-Ford算法 -->
+                <div class="card bg-white rounded-lg shadow-md p-6 transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Bellman-Ford 算法</h3>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="algorithm-tag tag-hard bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-xs font-medium">较难</span>
+                        <span class="algorithm-tag bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">最短路径</span>
+                        <span class="algorithm-tag bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs font-medium">动态规划</span>
+                    </div>
+                    <p class="text-gray-600 mb-4 line-clamp-3">Bellman-Ford算法用于寻找带权图中单源最短路径问题，能够处理含有负权边的情况，并能检测负权环。</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm"><i class="fas fa-clock mr-1"></i> O(VE)</span>
+                        <button class="view-algorithm-btn text-blue-600 hover:text-blue-800 font-medium flex items-center" data-algorithm="bellmanFord">
+                            查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Floyd-Warshall算法 -->
+                <div class="card bg-white rounded-lg shadow-md p-6 transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Floyd-Warshall 算法</h3>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="algorithm-tag tag-hard bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-xs font-medium">较难</span>
+                        <span class="algorithm-tag bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">最短路径</span>
+                        <span class="algorithm-tag bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs font-medium">动态规划</span>
+                    </div>
+                    <p class="text-gray-600 mb-4 line-clamp-3">Floyd-Warshall算法用于寻找带权图中所有节点对之间的最短路径问题，使用动态规划的思想，时间复杂度为O(V³)。</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm"><i class="fas fa-clock mr-1"></i> O(V³)</span>
+                        <button class="view-algorithm-btn text-blue-600 hover:text-blue-800 font-medium flex items-center" data-algorithm="floydWarshall">
+                            查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Prim算法 -->
+                <div class="card bg-white rounded-lg shadow-md p-6 transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Prim 算法</h3>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="algorithm-tag tag-hard bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-xs font-medium">较难</span>
+                        <span class="algorithm-tag bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-xs font-medium">最小生成树</span>
+                        <span class="algorithm-tag bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">贪心</span>
+                    </div>
+                    <p class="text-gray-600 mb-4 line-clamp-3">Prim算法用于构建加权无向图的最小生成树，从一个起始顶点开始，每次选择一条权重最小的边加入生成树。</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm"><i class="fas fa-clock mr-1"></i> O((V+E)log V)</span>
+                        <button class="view-algorithm-btn text-blue-600 hover:text-blue-800 font-medium flex items-center" data-algorithm="prim">
+                            查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Kruskal算法 -->
+                <div class="card bg-white rounded-lg shadow-md p-6 transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Kruskal 算法</h3>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="algorithm-tag tag-hard bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-xs font-medium">较难</span>
+                        <span class="algorithm-tag bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-xs font-medium">最小生成树</span>
+                        <span class="algorithm-tag bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">贪心</span>
+                        <span class="algorithm-tag bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs font-medium">并查集</span>
+                    </div>
+                    <p class="text-gray-600 mb-4 line-clamp-3">Kruskal算法用于构建加权无向图的最小生成树，按边权从小到大排序，依次添加不形成环的最小边。</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm"><i class="fas fa-clock mr-1"></i> O(E log E)</span>
+                        <button class="view-algorithm-btn text-blue-600 hover:text-blue-800 font-medium flex items-center" data-algorithm="kruskal">
+                            查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 拓扑排序 -->
+                <div class="card bg-white rounded-lg shadow-md p-6 transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">拓扑排序</h3>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="algorithm-tag tag-medium bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs font-medium">中等</span>
+                        <span class="algorithm-tag bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-medium">有向无环图</span>
+                        <span class="algorithm-tag bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">BFS/DFS</span>
+                    </div>
+                    <p class="text-gray-600 mb-4 line-clamp-3">拓扑排序是将有向无环图(DAG)的所有顶点排成一个线性序列，使得对于图中任何一对顶点u和v，如果存在一条从u到v的有向边，则u在序列中出现在v之前。</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm"><i class="fas fa-clock mr-1"></i> O(V+E)</span>
+                        <button class="view-algorithm-btn text-blue-600 hover:text-blue-800 font-medium flex items-center" data-algorithm="topologicalSort">
+                            查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- A*算法 -->
+                <div class="card bg-white rounded-lg shadow-md p-6 transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">A* 算法</h3>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="algorithm-tag tag-hard bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-xs font-medium">较难</span>
+                        <span class="algorithm-tag bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">最短路径</span>
+                        <span class="algorithm-tag bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs font-medium">启发式搜索</span>
+                    </div>
+                    <p class="text-gray-600 mb-4 line-clamp-3">A*算法是一种启发式搜索算法，用于寻找图中的最短路径，结合了Dijkstra算法和贪心最佳优先搜索的优点，使用启发式函数来加速搜索过程。</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm"><i class="fas fa-clock mr-1"></i> 取决于启发式函数</span>
+                        <button class="view-algorithm-btn text-blue-600 hover:text-blue-800 font-medium flex items-center" data-algorithm="aStar">
+                            查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 算法详情部分 -->
+            <div id="algorithmDetail" class="hidden bg-white rounded-lg shadow-lg p-6 mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-2xl font-bold text-gray-800" id="detailTitle"></h3>
+                    <button id="closeDetail" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="algorithm-detail">
+                    <div class="algorithm-header">
+                        <div class="flex flex-wrap gap-2 mb-3" id="detailTags"></div>
+                    </div>
+
+                    <div class="algorithm-description mb-6" id="detailDescription"></div>
+
+                    <div class="algorithm-complexity mb-6">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-2">复杂度分析</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-gray-600"><span class="font-medium">时间复杂度:</span> <span id="detailTimeComplexity"></span></p>
+                                <p class="text-gray-600"><span class="font-medium">最佳情况:</span> <span id="detailBestCase"></span></p>
+                                <p class="text-gray-600"><span class="font-medium">最坏情况:</span> <span id="detailWorstCase"></span></p>
+                                <p class="text-gray-600"><span class="font-medium">平均情况:</span> <span id="detailAverageCase"></span></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600"><span class="font-medium">空间复杂度:</span> <span id="detailSpaceComplexity"></span></p>
+                                <p class="text-gray-600"><span class="font-medium">前提条件:</span> <span id="detailPrecondition"></span></p>
+                                <p class="text-gray-600"><span class="font-medium">难度:</span> <span id="detailDifficulty"></span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-2">伪代码</h4>
+                        <pre class="algorithm-code rounded-md p-4 overflow-x-auto" id="detailPseudocode"></pre>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-2">Python 实现</h4>
+                        <pre class="algorithm-code rounded-md p-4 overflow-x-auto" id="detailPythonCode"></pre>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-2">JavaScript 实现</h4>
+                        <pre class="algorithm-code rounded-md p-4 overflow-x-auto" id="detailJavaScriptCode"></pre>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-2">可视化演示</h4>
+                        <div class="bg-gray-100 rounded-lg p-4 h-64 flex items-center justify-center" id="algorithmVisualization">
+                            <p class="text-gray-500 text-center">算法可视化区域<br><small>（点击下方按钮开始演示）</small></p>
+                        </div>
+                        <button id="visualizeBtn" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-play mr-2"></i> 开始演示
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-code mr-2"></i> 算法学习
+                    </h3>
+                    <p class="text-gray-400">致力于提供高质量的算法学习资源，帮助开发者掌握各类算法的原理和应用。</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-link mr-2"></i> 快速链接
+                    </h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="../index.html" class="hover:text-white transition-colors">首页</a></li>
+                        <li><a href="sorting.html" class="hover:text-white transition-colors">排序算法</a></li>
+                        <li><a href="searching.html" class="hover:text-white transition-colors">搜索算法</a></li>
+                        <li><a href="graph.html" class="hover:text-white transition-colors">图算法</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-envelope mr-2"></i> 联系我们
+                    </h3>
+                    <p class="text-gray-400">有任何问题或建议，请随时联系我们。</p>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-github text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-twitter text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-linkedin text-xl"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-500">
+                <p>&copy; 2023 算法学习网站. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="../js/main.js"></script>
+    <script src="../js/algorithms.js"></script>
+    <script>
+        // 等待DOM加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            // 算法数据
+            const algorithms = algorithmData.graph;
+
+            // 查看算法详情按钮点击事件
+            const viewButtons = document.querySelectorAll('.view-algorithm-btn');
+            const algorithmDetail = document.getElementById('algorithmDetail');
+            const closeDetail = document.getElementById('closeDetail');
+            const visualizeBtn = document.getElementById('visualizeBtn');
+            let currentAlgorithm = null;
+
+            viewButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const algorithmId = this.getAttribute('data-algorithm');
+                    // 查找对应的算法
+                    const algorithm = algorithms.find(alg => alg.id === algorithmId);
+                    if (algorithm) {
+                        currentAlgorithm = algorithm;
+                        // 填充算法详情
+                        document.getElementById('detailTitle').textContent = algorithm.name;
+                        document.getElementById('detailDescription').textContent = algorithm.description;
+                        document.getElementById('detailTimeComplexity').textContent = algorithm.complexity.time;
+                        document.getElementById('detailSpaceComplexity').textContent = algorithm.complexity.space;
+                        document.getElementById('detailBestCase').textContent = algorithm.complexity.bestCase;
+                        document.getElementById('detailWorstCase').textContent = algorithm.complexity.worstCase;
+                        document.getElementById('detailAverageCase').textContent = algorithm.complexity.averageCase;
+                        document.getElementById('detailDifficulty').textContent = algorithm.difficulty;
+                        document.getElementById('detailPrecondition').textContent = algorithm.precondition || '无特殊要求';
+                        document.getElementById('detailPseudocode').textContent = algorithm.pseudocode;
+                        document.getElementById('detailPythonCode').textContent = algorithm.code.python;
+                        document.getElementById('detailJavaScriptCode').textContent = algorithm.code.javascript;
+
+                        // 填充标签
+                        const tagsContainer = document.getElementById('detailTags');
+                        tagsContainer.innerHTML = '';
+                        algorithm.tags.forEach(tag => {
+                            const tagElement = document.createElement('span');
+                            tagElement.className = 'algorithm-tag bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full text-xs font-medium';
+                            tagElement.textContent = tag;
+                            tagsContainer.appendChild(tagElement);
+                        });
+
+                        // 显示详情
+                        algorithmDetail.classList.remove('hidden');
+                        // 滚动到详情部分
+                        algorithmDetail.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // 关闭详情按钮点击事件
+            closeDetail.addEventListener('click', function() {
+                algorithmDetail.classList.add('hidden');
+            });
+
+            // 可视化按钮点击事件
+            visualizeBtn.addEventListener('click', function() {
+                if (currentAlgorithm) {
+                    // 调用可视化函数
+                    visualizeGraph(currentAlgorithm.id);
+                    // 更新可视化区域
+                    const visualizationContainer = document.getElementById('algorithmVisualization');
+                    visualizationContainer.innerHTML = '<p class="text-gray-500 text-center">正在演示 ' + currentAlgorithm.name + '...</p>';
+                }
+            });
+        });
+
+        // 图算法可视化函数
+        function visualizeGraph(algorithm) {
+            // 这里是图算法可视化的示例实现
+            console.log('Visualizing graph algorithm:', algorithm);
+
+            // 示例: 创建一个简单的图
+            const graph = {
+                0: [1, 2],
+                1: [0, 3, 4],
+                2: [0, 5],
+                3: [1],
+                4: [1, 5],
+                5: [2, 4]
+            };
+            console.log('Graph:', graph);
+
+            // 这里应该有具体的可视化逻辑
+        }
+    </script>
+</body>
+</html>

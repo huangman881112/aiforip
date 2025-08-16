@@ -1,0 +1,358 @@
+/* 全局样式重置和基础样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f9fafb;
+}
+
+/* 链接样式 */
+.a {
+    color: #165DFF;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.a:hover {
+    color: #0E42D2;
+    text-decoration: underline;
+}
+
+/* 导航栏样式 */
+header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* 英雄区域样式 */
+.hero {
+    background: linear-gradient(135deg, #165DFF 0%, #0E42D2 100%);
+    color: white;
+    padding: 3rem 0;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+/* 卡片样式 */
+.card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+}
+
+/* 标题样式 */
+.h1, .h2, .h3, .h4, .h5, .h6 {
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+}
+
+.h1 {
+    font-size: 2.5rem;
+}
+
+.h2 {
+    font-size: 2rem;
+}
+
+.h3 {
+    font-size: 1.5rem;
+}
+
+/* 按钮样式 */
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.button-primary {
+    background-color: #165DFF;
+    color: white;
+    border: none;
+}
+
+.button-primary:hover {
+    background-color: #0E42D2;
+}
+
+/* 表格样式 */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.table th {
+    background-color: #f3f4f6;
+    font-weight: 600;
+}
+
+.table tr:nth-child(even) {
+    background-color: #f9fafb;
+}
+
+/* 算法详情页样式 */
+.algorithm-detail {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+.algorithm-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.algorithm-description {
+    margin-bottom: 1.5rem;
+}
+
+.algorithm-complexity {
+    background-color: #f3f4f6;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    margin-bottom: 1.5rem;
+}
+
+.complexity-time, .complexity-space {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.complexity-time p, .complexity-space p {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+.complexity-time .font-medium, .complexity-space .font-medium {
+    min-width: 80px;
+    margin-right: 0.5rem;
+    text-align: right;
+}
+
+.algorithm-code {
+    background-color: #1e293b;
+    color: #e2e8f0;
+    padding: 1.5rem;
+    border-radius: 0.375rem;
+    overflow-x: auto;
+    font-family: 'Fira Code', monospace;
+    margin-bottom: 1.5rem;
+}
+
+/* 页脚样式 */
+footer {
+    background-color: #1f2937;
+    color: white;
+    padding: 3rem 0;
+    margin-top: 4rem;
+}
+
+.footer-link {
+    color: #d1d5db;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+    color: white;
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .h1 {
+        font-size: 2rem;
+    }
+    .h2 {
+        font-size: 1.5rem;
+    }
+    .h3 {
+        font-size: 1.25rem;
+    }
+    .card {
+        padding: 1rem;
+    }
+    .algorithm-detail {
+        padding: 1.5rem;
+    }
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c5c5c5;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* 算法分类页面样式 */
+.category-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.category-list li {
+    margin-bottom: 1rem;
+}
+
+.category-list a {
+    display: block;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.category-list a:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* 搜索框样式 */
+.search-box {
+    display: flex;
+    margin-bottom: 2rem;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem 0 0 0.375rem;
+    font-size: 1rem;
+}
+
+.search-box button {
+    padding: 0.75rem 1rem;
+    background-color: #165DFF;
+    color: white;
+    border: none;
+    border-radius: 0 0.375rem 0.375rem 0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.search-box button:hover {
+    background-color: #0E42D2;
+}
+
+/* 算法标签样式 */
+.algorithm-tag {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.tag-easy {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.tag-medium {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.tag-hard {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+/* 代码高亮样式 */
+.code-keyword {
+    color: #f97316;
+}
+
+/* 文本对齐样式 */
+.text-left {
+    text-align: left;
+}
+
+/* Span元素靠左样式 */
+.span-left {
+    display: inline-block;
+    float: left;
+    clear: left;
+}
+
+.code-function {
+    color: #8b5cf6;
+}
+
+.code-string {
+    color: #10b981;
+}
+
+.code-comment {
+    color: #6b7280;
+    font-style: italic;
+}
+
+.code-number {
+    color: #ef4444;
+}

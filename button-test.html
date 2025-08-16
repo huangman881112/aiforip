@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>按钮点击测试</title>
+    <script src="js/algorithms.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .test-container { border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        #log-container { height: 300px; overflow-y: auto; border: 1px solid #eee; padding: 10px; background-color: #f9f9f9; }
+        .log-entry { margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>按钮点击测试页面</h1>
+
+    <div class="test-container">
+        <h2>1. 模拟按钮测试</h2>
+        <button id="testButton" class="view-algorithm-btn" data-algorithm="binarySearch">测试查看详情按钮</button>
+        <button id="testAllButtons">测试所有算法按钮</button>
+    </div>
+
+    <div class="test-container">
+        <h2>2. 算法数据检查</h2>
+        <button id="checkData">检查算法数据</button>
+        <div id="dataResult"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>3. 事件监听器检查</h2>
+        <button id="checkListeners">检查按钮事件监听器</button>
+        <div id="listenersResult"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>控制台日志</h2>
+        <div id="log-container"></div>
+    </div>
+
+    <script>
+        // 重定向控制台输出到页面
+        const logContainer = document.getElementById('log-container');
+        const originalConsole = {
+            log: console.log,
+            error: console.error,
+            info: console.info
+        };
+
+        function addLogEntry(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        console.log = function(message) {
+            addLogEntry(message, 'info');
+            originalConsole.log.apply(console, arguments);
+        };
+
+        console.error = function(message) {
+            addLogEntry(message, 'error');
+            originalConsole.error.apply(console, arguments);
+        };
+
+        console.info = function(message) {
+            addLogEntry(message, 'success');
+            originalConsole.info.apply(console, arguments);
+        };
+
+        // 1. 模拟按钮测试
+        document.getElementById('testButton').addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const algorithmId = this.getAttribute('data-algorithm');
+            console.log(`测试按钮被点击，算法ID: ${algorithmId}`);
+            testButtonClick(algorithmId);
+        });
+
+        document.getElementById('testAllButtons').addEventListener('click', function() {
+            console.log('开始测试所有算法按钮...');
+            ['binarySearch', 'linearSearch', 'interpolationSearch', 'jumpSearch', 'exponentialSearch', 'hashSearch'].forEach(id => {
+                setTimeout(() => {
+                    console.log(`测试算法: ${id}`);
+                    testButtonClick(id);
+                }, 500);
+            });
+        });
+
+        // 2. 算法数据检查
+        document.getElementById('checkData').addEventListener('click', function() {
+            const resultDiv = document.getElementById('dataResult');
+            resultDiv.innerHTML = '';
+
+            if (typeof algorithmData === 'undefined') {
+                resultDiv.innerHTML = '<p class="error">算法数据未加载！</p>';
+                console.error('算法数据未加载');
+                return;
+            }
+
+            resultDiv.innerHTML = '<p class="success">算法数据已加载:</p>';
+            const ul = document.createElement('ul');
+            Object.keys(algorithmData).forEach(key => {
+                const li = document.createElement('li');
+                li.textContent = `${key}: ${algorithmData[key].name || '无名称'}`;
+                ul.appendChild(li);
+            });
+            resultDiv.appendChild(ul);
+            console.info(`已加载 ${Object.keys(algorithmData).length} 个算法数据`);
+        });
+
+        // 3. 事件监听器检查
+        document.getElementById('checkListeners').addEventListener('click', function() {
+            const resultDiv = document.getElementById('listenersResult');
+            resultDiv.innerHTML = '';
+
+            // 检查searching.html是否在iframe中加载
+            if (window.parent && window.parent.document) {
+                const buttons = window.parent.document.querySelectorAll('.view-algorithm-btn');
+                if (buttons.length > 0) {
+                    resultDiv.innerHTML = `<p class="success">在父页面中找到 ${buttons.length} 个查看详情按钮</p>`;
+                    console.info(`在父页面中找到 ${buttons.length} 个查看详情按钮`);
+                } else {
+                    resultDiv.innerHTML = '<p class="error">在父页面中未找到查看详情按钮</p>';
+                    console.error('在父页面中未找到查看详情按钮');
+                }
+            } else {
+                resultDiv.innerHTML = '<p class="info">无法访问父页面，直接测试当前页按钮</p>';
+                const testButton = document.getElementById('testButton');
+                // 简单检查按钮是否存在
+                if (testButton) {
+                    resultDiv.innerHTML += '<p class="success">测试按钮存在</p>';
+                    console.info('测试按钮存在');
+                }
+            }
+        });
+
+        // 测试按钮点击函数
+        function testButtonClick(algorithmId) {
+            console.log(`尝试查找算法: ${algorithmId}`);
+
+            // 检查算法数据是否存在
+            if (typeof algorithmData === 'undefined') {
+                console.error('算法数据未定义');
+                return;
+            }
+
+            const algorithm = algorithmData[algorithmId];
+            if (algorithm) {
+                console.info(`找到算法: ${algorithm.name}`);
+                console.log('算法详情:', algorithm);
+
+                // 模拟设置当前算法
+                window.currentAlgorithm = algorithm;
+                console.log('已设置window.currentAlgorithm');
+
+                // 模拟显示详情
+                console.info('模拟显示算法详情');
+            } else {
+                console.error(`未找到算法: ${algorithmId}`);
+            }
+        }
+
+        // 页面加载完成后自动检查
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('测试页面加载完成');
+            console.log('检查算法数据...');
+            if (typeof algorithmData !== 'undefined') {
+                console.info('算法数据已加载');
+                console.log(`共 ${Object.keys(algorithmData).length} 个算法`);
+            } else {
+                console.error('算法数据未加载');
+            }
+        });
+    </script>
+</body>
+</html>

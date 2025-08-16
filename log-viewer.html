@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>控制台日志查看器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .log-container {
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .log-entry {
+            border-bottom: 1px solid #eee;
+            padding: 8px 0;
+        }
+        .log-timestamp {
+            color: #666;
+            font-size: 0.8em;
+            margin-right: 10px;
+        }
+        .log-message {
+            color: #333;
+        }
+        .log-error {
+            color: #e74c3c;
+        }
+        .log-log {
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-2xl font-bold mb-6">控制台日志查看器</h1>
+        
+        <div class="flex gap-4 mb-6">
+            <button id="refreshBtn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                刷新日志
+            </button>
+            <button id="clearBtn" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">
+                清除日志
+            </button>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">日志内容</h2>
+            <div id="logContainer" class="log-container max-h-[500px] overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <script>
+        // 等待DOM加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            const logContainer = document.getElementById('logContainer');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const clearBtn = document.getElementById('clearBtn');
+
+            // 加载日志
+            function loadLogs() {
+                logContainer.innerHTML = '';
+                try {
+                    const logs = JSON.parse(localStorage.getItem('consoleLogs') || '[]');
+                    
+                    if (logs.length === 0) {
+                        logContainer.innerHTML = '<p class="text-gray-500 italic">没有找到日志记录</p>';
+                        return;
+                    }
+
+                    logs.forEach(log => {
+                        const logEntry = document.createElement('div');
+                        logEntry.className = 'log-entry';
+
+                        const timestamp = document.createElement('span');
+                        timestamp.className = 'log-timestamp';
+                        timestamp.textContent = log.timestamp;
+
+                        const message = document.createElement('span');
+                        message.className = log.type === 'error' ? 'log-error' : 'log-log';
+                        message.textContent = log.message;
+
+                        logEntry.appendChild(timestamp);
+                        logEntry.appendChild(message);
+                        logContainer.appendChild(logEntry);
+                    });
+
+                    // 滚动到底部
+                    logContainer.scrollTop = logContainer.scrollHeight;
+                } catch (e) {
+                    logContainer.innerHTML = `<p class="text-red-500">加载日志时出错: ${e.message}</p>`;
+                }
+            }
+
+            // 清除日志
+            function clearLogs() {
+                if (confirm('确定要清除所有日志吗？')) {
+                    localStorage.removeItem('consoleLogs');
+                    loadLogs();
+                }
+            }
+
+            // 绑定事件
+            refreshBtn.addEventListener('click', loadLogs);
+            clearBtn.addEventListener('click', clearLogs);
+
+            // 初始加载
+            loadLogs();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+/* 引入公共样式组件 */
+@import './common-sort-styles.css';
+
+/* 快速排序容器样式 */
+.quick-sort-detail {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 32px;
+  padding: 24px;
+  position: relative;
+}
+
+/* 快速排序特有的样式 */
+.bar.pivot {
+  background-color: #ec4899;
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+}
+
+.step-item.pivot {
+  background-color: #fce7f3;
+  color: #be185d;
+}
+
+.step-item.partition {
+  background-color: #e0e7ff;
+  color: #4338ca;
+}
+
+.step-item.compare {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.step-item.swap {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.step-item.finish {
+  background-color: #ede9fe;
+  color: #6b21a8;
+  font-weight: bold;
+}

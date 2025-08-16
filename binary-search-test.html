@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二分查找测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-2xl font-bold mb-6">二分查找详情测试</h1>
+        
+        <button id="loadDataBtn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors mb-6">
+            加载二分查找数据
+        </button>
+        
+        <div id="algorithmDetail" class="hidden bg-white rounded-lg shadow-lg p-6 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold text-gray-800" id="detailTitle"></h3>
+            </div>
+
+            <div class="algorithm-detail">
+                <div class="algorithm-header">
+                    <div class="flex flex-wrap gap-2 mb-3" id="detailTags"></div>
+                </div>
+
+                <div class="algorithm-description mb-6" id="detailDescription"></div>
+
+                <div class="algorithm-complexity mb-6">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-2">复杂度分析</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-gray-600"><span class="font-medium">时间复杂度:</span> <span id="detailTimeComplexity"></span></p>
+                            <p class="text-gray-600"><span class="font-medium">最佳情况:</span> <span id="detailBestCase"></span></p>
+                            <p class="text-gray-600"><span class="font-medium">最坏情况:</span> <span id="detailWorstCase"></span></p>
+                            <p class="text-gray-600"><span class="font-medium">平均情况:</span> <span id="detailAverageCase"></span></p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600"><span class="font-medium">空间复杂度:</span> <span id="detailSpaceComplexity"></span></p>
+                            <p class="text-gray-600"><span class="font-medium">前提条件:</span> <span id="detailPrecondition"></span></p>
+                            <p class="text-gray-600"><span class="font-medium">难度:</span> <span id="detailDifficulty"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-2">伪代码</h4>
+                    <pre class="algorithm-code rounded-md p-4 overflow-x-auto" id="detailPseudocode"></pre>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Python 实现</h4>
+                    <pre class="algorithm-code rounded-md p-4 overflow-x-auto" id="detailPythonCode"></pre>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-2">JavaScript 实现</h4>
+                    <pre class="algorithm-code rounded-md p-4 overflow-x-auto" id="detailJavaScriptCode"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="log-console.js"></script>
+<script src="js/algorithms.js"></script>
+    <script>
+        // 等待DOM加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('二分查找测试页面加载完成');
+            console.log('algorithmData是否可用:', window.algorithmData !== undefined);
+
+            const loadDataBtn = document.getElementById('loadDataBtn');
+            const algorithmDetail = document.getElementById('algorithmDetail');
+
+            loadDataBtn.addEventListener('click', function() {
+                console.log('加载二分查找数据按钮点击');
+
+                if (window.algorithmData && window.algorithmData.searching) {
+                    console.log('搜索算法数量:', window.algorithmData.searching.length);
+
+                    // 查找二分查找算法
+                    const binarySearch = window.algorithmData.searching.find(alg => alg.id === 'binarySearch');
+
+                    if (binarySearch) {
+                        console.log('找到二分查找算法:', binarySearch.name);
+                        console.log('复杂度分析:', binarySearch.complexity);
+                        console.log('伪代码:', binarySearch.pseudocode);
+                        console.log('JavaScript实现:', binarySearch.code.javascript);
+
+                        // 填充算法详情
+                        document.getElementById('detailTitle').textContent = binarySearch.name;
+                        document.getElementById('detailDescription').textContent = binarySearch.description;
+                        document.getElementById('detailTimeComplexity').textContent = binarySearch.complexity.time;
+                        document.getElementById('detailSpaceComplexity').textContent = binarySearch.complexity.space;
+                        document.getElementById('detailBestCase').textContent = binarySearch.complexity.bestCase;
+                        document.getElementById('detailWorstCase').textContent = binarySearch.complexity.worstCase;
+                        document.getElementById('detailAverageCase').textContent = binarySearch.complexity.averageCase;
+                        document.getElementById('detailDifficulty').textContent = binarySearch.difficulty;
+                        document.getElementById('detailPrecondition').textContent = binarySearch.precondition;
+                        document.getElementById('detailPseudocode').textContent = binarySearch.pseudocode;
+                        document.getElementById('detailPythonCode').textContent = binarySearch.code.python;
+                        document.getElementById('detailJavaScriptCode').textContent = binarySearch.code.javascript;
+
+                        // 填充标签
+                        const tagsContainer = document.getElementById('detailTags');
+                        tagsContainer.innerHTML = '';
+                        binarySearch.tags.forEach(tag => {
+                            const tagElement = document.createElement('span');
+                            tagElement.className = 'algorithm-tag bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full text-xs font-medium';
+                            tagElement.textContent = tag;
+                            tagsContainer.appendChild(tagElement);
+                        });
+
+                        // 显示详情
+                        algorithmDetail.classList.remove('hidden');
+                        console.log('详情填充完成');
+                    } else {
+                        console.error('未找到二分查找算法');
+                        alert('未找到二分查找算法数据');
+                    }
+                } else {
+                    console.error('algorithmData.searching不存在');
+                    alert('算法数据未加载');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

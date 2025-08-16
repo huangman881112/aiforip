@@ -1,0 +1,449 @@
+@import '../sorting_algorithms/common-sort-styles.css';
+
+/* 线性查找容器样式 */
+.linear-search-detail {
+  /* 与线性查找保持一致的容器样式 */
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 32px;
+  padding: 24px;
+  position: relative;
+}
+
+/* 模态框头部样式 - 与线性查找保持一致 */
+.modal-header {
+  background-color: #f8fafc;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-header h2 {
+  margin: 0 0 16px 0;
+  font-size: 24px;
+  color: #1e293b;
+}
+
+/* 关闭按钮样式 - 去掉红色背景 */
+.close-btn {
+  background-color: #e2e8f0;
+  color: #64748b;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+.close-btn:hover {
+  background-color: #cbd5e1;
+}
+
+/* 标签页样式 - 与线性查找保持一致 */
+.tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.tabs button {
+  padding: 8px 16px;
+  border: none;
+  background-color: #e2e8f0;
+  color: #64748b;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.tabs button.active {
+  background-color: #3b82f6;
+  color: white;
+  font-weight: 500;
+}
+
+/* 标签内容样式 */
+.tab-content {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* 详情部分样式 */
+.detail-section {
+  margin-bottom: 24px;
+}
+
+.detail-section h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 18px;
+  color: #1e293b;
+}
+
+.detail-section p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #64748b;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.detail-section ul {
+  margin: 0;
+  padding-left: 20px;
+  text-align: left;
+}
+
+/* 算法可视化样式 */
+.visualization-container {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+}
+
+/* 数组元素样式 */
+.array-container {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.array-element {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #3b82f6; /* 初始蓝色 */
+  color: white; /* 文字颜色设为白色，确保在蓝色背景上清晰可见 */
+  transition: all 0.5s ease; /* 延长过渡时间，使动画更平滑 */
+}
+
+.array-element.checking {
+  background-color: #ffeb3b; /* 检查时黄色 */
+  color: #000; /* 黄色背景上文字设为黑色 */
+  transform: scale(1.2);
+}
+
+.array-element.found {
+  background-color: #4caf50; /* 找到时绿色 */
+  color: white;
+  transform: scale(1.2);
+  animation: pulse 1s; /* 添加脉动动画 */
+}
+
+.array-element.not-found {
+  background-color: #f44336; /* 未找到时红色 */
+  color: white;
+}
+
+/* 添加脉动动画 */
+@keyframes pulse {
+  0% { transform: scale(1.2); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1.2); }
+}
+
+/* 搜索状态和结果样式 */
+.search-status {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}
+
+.search-result {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}
+
+/* 可视化控制样式 */
+.visualization-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.visualization-controls button {
+  padding: 8px 16px;
+  border: none;
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.visualization-controls button:hover {
+  background-color: #2563eb;
+}
+
+.visualization-controls button:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.visualization-controls input[type="number"] {
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  width: 100px;
+}
+
+.visualization-controls input[type="range"] {
+  width: 150px;
+}
+
+/* 代码块样式 */
+pre {
+  background-color: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 0;
+  text-align: left;
+}
+
+/* 复杂度分析样式 */
+.complexity-analysis {
+  margin-bottom: 24px;
+}
+
+.complexity-analysis h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 18px;
+  color: #1e293b;
+}
+
+.complexity-item {
+  background-color: #f8fafc;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.complexity-item p {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: left;
+}
+
+.complexity-item ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+/* 步骤历史样式 */
+.steps-history {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.steps-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.step-item {
+  padding: 10px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.step-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.step-item.current {
+  border-left: 4px solid #3b82f6;
+  background-color: #f0f9ff;
+}
+
+.step-number {
+  font-weight: bold;
+  margin-right: 12px;
+  color: #64748b;
+  min-width: 24px;
+  text-align: right;
+}
+
+.step-icon {
+  margin-right: 12px;
+  font-size: 16px;
+}
+
+.step-details {
+  flex: 1;
+}
+
+/* 步骤类型样式 */
+.step-item.check {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.step-item.found {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.step-item.notFound {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.step-item.finish {
+  background-color: #ede9fe;
+  color: #6b21a8;
+  font-weight: bold;
+}
+
+/* 数据集显示样式 */
+.data-set-display {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 15px;
+  background-color: #f8fafc;
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+
+.data-set-display.array-generated {
+  background-color: #dcfce7;
+  border-left: 4px solid #10b981;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.data-label {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.data-items {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 5px 0;
+}
+
+.data-item {
+  padding: 8px 12px;
+  background-color: #e0f2fe;
+  border-radius: 4px;
+  white-space: nowrap;
+  transition: all 0.3s;
+}
+
+.data-set-display.array-generated .data-item {
+  background-color: #bbf7d0;
+  transform: translateY(-2px);
+}
+
+/* 统计信息样式 */
+.stats-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background-color: #f8fafc;
+  border-radius: 6px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* 进度条样式 */
+.progress-container {
+  height: 8px;
+  background-color: #e2e8f0;
+  border-radius: 4px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #3b82f6;
+  transition: width 0.3s ease;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .tabs {
+    flex-wrap: wrap;
+  }
+
+  .array-element {
+    width: 40px;
+    height: 40px;
+  }
+
+  .visualization-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-header h2 {
+    font-size: 20px;
+  }
+
+  .array-element {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+}

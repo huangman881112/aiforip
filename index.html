@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>算法学习网站 - 探索计算机算法的奥秘</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 自定义样式 -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-code text-blue-600 text-2xl"></i>
+                <h1 class="text-xl font-bold text-gray-800">算法学习</h1>
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <a href="index.html" class="text-blue-600 font-medium">首页</a>
+                <a href="algorithms/sorting.html" class="text-gray-600 hover:text-blue-600 transition-colors">排序算法</a>
+                <a href="algorithms/searching.html" class="text-gray-600 hover:text-blue-600 transition-colors">搜索算法</a>
+                <a href="algorithms/graph.html" class="text-gray-600 hover:text-blue-600 transition-colors">图算法</a>
+                <a href="algorithms/dynamic.html" class="text-gray-600 hover:text-blue-600 transition-colors">动态规划</a>
+                <a href="algorithms/greedy.html" class="text-gray-600 hover:text-blue-600 transition-colors">贪心算法</a>
+                <a href="algorithms/other.html" class="text-gray-600 hover:text-blue-600 transition-colors">更多分类</a>
+            </nav>
+            <!-- 移动端菜单按钮 -->
+            <button class="md:hidden text-gray-600 focus:outline-none" id="menuBtn">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </div>
+        <!-- 移动端菜单 -->
+        <div class="md:hidden hidden bg-white absolute w-full shadow-lg" id="mobileMenu">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="index.html" class="text-blue-600 font-medium py-2">首页</a>
+                <a href="algorithms/sorting.html" class="text-gray-600 hover:text-blue-600 transition-colors py-2">排序算法</a>
+                <a href="algorithms/searching.html" class="text-gray-600 hover:text-blue-600 transition-colors py-2">搜索算法</a>
+                <a href="algorithms/graph.html" class="text-gray-600 hover:text-blue-600 transition-colors py-2">图算法</a>
+                <a href="algorithms/dynamic.html" class="text-gray-600 hover:text-blue-600 transition-colors py-2">动态规划</a>
+                <a href="algorithms/greedy.html" class="text-gray-600 hover:text-blue-600 transition-colors py-2">贪心算法</a>
+                <a href="algorithms/other.html" class="text-gray-600 hover:text-blue-600 transition-colors py-2">更多分类</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- 英雄区域 -->
+        <section class="bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg shadow-lg p-8 mb-10">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">探索计算机算法的奥秘</h2>
+            <p class="text-lg mb-6">从基础到进阶，全面学习各类算法的原理、实现和应用场景</p>
+            <a href="algorithms/sorting.html" class="bg-white text-blue-600 font-medium py-2 px-6 rounded-md hover:bg-gray-100 transition-colors inline-flex items-center">
+                开始学习 <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </section>
+
+        <!-- 算法分类概览 -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-sitemap text-blue-600 mr-2"></i> 算法分类概览
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 排序算法 -->
+                <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border-l-4 border-blue-500">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-sort text-blue-500 text-2xl mr-3"></i>
+                        <h3 class="text-xl font-semibold text-gray-800">排序算法</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">比较类排序（冒泡、选择、插入、希尔、归并、快速、堆排序）和非比较类排序（计数、桶、基数排序）</p>
+                    <a href="algorithms/sorting.html" class="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center">
+                        查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                    </a>
+                </div>
+
+                <!-- 搜索与查找算法 -->
+                <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border-l-4 border-green-500">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-search text-green-500 text-2xl mr-3"></i>
+                        <h3 class="text-xl font-semibold text-gray-800">搜索与查找算法</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">线性查找、二分查找、插值查找、跳跃查找、指数查找和哈希查找</p>
+                    <a href="algorithms/searching.html" class="text-green-600 hover:text-green-800 font-medium inline-flex items-center">
+                        查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                    </a>
+                </div>
+
+                <!-- 图算法 -->
+                <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border-l-4 border-purple-500">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-project-diagram text-purple-500 text-2xl mr-3"></i>
+                        <h3 class="text-xl font-semibold text-gray-800">图算法</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">DFS、BFS、最短路径算法、最小生成树、网络流和拓扑结构算法</p>
+                    <a href="algorithms/graph.html" class="text-purple-600 hover:text-purple-800 font-medium inline-flex items-center">
+                        查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                    </a>
+                </div>
+
+                <!-- 动态规划 -->
+                <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border-l-4 border-yellow-500">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-cubes text-yellow-500 text-2xl mr-3"></i>
+                        <h3 class="text-xl font-semibold text-gray-800">动态规划</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">背包问题、最长公共子序列、最长递增子序列、编辑距离和矩阵链乘</p>
+                    <a href="algorithms/dynamic.html" class="text-yellow-600 hover:text-yellow-800 font-medium inline-flex items-center">
+                        查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                    </a>
+                </div>
+
+                <!-- 贪心算法 -->
+                <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border-l-4 border-red-500">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-bolt text-red-500 text-2xl mr-3"></i>
+                        <h3 class="text-xl font-semibold text-gray-800">贪心算法</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">活动选择问题、霍夫曼编码、最小生成树和分数背包问题</p>
+                    <a href="algorithms/greedy.html" class="text-red-600 hover:text-red-800 font-medium inline-flex items-center">
+                        查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                    </a>
+                </div>
+
+                <!-- 更多分类 -->
+                <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border-l-4 border-gray-500">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-ellipsis-h text-gray-500 text-2xl mr-3"></i>
+                        <h3 class="text-xl font-semibold text-gray-800">更多分类</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">分治算法、数学与数论算法、字符串算法、机器学习算法等</p>
+                    <a href="algorithms/other.html" class="text-gray-600 hover:text-gray-800 font-medium inline-flex items-center">
+                        查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 特色内容 -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-star text-yellow-500 mr-2"></i> 特色内容
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 算法复杂度比较 -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">算法复杂度比较</h3>
+                    <p class="text-gray-600 mb-4">了解不同算法在时间和空间上的性能差异，选择最适合特定问题的算法。</p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="border px-4 py-2 text-left">算法</th>
+                                    <th class="border px-4 py-2 text-left">时间复杂度</th>
+                                    <th class="border px-4 py-2 text-left">空间复杂度</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="border px-4 py-2">冒泡排序</td>
+                                    <td class="border px-4 py-2">O(n²)</td>
+                                    <td class="border px-4 py-2">O(1)</td>
+                                </tr>
+                                <tr class="bg-gray-50">
+                                    <td class="border px-4 py-2">快速排序</td>
+                                    <td class="border px-4 py-2">O(n log n)</td>
+                                    <td class="border px-4 py-2">O(log n)</td>
+                                </tr>
+                                <tr>
+                                    <td class="border px-4 py-2">归并排序</td>
+                                    <td class="border px-4 py-2">O(n log n)</td>
+                                    <td class="border px-4 py-2">O(n)</td>
+                                </tr>
+                                <tr class="bg-gray-50">
+                                    <td class="border px-4 py-2">二分查找</td>
+                                    <td class="border px-4 py-2">O(log n)</td>
+                                    <td class="border px-4 py-2">O(1)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 算法可视化 -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">算法可视化</h3>
+                    <p class="text-gray-600 mb-4">通过交互式可视化理解算法的工作原理和执行过程。</p>
+                    <div class="bg-gray-100 rounded-lg p-4 h-40 flex items-center justify-center">
+                        <p class="text-gray-500 text-center">排序算法可视化示例<br><small>（实际项目中将包含交互式动画）</small></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-code mr-2"></i> 算法学习
+                    </h3>
+                    <p class="text-gray-400">致力于提供高质量的算法学习资源，帮助开发者掌握各类算法的原理和应用。</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-link mr-2"></i> 快速链接
+                    </h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="index.html" class="hover:text-white transition-colors">首页</a></li>
+                        <li><a href="algorithms/sorting.html" class="hover:text-white transition-colors">排序算法</a></li>
+                        <li><a href="algorithms/searching.html" class="hover:text-white transition-colors">搜索算法</a></li>
+                        <li><a href="algorithms/graph.html" class="hover:text-white transition-colors">图算法</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-envelope mr-2"></i> 联系我们
+                    </h3>
+                    <p class="text-gray-400">有任何问题或建议，请随时联系我们。</p>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-github text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-twitter text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-linkedin text-xl"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-500">
+                <p>&copy; 2023 算法学习网站. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/main.js?v=1.0"></script>
+</body>
+</html>

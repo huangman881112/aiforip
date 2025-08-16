@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动态规划 - 算法学习网站</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 自定义样式 -->
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-code text-blue-600 text-2xl"></i>
+                <h1 class="text-xl font-bold text-gray-800">算法学习</h1>
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <a href="../index.html" class="text-gray-600 hover:text-blue-600 transition-colors">首页</a>
+                <a href="sorting.html" class="text-gray-600 hover:text-blue-600 transition-colors">排序算法</a>
+                <a href="searching.html" class="text-gray-600 hover:text-blue-600 transition-colors">搜索算法</a>
+                <a href="graph.html" class="text-gray-600 hover:text-blue-600 transition-colors">图算法</a>
+                <a href="dynamic.html" class="text-blue-600 font-medium">动态规划</a>
+                <a href="greedy.html" class="text-gray-600 hover:text-blue-600 transition-colors">贪心算法</a>
+                <a href="other.html" class="text-gray-600 hover:text-blue-600 transition-colors">更多分类</a>
+            </nav>
+            <!-- 移动端菜单按钮 -->
+            <button class="md:hidden text-gray-600 focus:outline-none" id="menuBtn">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </div>
+        <!-- 移动端菜单 -->
+        <div class="md:hidden hidden bg-white absolute w-full shadow-lg" id="mobileMenu">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="../index.html" class="text-gray-600 hover:text-blue-600 transition-colors py-2">首页</a>
+                <a href="sorting.html" class="text-gray-600 hover:text-blue-600 transition-colors py-2">排序算法</a>
+                <a href="searching.html" class="text-gray-600 hover:text-blue-600 transition-colors py-2">搜索算法</a>
+                <a href="graph.html" class="text-gray-600 hover:text-blue-600 transition-colors py-2">图算法</a>
+                <a href="dynamic.html" class="text-blue-600 font-medium py-2">动态规划</a>
+                <a href="greedy.html" class="text-gray-600 hover:text-blue-600 transition-colors py-2">贪心算法</a>
+                <a href="other.html" class="text-gray-600 hover:text-blue-600 transition-colors py-2">更多分类</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="container mx-auto px-4 py-8">
+        <section class="mb-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-cubes text-orange-600 mr-2"></i> 动态规划 (DP)
+            </h2>
+            <p class="text-gray-600 mb-6">动态规划是一种通过将复杂问题分解为子问题并存储子问题结果以避免重复计算的算法设计技术。它广泛应用于优化问题，如背包问题、最长公共子序列等。</p>
+
+            <!-- 算法分类标签 -->
+            <div class="mb-8 flex flex-wrap gap-2">
+                <span class="algorithm-tag tag-medium bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">背包问题</span>
+                <span class="algorithm-tag tag-medium bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">序列问题</span>
+                <span class="algorithm-tag tag-medium bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">矩阵问题</span>
+                <span class="algorithm-tag tag-hard bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">区间问题</span>
+                <span class="algorithm-tag tag-medium bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">树问题</span>
+            </div>
+
+            <!-- 算法列表 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+                <!-- 0-1背包问题 -->
+                <div class="card bg-white rounded-lg shadow-md p-6 transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">0-1背包问题</h3>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="algorithm-tag tag-medium bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs font-medium">中等</span>
+                        <span class="algorithm-tag bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-medium">背包问题</span>
+                        <span class="algorithm-tag bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">经典</span>
+                    </div>
+                    <p class="text-gray-600 mb-4 line-clamp-3">0-1背包问题是一个经典的动态规划问题，给定一组物品和一个背包容量，每个物品有特定的重量和价值，求在不超过背包容量的前提下，能装入背包的最大价值。</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm"><i class="fas fa-clock mr-1"></i> O(nW)</span>
+                        <button class="view-algorithm-btn text-blue-600 hover:text-blue-800 font-medium flex items-center" data-algorithm="knapsack01">
+                            查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 完全背包问题 -->
+                <div class="card bg-white rounded-lg shadow-md p-6 transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">完全背包问题</h3>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="algorithm-tag tag-medium bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs font-medium">中等</span>
+                        <span class="algorithm-tag bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-medium">背包问题</span>
+                        <span class="algorithm-tag bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">经典</span>
+                    </div>
+                    <p class="text-gray-600 mb-4 line-clamp-3">完全背包问题是0-1背包问题的变种，每个物品可以选择多次，求在不超过背包容量的前提下，能装入背包的最大价值。</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm"><i class="fas fa-clock mr-1"></i> O(nW)</span>
+                        <button class="view-algorithm-btn text-blue-600 hover:text-blue-800 font-medium flex items-center" data-algorithm="unboundedKnapsack">
+                            查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 最长公共子序列 -->
+                <div class="card bg-white rounded-lg shadow-md p-6 transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">最长公共子序列 (LCS)</h3>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="algorithm-tag tag-medium bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs font-medium">中等</span>
+                        <span class="algorithm-tag bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-xs font-medium">序列问题</span>
+                        <span class="algorithm-tag bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">经典</span>
+                    </div>
+                    <p class="text-gray-600 mb-4 line-clamp-3">最长公共子序列问题是寻找两个字符串共有的最长子序列，子序列中的字符不必连续但保持原有顺序。</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm"><i class="fas fa-clock mr-1"></i> O(mn)</span>
+                        <button class="view-algorithm-btn text-blue-600 hover:text-blue-800 font-medium flex items-center" data-algorithm="lcs">
+                            查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 最长递增子序列 -->
+                <div class="card bg-white rounded-lg shadow-md p-6 transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">最长递增子序列 (LIS)</h3>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="algorithm-tag tag-medium bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs font-medium">中等</span>
+                        <span class="algorithm-tag bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-xs font-medium">序列问题</span>
+                        <span class="algorithm-tag bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">经典</span>
+                    </div>
+                    <p class="text-gray-600 mb-4 line-clamp-3">最长递增子序列问题是在一个序列中寻找最长的严格递增子序列，子序列中的元素不必连续。</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm"><i class="fas fa-clock mr-1"></i> O(n²) 或 O(n log n)</span>
+                        <button class="view-algorithm-btn text-blue-600 hover:text-blue-800 font-medium flex items-center" data-algorithm="lis">
+                            查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 编辑距离 -->
+                <div class="card bg-white rounded-lg shadow-md p-6 transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">编辑距离</h3>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="algorithm-tag tag-medium bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs font-medium">中等</span>
+                        <span class="algorithm-tag bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-xs font-medium">序列问题</span>
+                        <span class="algorithm-tag bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-xs font-medium">字符串</span>
+                    </div>
+                    <p class="text-gray-600 mb-4 line-clamp-3">编辑距离是指将一个字符串转换为另一个字符串所需的最少操作次数，操作包括插入、删除和替换字符。</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm"><i class="fas fa-clock mr-1"></i> O(mn)</span>
+                        <button class="view-algorithm-btn text-blue-600 hover:text-blue-800 font-medium flex items-center" data-algorithm="editDistance">
+                            查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 矩阵链乘 -->
+                <div class="card bg-white rounded-lg shadow-md p-6 transition-shadow hover:shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">矩阵链乘</h3>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="algorithm-tag tag-hard bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-xs font-medium">较难</span>
+                        <span class="algorithm-tag bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs font-medium">矩阵问题</span>
+                        <span class="algorithm-tag bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">区间DP</span>
+                    </div>
+                    <p class="text-gray-600 mb-4 line-clamp-3">矩阵链乘问题是寻找一种括号化方案，使得矩阵相乘的运算次数最少，是一个经典的区间动态规划问题。</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm"><i class="fas fa-clock mr-1"></i> O(n³)</span>
+                        <button class="view-algorithm-btn text-blue-600 hover:text-blue-800 font-medium flex items-center" data-algorithm="matrixChain">
+                            查看详情 <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 算法详情部分 -->
+            <div id="algorithmDetail" class="hidden bg-white rounded-lg shadow-lg p-6 mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-2xl font-bold text-gray-800" id="detailTitle"></h3>
+                    <button id="closeDetail" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="algorithm-detail">
+                    <div class="algorithm-header">
+                        <div class="flex flex-wrap gap-2 mb-3" id="detailTags"></div>
+                    </div>
+
+                    <div class="algorithm-description mb-6" id="detailDescription"></div>
+
+                    <div class="algorithm-complexity mb-6">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-2">复杂度分析</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-gray-600"><span class="font-medium">时间复杂度:</span> <span id="detailTimeComplexity"></span></p>
+                                <p class="text-gray-600"><span class="font-medium">最佳情况:</span> <span id="detailBestCase"></span></p>
+                                <p class="text-gray-600"><span class="font-medium">最坏情况:</span> <span id="detailWorstCase"></span></p>
+                                <p class="text-gray-600"><span class="font-medium">平均情况:</span> <span id="detailAverageCase"></span></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600"><span class="font-medium">空间复杂度:</span> <span id="detailSpaceComplexity"></span></p>
+                                <p class="text-gray-600"><span class="font-medium">前提条件:</span> <span id="detailPrecondition"></span></p>
+                                <p class="text-gray-600"><span class="font-medium">难度:</span> <span id="detailDifficulty"></span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-2">伪代码</h4>
+                        <pre class="algorithm-code rounded-md p-4 overflow-x-auto" id="detailPseudocode"></pre>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-2">Python 实现</h4>
+                        <pre class="algorithm-code rounded-md p-4 overflow-x-auto" id="detailPythonCode"></pre>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-2">JavaScript 实现</h4>
+                        <pre class="algorithm-code rounded-md p-4 overflow-x-auto" id="detailJavaScriptCode"></pre>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-2">可视化演示</h4>
+                        <div class="bg-gray-100 rounded-lg p-4 h-64 flex items-center justify-center" id="algorithmVisualization">
+                            <p class="text-gray-500 text-center">算法可视化区域<br><small>（点击下方按钮开始演示）</small></p>
+                        </div>
+                        <button id="visualizeBtn" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-play mr-2"></i> 开始演示
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-code mr-2"></i> 算法学习
+                    </h3>
+                    <p class="text-gray-400">致力于提供高质量的算法学习资源，帮助开发者掌握各类算法的原理和应用。</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-link mr-2"></i> 快速链接
+                    </h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="../index.html" class="hover:text-white transition-colors">首页</a></li>
+                        <li><a href="sorting.html" class="hover:text-white transition-colors">排序算法</a></li>
+                        <li><a href="searching.html" class="hover:text-white transition-colors">搜索算法</a></li>
+                        <li><a href="graph.html" class="hover:text-white transition-colors">图算法</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-envelope mr-2"></i> 联系我们
+                    </h3>
+                    <p class="text-gray-400">有任何问题或建议，请随时联系我们。</p>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-github text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-twitter text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-linkedin text-xl"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-500">
+                <p>&copy; 2023 算法学习网站. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="../js/main.js"></script>
+    <script src="../js/algorithms.js"></script>
+    <script>
+        // 等待DOM加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            // 算法数据
+            const algorithms = algorithmData.dynamic;
+
+            // 查看算法详情按钮点击事件
+            const viewButtons = document.querySelectorAll('.view-algorithm-btn');
+            const algorithmDetail = document.getElementById('algorithmDetail');
+            const closeDetail = document.getElementById('closeDetail');
+            const visualizeBtn = document.getElementById('visualizeBtn');
+            let currentAlgorithm = null;
+
+            viewButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const algorithmId = this.getAttribute('data-algorithm');
+                    // 查找对应的算法
+                    const algorithm = algorithms.find(alg => alg.id === algorithmId);
+                    if (algorithm) {
+                        currentAlgorithm = algorithm;
+                        // 填充算法详情
+                        document.getElementById('detailTitle').textContent = algorithm.name;
+                        document.getElementById('detailDescription').textContent = algorithm.description;
+                        document.getElementById('detailTimeComplexity').textContent = algorithm.complexity.time;
+                        document.getElementById('detailSpaceComplexity').textContent = algorithm.complexity.space;
+                        document.getElementById('detailBestCase').textContent = algorithm.complexity.bestCase;
+                        document.getElementById('detailWorstCase').textContent = algorithm.complexity.worstCase;
+                        document.getElementById('detailAverageCase').textContent = algorithm.complexity.averageCase;
+                        document.getElementById('detailDifficulty').textContent = algorithm.difficulty;
+                        document.getElementById('detailPrecondition').textContent = algorithm.precondition || '无特殊要求';
+                        document.getElementById('detailPseudocode').textContent = algorithm.pseudocode;
+                        document.getElementById('detailPythonCode').textContent = algorithm.code.python;
+                        document.getElementById('detailJavaScriptCode').textContent = algorithm.code.javascript;
+
+                        // 填充标签
+                        const tagsContainer = document.getElementById('detailTags');
+                        tagsContainer.innerHTML = '';
+                        algorithm.tags.forEach(tag => {
+                            const tagElement = document.createElement('span');
+                            tagElement.className = 'algorithm-tag bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full text-xs font-medium';
+                            tagElement.textContent = tag;
+                            tagsContainer.appendChild(tagElement);
+                        });
+
+                        // 显示详情
+                        algorithmDetail.classList.remove('hidden');
+                        // 滚动到详情部分
+                        algorithmDetail.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // 关闭详情按钮点击事件
+            closeDetail.addEventListener('click', function() {
+                algorithmDetail.classList.add('hidden');
+            });
+
+            // 可视化按钮点击事件
+            visualizeBtn.addEventListener('click', function() {
+                if (currentAlgorithm) {
+                    // 调用可视化函数
+                    visualizeDynamic(currentAlgorithm.id);
+                    // 更新可视化区域
+                    const visualizationContainer = document.getElementById('algorithmVisualization');
+                    visualizationContainer.innerHTML = '<p class="text-gray-500 text-center">正在演示 ' + currentAlgorithm.name + '...</p>';
+                }
+            });
+        });
+
+        // 动态规划算法可视化函数
+        function visualizeDynamic(algorithm) {
+            // 这里是动态规划算法可视化的示例实现
+            console.log('Visualizing dynamic programming algorithm:', algorithm);
+
+            // 示例: 针对0-1背包问题创建一些数据
+            if (algorithm === 'knapsack01') {
+                const weights = [2, 3, 4, 5];
+                const values = [3, 4, 5, 6];
+                const capacity = 8;
+                console.log('Weights:', weights);
+                console.log('Values:', values);
+                console.log('Capacity:', capacity);
+            }
+
+            // 这里应该有具体的可视化逻辑
+        }
+    </script>
+</body>
+</html>

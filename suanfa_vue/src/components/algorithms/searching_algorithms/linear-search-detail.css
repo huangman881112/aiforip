@@ -310,7 +310,7 @@
   background-color: #2563eb;
 }
 
-.visualization-controls button:disabled {
+.visualization-container .button-group button:disabled {
   background-color: #94a3b8;
   cursor: not-allowed;
 }

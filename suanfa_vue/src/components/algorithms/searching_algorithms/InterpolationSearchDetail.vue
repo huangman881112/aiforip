@@ -13,6 +13,7 @@ const array = ref([1, 3, 5, 7, 9, 11, 13, 15, 17, 19])
 const target = ref(13)
 const result = ref(-1)
 const isSearching = ref(false)
+const isButtonClicked = ref(false)
 const steps = ref([])
 const currentStep = ref(0)
 const animationSpeed = ref(1000)
@@ -35,9 +36,9 @@ const generateRandomArray = async () => {
     }
 
     // 更新按钮状态
-    buttonStates.value.generate = true
+    isButtonClicked.value = true
     setTimeout(() => {
-      buttonStates.value.generate = false
+      isButtonClicked.value = false
     }, 200)
 
     console.log('[DEBUG] 生成随机数组')
@@ -69,9 +70,9 @@ const generateRandomArray = async () => {
 const resetSearch = () => {
   try {
     // 更新按钮状态
-    buttonStates.value.reset = true
+    isButtonClicked.value = true
     setTimeout(() => {
-      buttonStates.value.reset = false
+      isButtonClicked.value = false
     }, 200)
 
     isSearching.value = false
@@ -91,11 +92,13 @@ const resetSearch = () => {
 const interpolationSearch = async () => {
   console.log('开始查找按钮被点击');
   if (isSearching.value || isAnimating.value) return
-
+  isButtonClicked.value = true;
+  isSearching.value = true;
   // 更新按钮状态
-  buttonStates.value.search = true
+  isButtonClicked.value = true
   setTimeout(() => {
-    buttonStates.value.search = false
+    buttonStates.value = false
+    isButtonClicked.value = false;
   }, 200)
 
   resetSearch()
@@ -182,9 +185,9 @@ const testSearch = async () => {
     }
 
     // 更新按钮状态
-    buttonStates.value.test = true
+    isButtonClicked.value = true
     setTimeout(() => {
-      buttonStates.value.test = false
+      isButtonClicked.value = false
     }, 200)
 
     // 生成一个包含目标值的数组
@@ -418,7 +421,6 @@ watchEffect(() => {
           </div>
           <div class="visualization-container">
             <div class="array-container"> 
-            <!-- <div v-if="array.value.length>0"> -->
               <div v-for="(item, index) in array" :key="index" class="array-element" :class="{
                 'checking': currentStepInfo && index === currentStepInfo.pos,
                 'found': currentStepInfo && index === currentStepInfo.pos && currentStepInfo.type === 'found',
@@ -428,29 +430,20 @@ watchEffect(() => {
               }">
                 {{ item }}
               </div>
-              <!-- <div v-if="array.value.length === 0" class="empty-array-message">
-                数组为空，请点击"生成新列表"按钮
-              </div> -->
-            <!-- </div> -->
-            <!-- <div v-else class="empty-array-message">
-              数组未初始化，请点击"生成新列表"按钮
-            </div> -->
-          </div>
+            </div>
 
       
-          <div class="button-group">
-            <button @click="generateRandomArray" :disabled="isSearching || isAnimating" :class="{ 'clicked': buttonStates.generate }">生成新列表</button>
-            <button @click="interpolationSearch" :disabled="isSearching || isAnimating" :class="{ 'clicked': buttonStates.search }">开始搜索</button>
-            <button @click="testSearch" :disabled="isSearching || isAnimating" :class="{ 'clicked': buttonStates.test }">测试搜索</button>
-            <button @click="resetSearch" :disabled="!isSearching && steps.length === 0" :class="{ 'clicked': buttonStates.reset }">重置搜索</button>
-          </div>
+           <div class="button-group">
+            <button @click="generateRandomArray" :disabled="isSearching" :class="{ 'clicked': isButtonClicked }">生成新列表</button>
+            <button @click="interpolationSearch" :disabled="isSearching" :class="{ 'clicked': isButtonClicked }">开始搜索</button>
+            <button @click="testSearch" :disabled="isSearching" :class="{ 'clicked': isButtonClicked }">测试搜索</button>
+            <button @click="resetSearch" :disabled="!isSearching && steps.length === 0" :class="{ 'clicked': isButtonClicked }">重置搜索</button>
+           </div>
 
-          <!-- <div class="step-details"> -->
-            <!-- <h4>当前步骤详情</h4> -->
-            <!-- <p>{{ currentStep > 0 && steps[currentStep.value - 1] ? steps[currentStep.value - 1].details : '准备开始' }}</p> -->
-          <!-- </div> -->
+
           <div class="step-details">
             <h4>当前步骤详情</h4>
+            {{ currentStep }}
             <p>{{ currentStep > 0 && steps[currentStep - 1] ? steps[currentStep - 1].details : '准备开始' }}</p>
           </div>
           <div class="steps-history">
@@ -518,20 +511,5 @@ watchEffect(() => {
   overflow: hidden;
 }
 
-/* 确保数组容器可见 */
-.array-container {
-  min-height: 80px;
-  /* border: 1px solid #e2e8f0; */
-  padding: 10px;
-  border-radius: 4px;
-  /* background-color: white; */
-}
 
-/* 增强数组元素的可见性 */
-.array-element {
-  min-width: 40px;
-  height: 40px;
-  line-height: 40px;
-  font-size: 16px;
-}
 </style>

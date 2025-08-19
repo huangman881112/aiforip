@@ -223,14 +223,14 @@
   margin-top: 20px;
 }
 
-.visualization-controls {
+.visualization-container {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
   flex-wrap: wrap;
 }
 
-.visualization-controls button {
+.visualization-container  .button-group button {
   padding: 8px 16px;
   background-color: #1e88e5;
   color: white;
@@ -240,12 +240,12 @@
   transition: background-color 0.3s;
 }
 
-.visualization-controls button:hover {
+.visualization-container button:hover {
   background-color: #1565c0;
 }
 
-.visualization-controls input[type="number"],
-.visualization-controls input[type="text"] {
+.visualization-container input[type="number"],
+.visualization-container input[type="text"] {
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;

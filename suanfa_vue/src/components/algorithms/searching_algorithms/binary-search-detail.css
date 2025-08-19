@@ -297,7 +297,7 @@
   gap: 10px;
 }
 
-.visualization-controls button {
+.visualization-container .button-group button {
   padding: 8px 16px;
   border: none;
   background-color: #3b82f6;
@@ -316,7 +316,7 @@
   background-color: #2563eb;
 }
 
-.visualization-controls button:disabled {
+.visualization-container .button-group button:disabled {
   background-color: #94a3b8;
   cursor: not-allowed;
 }

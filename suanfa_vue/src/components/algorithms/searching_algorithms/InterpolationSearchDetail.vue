@@ -507,8 +507,12 @@ watchEffect(() => {
 
 /* 插值查找特有样式 */
 .interpolation-search-detail {
-  height: 100%;
-  overflow: hidden;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 32px;
+  padding: 24px;
+  position: relative;
 }
 
 

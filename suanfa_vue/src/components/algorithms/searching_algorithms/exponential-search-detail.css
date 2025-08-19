@@ -1,0 +1,115 @@
+.algorithm-container {
+  /* 与线性查找保持一致的容器样式 */
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 32px;
+  padding: 24px;
+  position: relative;
+}
+
+.array-visualization {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+
+.array-element {
+  width: 40px;
+  height: 40px;
+  margin: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.array-element.normal {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.array-element.current {
+  background-color: #ff9800;
+  color: white;
+  transform: scale(1.2);
+}
+
+.array-element.found {
+  background-color: #4caf50;
+  color: white;
+  transform: scale(1.2);
+}
+
+.array-element.not-found {
+  background-color: #f44336;
+  color: white;
+}
+
+.search-controls {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+}
+
+.control-group {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+input[type='number'], input[type='range'] {
+  margin-right: 10px;
+}
+
+button {
+  margin-right: 10px;
+  padding: 8px 16px;
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #0b7dda;
+}
+
+.search-status {
+  margin: 15px 0;
+  padding: 10px;
+  background-color: #e3f2fd;
+  border-radius: 4px;
+}
+
+.steps-history {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  font-family: monospace;
+}
+
+.step-item {
+  margin-bottom: 5px;
+  padding: 5px;
+  border-bottom: 1px solid #eee;
+}
+
+.step-item.highlight {
+  background-color: #fff3cd;
+}

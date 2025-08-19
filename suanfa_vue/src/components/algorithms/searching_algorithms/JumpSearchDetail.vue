@@ -1,5 +1,5 @@
 <script setup>
-import { ref, defineEmits, nextTick, computed } from 'vue'
+import { ref, defineEmits, nextTick, computed, watch } from 'vue'
 
 // 定义emits
 const emit = defineEmits(['close'])
@@ -7,9 +7,41 @@ const emit = defineEmits(['close'])
 // 控制标签页切换
 const activeTab = ref('basic')
 
+// 列表大小控制
+const listSize = ref(7)
+const minSize = ref(3)
+const maxSize = ref(20)
+
+// 目标值控制
+const targetValue = ref(13)
+const minTarget = ref(1)
+const maxTarget = ref(100)
+
+// 确保listSize始终是数字类型
+watch(listSize, (newValue) => {
+  if (typeof newValue !== 'number' || isNaN(newValue)) {
+    console.warn('[WARNING] 列表大小不是有效数字，已重置为默认值');
+    listSize.value = 7;
+  } else {
+    // 确保值在有效范围内
+    listSize.value = Math.max(minSize.value, Math.min(maxSize.value, Math.round(newValue)));
+  }
+})
+
+// 确保targetValue始终是数字类型
+watch(targetValue, (newValue) => {
+  if (typeof newValue !== 'number' || isNaN(newValue)) {
+    console.warn('[WARNING] 目标值不是有效数字，已重置为默认值');
+    targetValue.value = 13;
+  } else {
+    // 确保值在有效范围内
+    targetValue.value = Math.max(minTarget.value, Math.min(maxTarget.value, Math.round(newValue)));
+  }
+})
+
 // 算法参数
 const array = ref([1, 3, 5, 7, 9, 11, 13, 15, 17, 19])
-const target = ref(13)
+const searchArray = ref([...array.value])
 const result = ref(-1)
 const isSearching = ref(false)
 const steps = ref([])
@@ -18,17 +50,22 @@ const animationSpeed = ref(1000)
 const isAnimating = ref(false)
 const searchStatus = ref('就绪')
 const comparisonCount = ref(0)
+const errorMessage = ref('')
+const isButtonClicked = ref(false)
+const currentIndex = ref(-1)
+const isArraySorted = ref(true)
 
 // 生成随机有序数组
 const generateRandomArray = async () => {
   try {
     if (isSearching.value || isAnimating.value) {
-      console.warn('[WARNING] 正在搜索或动画中，无法生成新数组')
+      errorMessage.value = '正在搜索或动画中，无法生成新数组'
+      setTimeout(() => errorMessage.value = '', 3000)
       return
     }
 
     console.log('[DEBUG] 生成随机数组')
-    const length = Math.floor(Math.random() * 5) + 5 // 5-10个元素
+    const length = listSize.value
     const newArray = []
     let current = Math.floor(Math.random() * 10)
     newArray.push(current)
@@ -37,13 +74,16 @@ const generateRandomArray = async () => {
       newArray.push(current)
     }
     array.value = newArray
+    searchArray.value = [...array.value]
     console.log('[DEBUG] 生成的随机数组:', newArray)
 
     // 等待DOM更新后再重置搜索
     await nextTick()
     resetSearch()
+    errorMessage.value = ''
   } catch (error) {
     console.error('[ERROR] 生成随机数组失败:', error)
+    errorMessage.value = `生成随机数组失败: ${error.message}`
   }
 }
 
@@ -57,107 +97,109 @@ const resetSearch = () => {
     currentStep.value = 0
     comparisonCount.value = 0
     searchStatus.value = '就绪'
+    currentIndex.value = -1
+    searchArray.value = [...array.value]
     console.log('[DEBUG] 搜索已重置')
   } catch (error) {
     console.error('[ERROR] 重置搜索失败:', error)
+    errorMessage.value = `重置搜索失败: ${error.message}`
   }
 }
 
 // 跳跃搜索算法
 const jumpSearch = async () => {
   console.log('开始查找按钮被点击');
-  if (isSearching.value || isAnimating.value) return
+  if (isSearching.value || isAnimating.value) {
+    errorMessage.value = '正在搜索中，请等待完成或重置后再试'
+    setTimeout(() => errorMessage.value = '', 3000)
+    return
+  }
 
+  isButtonClicked.value = true
   resetSearch()
   isSearching.value = true
   searchStatus.value = '查找中...'
   comparisonCount.value = 0
+  errorMessage.value = ''
 
-  const arr = [...array.value].sort((a, b) => a - b) // 确保数组有序
-  const tar = target.value
+  const arr = [...searchArray.value]
+  // 确保数组有序
+  if (!isArraySorted.value) {
+    arr.sort((a, b) => a - b)
+    steps.value.push({ step: 0, type: 'info', details: `数组已自动排序: [${arr.join(', ')}]` })
+  }
+  const tar = targetValue.value
   const n = arr.length
   const step = Math.floor(Math.sqrt(n)) // 跳跃步长
   let prev = 0
   let foundIndex = -1
+  let found = false
 
   console.log('查找开始前的数组:', arr);
   steps.value.push({ step: 0, type: 'info', details: `查找开始，初始数组: [${arr.join(', ')}]，目标值: ${tar}，跳跃步长: ${step}` })
 
   // 记录跳跃步骤
-  while (arr[Math.min(step, n) - 1] < tar) {
+  while (arr[Math.min(prev + step, n) - 1] < tar) {
     comparisonCount.value++
     currentStep.value++
-    const curr = Math.min(step, n) - 1
+    const curr = Math.min(prev + step, n) - 1
     const stepDetails = `第 ${currentStep.value} 步: 跳跃到位置 ${curr}，值: ${arr[curr]}，小于目标值 ${tar}`
     console.log(stepDetails);
     steps.value.push({ step: currentStep.value, type: 'jumping', details: stepDetails, prev, curr })
-    prev = step
+    currentIndex.value = curr
+    await new Promise(resolve => setTimeout(resolve, animationSpeed.value))
+    prev += step
     if (prev >= n) {
       break
     }
   }
 
   // 记录线性搜索步骤
-  while (prev < n && arr[prev] < tar) {
+  while (prev < n && arr[prev] < tar && !found) {
     comparisonCount.value++
     currentStep.value++
     const stepDetails = `第 ${currentStep.value} 步: 检查位置 ${prev}，值: ${arr[prev]}，小于目标值 ${tar}`
     console.log(stepDetails);
     steps.value.push({ step: currentStep.value, type: 'checking', details: stepDetails, prev, curr: prev })
+    currentIndex.value = prev
+    await new Promise(resolve => setTimeout(resolve, animationSpeed.value))
     prev++
-    if (prev === Math.min(step, n)) {
+    if (prev === Math.min(prev + step, n)) {
       break
     }
   }
 
   // 检查目标值
-  if (prev < n) {
+  if (prev < n && !found) {
     comparisonCount.value++
     currentStep.value++
+    currentIndex.value = prev
     if (arr[prev] === tar) {
       foundIndex = prev
+      found = true
       const foundDetails = `第 ${currentStep.value} 步: 在位置 ${prev} 找到目标值 ${tar}`
       console.log(foundDetails);
       steps.value.push({ step: currentStep.value, type: 'found', details: foundDetails, prev, curr: prev })
+      await new Promise(resolve => setTimeout(resolve, animationSpeed.value))
     } else {
       const notFoundDetails = `第 ${currentStep.value} 步: 位置 ${prev} 的值 ${arr[prev]} 不是目标值 ${tar}`
       console.log(notFoundDetails);
       steps.value.push({ step: currentStep.value, type: 'notFound', details: notFoundDetails, prev, curr: prev })
+      await new Promise(resolve => setTimeout(resolve, animationSpeed.value))
     }
   }
 
   result.value = foundIndex
+  currentIndex.value = -1
   isSearching.value = false
+  isButtonClicked.value = false
   if (foundIndex !== -1) {
-    searchStatus.value = '查找完成'
+    searchStatus.value = '查找完成 - 找到目标值'
     steps.value.push({ step: currentStep.value + 1, type: 'finish', details: `查找完成，在索引 ${foundIndex} 找到目标值 ${tar}` })
   } else {
-    searchStatus.value = '未找到目标'
+    searchStatus.value = '查找完成 - 未找到目标'
     steps.value.push({ step: currentStep.value + 1, type: 'finish', details: `查找完成，未找到目标值 ${tar}` })
   }
-  animateSteps()
-}
-
-// 动画展示步骤
-const animateSteps = () => {
-  if (steps.value.length === 0) return
-
-  isAnimating.value = true
-  currentStep.value = 0
-
-  const animateNextStep = () => {
-    if (currentStep.value >= steps.value.length) {
-      isAnimating.value = false
-      return
-    }
-
-    currentStep.value++
-    console.log(`[动画] 执行步骤 ${currentStep.value}: ${steps.value[currentStep.value - 1].details}`)
-
-    setTimeout(animateNextStep, animationSpeed.value)
-  }
-
-  animateNextStep()
 }
 
 // 关闭详情
@@ -172,16 +214,31 @@ const currentStepInfo = computed(() => {
   }
   return steps.value[currentStep.value - 1]
 })
+
+// 检查数组是否有序
+const checkArraySorted = () => {
+  for (let i = 1; i < array.value.length; i++) {
+    if (array.value[i] < array.value[i - 1]) {
+      return false
+    }
+  }
+  return true
+}
+
+// 监听数组变化，检查是否有序
+watch(array, () => {
+  isArraySorted.value = checkArraySorted()
+})
 </script>
 
 <template>
-  <div class="jump-search-detail detail-container search-detail">
+  <div class="jump-search-detail detail-container">
     <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>跳跃搜索 (Jump Search)</h2>
       <div class="tabs">
         <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ active: activeTab === 'search' }" @click="activeTab = 'search'">演示</button>
+        <button :class="{ active: activeTab === 'search' }" @click="activeTab = 'search'">查找</button>
         <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
         <button :class="{ active: activeTab === 'notes' }" @click="activeTab = 'notes'">笔记</button>
       </div>
@@ -307,7 +364,7 @@ def jump_search(arr, target):
         <div class="stats-container">
           <div class="stat-item">
             <span class="stat-label">查找状态:</span>
-            <span class="stat-value">{{ searchStatus }}</span>
+            <span class="stat-value {{ searchStatus.includes('完成') ? (result !== -1 ? 'success' : 'error') : 'warning' }}">{{ searchStatus }}</span>
           </div>
           <div class="stat-item">
             <span class="stat-label">比较次数:</span>
@@ -317,40 +374,67 @@ def jump_search(arr, target):
             <span class="stat-label">当前步骤:</span>
             <span class="stat-value">{{ currentStep }}</span>
           </div>
-        </div>
-        <div class="visualization-container">
-          <div class="visualization-controls">
-            <button @click="jumpSearch" :disabled="isSearching || isAnimating">开始查找</button>
-            <button @click="resetSearch" :disabled="!isSearching && steps.length === 0">重置</button>
-            <button @click="generateRandomArray" :disabled="isSearching || isAnimating">生成随机数组</button>
-            <input type="number" v-model="target" placeholder="目标值" :disabled="isSearching || isAnimating">
-            <div class="speed-control">
-              <label>动画速度:</label>
-              <input type="range" min="500" max="2000" v-model="animationSpeed" :disabled="isSearching || isAnimating">
-            </div>
+          <div class="stat-item">
+            <span class="stat-label">找到索引:</span>
+            <span class="stat-value {{ result !== -1 ? 'success' : '' }}">{{ result !== -1 ? result : '未找到' }}</span>
           </div>
+        </div>
 
+        <div class="visualization-container">
           <div class="array-container">
-            <div v-for="(item, index) in array.value" :key="index" class="array-element" :class="{
-              'jumping': currentStepInfo && index === currentStepInfo.curr && currentStepInfo.type === 'jumping',
-              'checking': currentStepInfo && index === currentStepInfo.curr && currentStepInfo.type === 'checking',
-              'found': currentStepInfo && index === currentStepInfo.curr && currentStepInfo.type === 'found',
-              'not-found': currentStepInfo && index === currentStepInfo.curr && currentStepInfo.type === 'notFound',
+            <div v-for="(item, index) in searchArray" :key="index" class="array-element" :class="{
+              'jumping': currentIndex === index && steps[currentStep.value - 1]?.type === 'jumping',
+              'checking': currentIndex === index && steps[currentStep.value - 1]?.type === 'checking',
+              'found': currentIndex === index && steps[currentStep.value - 1]?.type === 'found',
+              'not-found': currentIndex === index && steps[currentStep.value - 1]?.type === 'notFound',
               'block': currentStepInfo && index >= currentStepInfo.prev && index < currentStepInfo.curr + 1 && currentStepInfo.type !== 'jumping'
             }">
               {{ item }}
             </div>
           </div>
 
-          <div class="search-result" v-if="!isSearching && !isAnimating && steps.length > 0">
-            <p v-if="result !== -1">找到目标值 {{ target }}，索引为 {{ result }}</p>
-            <p v-else>未找到目标值 {{ target }}</p>
+
+            <div class="slider-controls">
+              <div class="slider-group">
+                <label>列表大小: {{ listSize }}</label>
+                <!-- <div class="slider-wrapper"> -->
+                  <!-- <input type="range" :min="minSize" :max="maxSize" v-model="listSize" :disabled="isSearching"> -->
+                  <input type="number" :min="minSize" :max="maxSize" v-model.number="listSize" :disabled="isSearching" class="short-input">
+                <!-- </div> -->
+                <span class="range-info">({{ minSize }}-{{ maxSize }})</span>
+              </div>
+
+              <div class="slider-group">
+                <label>目标值: {{ targetValue }}</label>
+                <!-- <div class="slider-wrapper"> -->
+                  <!-- <input type="range" :min="minTarget" :max="maxTarget" v-model="targetValue" :disabled="isSearching"> -->
+                  <input type="number" :min="minTarget" :max="maxTarget" v-model.number="targetValue" :disabled="isSearching" class="short-input">
+                <!-- </div> -->
+                <span class="range-info">({{ minTarget }}-{{ maxTarget }})</span>
+              </div>
+
+              <div class="slider-group">
+                <label>动画速度: {{ animationSpeed }}ms</label>
+                <input type="range" min="100" max="2000" v-model="animationSpeed" :disabled="isSearching">
+              </div>
+            </div>
+
+            <div class="button-group">
+              <button @click="generateRandomArray" :disabled="isSearching" :class="{ 'clicked': isButtonClicked }">生成新列表</button>
+              <button @click="jumpSearch" :disabled="isSearching" :class="{ 'clicked': isButtonClicked }">开始查找</button>
+              <button @click="resetSearch" :disabled="isSearching" :class="{ 'clicked': isButtonClicked }">重置查找</button>
+            </div>
+   
+
+          <div class="error-message" v-if="errorMessage">
+            <p>{{ errorMessage }}</p>
           </div>
 
           <div class="step-details">
             <h4>当前步骤详情</h4>
             <p>{{ currentStep > 0 && steps[currentStep.value - 1] ? steps[currentStep.value - 1].details : '准备开始' }}</p>
           </div>
+
           <div class="steps-history">
             <h4>查找步骤历史</h4>
             <div class="steps-container">
@@ -417,65 +501,234 @@ def jump_search(arr, target):
 </template>
 
 <style scoped>
-@import './linear-search-detail.css';
+/* 引入公共样式 */
+@import './binary-search-detail.css';
 
 /* 跳跃搜索特有样式 */
-.array-container {
+.jump-search-detail {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 32px;
+  padding: 24px;
+  position: relative;
+}
+
+/* 数组元素样式 */
+.array-element {
+  transition: all 0.3s ease;
+}
+
+/* 跳跃状态 */
+.jumping {
+  background-color: var(--accent-color);
+  transform: scale(1.2);
+  border-color: #e68a00;
+}
+
+/* 检查状态 */
+.checking {
+  background-color: var(--warning-color);
+  border-color: #d4a700;
+}
+
+/* 找到状态 */
+.found {
+  background-color: var(--success-color);
+  transform: scale(1.2);
+  border-color: #3d8b40;
+}
+
+/* 未找到状态 */
+ .not-found {
+  background-color: var(--danger-color);
+  border-color: #d32f2f;
+}
+
+/* 块高亮 */
+.block {
+  background-color: rgba(66, 185, 131, 0.2);
+}    
+
+/* 按钮样式 */
+.button-group {
   display: flex;
   gap: 10px;
-  margin: 20px 0;
-  flex-wrap: wrap;
+  margin-top: 15px;
 }
 
-.array-element {
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.button-group button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: var(--primary-color);
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.button-group button:hover:not(:disabled) {
+  background-color: #3aa876;
+}
+
+.button-group button:disabled {
+  background-color: #a0a0a0;
+  cursor: not-allowed;
+}
+
+.button-group button.clicked {
+  background-color: #2c9764;
+}
+
+/* 步骤历史样式 */
+/* .steps-history {
+  margin-top: 20px;
+  max-height: 200px;
+  overflow-y: auto;
   border: 1px solid #ddd;
   border-radius: 4px;
-  background-color: #f0f0f0;
-  transition: all 0.3s;
-}
-
-.array-element.jumping {
-  background-color: #2196f3;
-  color: white;
-  transform: scale(1.2);
-}
-
-.array-element.checking {
-  background-color: #ffeb3b;
-  transform: scale(1.1);
-}
-
-.array-element.found {
-  background-color: #4caf50;
-  color: white;
-  transform: scale(1.2);
-}
-
-.array-element.not-found {
-  background-color: #f44336;
-  color: white;
-}
-
-.array-element.block {
-  background-color: #e3f2fd;
-}
-
-.search-status {
-  margin-top: 20px;
   padding: 10px;
+} */
+
+/* .step-item { */
+  /* padding: 5px 0;
+  border-bottom: 1px solid #eee;
+  display: flex;
+}
+
+.step-number {
+  font-weight: bold;
+  margin-right: 10px;
+  color: var(--secondary-color);
+}
+
+.step-details {
+  flex: 1;
+} */
+
+/* 步骤类型样式 */
+.step-item.info {
+  color: #666;
+}
+
+.step-item.jumping {
+  color: var(--accent-color);
+}
+
+.step-item.checking {
+  color: var(--warning-color);
+}
+
+.step-item.found {
+  color: var(--success-color);
+}
+
+.step-item.notFound {
+  color: var(--danger-color);
+}
+
+.step-item.finish {
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+/* 搜索控制样式 */
+.search-controls {
+  margin-top: 20px;
   background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 滑块控制样式 */
+/* .slider-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.slider-wrapper {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+} */
+
+.slider-wrapper input[type="range"] {
+  flex: 1;
+}
+
+.slider-wrapper input[type="number"] {
+  width: 60px;
+}
+
+.short-input {
+  width: 60px;
+  padding: 5px;
+  border: 1px solid #ddd;
   border-radius: 4px;
 }
 
-.search-result {
-  margin-top: 20px;
+/* 统计信息样式 */
+.stats-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 15px;
   padding: 10px;
-  background-color: #f9f9f9;
+  background-color: #f5f5f5;
   border-radius: 4px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.stat-value {
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.stat-value.success {
+  color: var(--success-color);
+}
+
+.stat-value.error {
+  color: var(--danger-color);
+}
+
+.stat-value.warning {
+  color: var(--warning-color);
+}
+
+/* 错误信息样式 */
+.error-message {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: rgba(244, 67, 54, 0.1);
+  color: var(--danger-color);
+  border-radius: 4px;
+  border-left: 4px solid var(--danger-color);
+}
+
+/* 当前步骤详情 */
+.step-details {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: rgba(66, 185, 131, 0.1);
+  border-radius: 4px;
+  border-left: 4px solid var(--primary-color);
 }
 </style>

@@ -174,10 +174,7 @@ const filteredAlgorithms = computed(() => {
 /* 引入公共样式文件 */
 @import './common-algorithm-page.css';
 
-/* 搜索页面特有样式 */
-.searching-page-container {
-  /* 继承自公共样式，如有需要可添加搜索页面特有样式 */
-}
+
 
 /* 分类标签样式 */
 .category-tabs {

@@ -13,6 +13,8 @@ import BellmanFordDetail from './BellmanFordDetail.vue'
 import FloydWarshallDetail from './FloydWarshallDetail.vue'
 // 导入A*算法详情组件
 import AStarDetail from './AStarDetail.vue'
+// 导入Prim算法详情组件
+import PrimDetail from './PrimDetail.vue'
 
 // 当前选中的算法ID
 const selectedAlgorithm = ref(null)
@@ -45,6 +47,9 @@ const scrollToDetail = () => {
         break;
       case 6:
         detailElement = document.querySelector('.a-star-detail');
+        break;
+      case 7:
+        detailElement = document.querySelector('.prim-detail');
         break;
       default:
         console.warn('未找到对应的算法详情元素');
@@ -261,6 +266,8 @@ const filteredAlgorithms = computed(() => {
       <FloydWarshallDetail v-else-if="selectedAlgorithm === 5" @close="selectedAlgorithm = null" class="floyd-warshall-detail" />
       <!-- A*算法详情 -->
       <AStarDetail v-else-if="selectedAlgorithm === 6" @close="selectedAlgorithm = null" class="a-star-detail" />
+      <!-- Prim算法详情 -->
+      <PrimDetail v-else-if="selectedAlgorithm === 7" @close="selectedAlgorithm = null" class="prim-detail" />
       <!-- 其他算法详情（待实现） -->
       <div v-else>
         <p>该算法的详细实现将在后续添加。</p>

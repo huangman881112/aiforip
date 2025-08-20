@@ -137,6 +137,10 @@ svg .node.start {
   fill: #ffc107;
 }
 
+/* 最小生成树节点样式 */
+svg .node.mst-node {
+  fill: #1E88E5;
+}
 
 
 

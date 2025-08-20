@@ -26,6 +26,9 @@ const GraphPage = () => import('../components/algorithms/graph_algorithms/GraphP
 // 导入图算法详情页组件
 const BFSDetail = () => import('../components/algorithms/graph_algorithms/BFSDetail.vue')
 const DijkstraDetail = () => import('../components/algorithms/graph_algorithms/DijkstraDetail.vue')
+const PrimDetail = () => import('../components/algorithms/graph_algorithms/PrimDetail.vue')
+const AStarDetail = () => import('../components/algorithms/graph_algorithms/AStarDetail.vue')
+const DFSDetail = () => import('../components/algorithms/graph_algorithms/DFSDetail.vue')
 
 // 定义路由
 const routes = [
@@ -48,6 +51,9 @@ const routes = [
   {    path: '/algorithms/graph',    name: 'GraphPage',    component: GraphPage  },
   {    path: '/algorithms/graph/bfs',    name: 'BFSDetail',    component: BFSDetail  },
   {    path: '/algorithms/graph/dijkstra',    name: 'DijkstraDetail',    component: DijkstraDetail  },
+  {    path: '/algorithms/graph/prim',    name: 'PrimDetail',    component: PrimDetail  },
+  {    path: '/algorithms/graph/astar',    name: 'AStarDetail',    component: AStarDetail  },
+  {    path: '/algorithms/graph/dfs',    name: 'DFSDetail',    component: DFSDetail  },
   // 搜索算法相关路由
   {
     path: '/algorithms/searching',

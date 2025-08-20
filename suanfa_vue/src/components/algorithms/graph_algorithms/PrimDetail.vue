@@ -305,9 +305,9 @@ mst.forEach(edge => {
             <p>{{ currentStepDetails }}</p>
           </div>
 
-          <div class="steps-history">
+          <div class="step-history">
             <h4>算法步骤历史</h4>
-            <div class="steps-container">
+            <div class="step-container">
               <div v-for="step in algorithmSteps" :key="step.step" :class="'step-item ' + step.type">
                 <span class="step-number">{{ step.step }}.</span>
                 <span class="step-details">{{ step.details }}</span>

@@ -162,7 +162,7 @@ mst.forEach(edge => {
         </div>
       </div>
       </div>
-      <div v-if="activeTab === 'search'" class="search-content">
+      <div v-if="activeTab === 'search'" class="search-section">
         <h3>Prim算法可视化</h3>
         <p>Prim算法用于构建最小生成树，从一个起始顶点开始，每次选择权重最小的边加入生成树。</p>
         <div class="visualization-container">
@@ -305,9 +305,9 @@ mst.forEach(edge => {
             <p>{{ currentStepDetails }}</p>
           </div>
 
-          <div class="step-history">
-            <h4>算法步骤历史</h4>
-            <div class="step-container">
+           <div class="steps-history">
+            <h4>搜索步骤历史</h4>
+            <div class="steps-container">
               <div v-for="step in algorithmSteps" :key="step.step" :class="'step-item ' + step.type">
                 <span class="step-number">{{ step.step }}.</span>
                 <span class="step-details">{{ step.details }}</span>

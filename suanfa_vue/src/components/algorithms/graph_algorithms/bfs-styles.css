@@ -269,6 +269,28 @@ svg .node.mst-node {
   background-color: #e6f7ee;
 }
 
+.step-item.add {
+  background-color: #d48817;
+}
+
+
+.step-item.update {
+  background-color: #82d319;
+}
+
+
+.step-item.init {
+  background-color: #2a2c2b;
+}
+
+.step-item.search {
+  background-color: #2fc776;
+}
+
+.step-item.complete {
+  background-color: #212cca;
+}
+
 .step-item.neighbor {
   background-color: #fff9e6;
 }

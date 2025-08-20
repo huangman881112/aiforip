@@ -29,6 +29,7 @@ const DijkstraDetail = () => import('../components/algorithms/graph_algorithms/D
 const PrimDetail = () => import('../components/algorithms/graph_algorithms/PrimDetail.vue')
 const AStarDetail = () => import('../components/algorithms/graph_algorithms/AStarDetail.vue')
 const DFSDetail = () => import('../components/algorithms/graph_algorithms/DFSDetail.vue')
+const KruskalDetail = () => import('../components/algorithms/graph_algorithms/KruskalDetail.vue')
 
 // 定义路由
 const routes = [
@@ -54,6 +55,7 @@ const routes = [
   {    path: '/algorithms/graph/prim',    name: 'PrimDetail',    component: PrimDetail  },
   {    path: '/algorithms/graph/astar',    name: 'AStarDetail',    component: AStarDetail  },
   {    path: '/algorithms/graph/dfs',    name: 'DFSDetail',    component: DFSDetail  },
+  {    path: '/algorithms/graph/kruskal',    name: 'KruskalDetail',    component: KruskalDetail  },
   // 搜索算法相关路由
   {
     path: '/algorithms/searching',

@@ -26,7 +26,7 @@
         <div class="category-card">
           <h3>图算法</h3>
           <p>DFS、BFS、最短路径算法、最小生成树、网络流和拓扑排序算法</p>
-          <router-link to="/algorithms">查看详情</router-link>
+          <router-link to="/algorithms/graph">查看详情</router-link>
         </div>
         <div class="category-card">
           <h3>动态规划</h3>

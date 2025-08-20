@@ -21,6 +21,8 @@ const TaskExportComponent = () => import('../components/common/TaskExportCompone
 const JumpSearchDetail = () => import('../components/algorithms/searching_algorithms/JumpSearchDetail.vue')
 const ExponentialSearchDetail = () => import('../components/algorithms/searching_algorithms/ExponentialSearchDetail.vue')
 const HashingSearchDetail = () => import('../components/algorithms/searching_algorithms/HashingSearchDetail.vue')
+// 导入图算法页面组件
+const GraphPage = () => import('../components/algorithms/graph_algorithms/GraphPage.vue')
 
 // 定义路由
 const routes = [
@@ -38,11 +40,9 @@ const routes = [
   {    path: '/algorithms/sorting/simple-bubble-sort',    name: 'SimpleBubbleSort',    component: SimpleBubbleSort  },
   {    path: '/algorithms/sorting/insertion-sort',    name: 'InsertionSortDetail',    component: InsertionSortDetail  },
   {    path: '/algorithms/sorting/selection-sort',    name: 'SelectionSortDetail',    component: SelectionSortDetail  },
-  {
-    path: '/algorithms/sorting',
-    name: 'SortingPage',
-    component: SortingPage
-  },
+  {    path: '/algorithms/sorting',    name: 'SortingPage',    component: SortingPage  },  
+  // 图算法相关路由
+  {    path: '/algorithms/graph',    name: 'GraphPage',    component: GraphPage  },
   // 搜索算法相关路由
   {
     path: '/algorithms/searching',

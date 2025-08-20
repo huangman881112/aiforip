@@ -153,9 +153,9 @@ const binarySearch = async () => {
   isSearching.value = true;
   searchStatus.value = '搜索中...'
   // 100ms后重置按钮状态
-  setTimeout(() => {
-    isButtonClicked.value = false;
-  }, 100);
+  // setTimeout(() => {
+  //   isButtonClicked.value = false;
+  // }, 100);
   comparisonCount.value = 0
   currentStep.value = 0
   foundIndex.value = -1

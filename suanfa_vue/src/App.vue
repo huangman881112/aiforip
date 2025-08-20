@@ -2,7 +2,7 @@
 // 不需要导入ReactWrapper，因为我们会通过路由加载
 </script>
 
-<template>
+<template style="height: 100%; width: 1980px">
   <div class="app-container">
     <header class="app-header">
       <div class="header-content">
@@ -12,7 +12,7 @@
             <li><router-link to="/">首页</router-link></li>
             <li><router-link to="/algorithms/sorting" active-class="active-link">排序算法</router-link></li>
             <li><router-link to="/algorithms/searching" active-class="active-link">搜索算法</router-link></li>
-            <li><router-link to="/algorithms">图算法</router-link></li>
+            <li><router-link to="/algorithms/graph" active-class="active-link">图算法</router-link></li>
             <li><router-link to="/algorithms">动态规划</router-link></li>
             <li><router-link to="/algorithms">贪心算法</router-link></li>
             <li><router-link to="/algorithms">更多分类</router-link></li>
@@ -57,6 +57,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  width: 100%;
 }
 
 .app-header {
@@ -69,8 +70,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
+  /* max-width: 1200px; */
+  margin: 0;
   padding: 0 20px;
 }
 
@@ -79,6 +80,7 @@
   text-decoration: none;
   font-size: 1.8rem;
   font-weight: bold;
+  padding: -20px 0 0 20px;
 }
 
 .app-nav {
@@ -112,8 +114,8 @@
 
 .app-main {
   flex: 1;
-  padding: 20px;
-  max-width: 1200px;
+  /* padding: 20px; */
+  /* max-width: 1200px; */
   margin: 0 auto;
   width: 100%;
 }

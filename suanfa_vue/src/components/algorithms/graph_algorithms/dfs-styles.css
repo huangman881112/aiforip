@@ -1,6 +1,6 @@
 @import '../sorting_algorithms/common-algorithm-page.css';
 @import '../sorting_algorithms/common-sort-styles.css';
-@import './dfs-styles.css';
+
 /* DFS特有样式 */
 .dfs-detail {
   /* 保留组件特有样式 */

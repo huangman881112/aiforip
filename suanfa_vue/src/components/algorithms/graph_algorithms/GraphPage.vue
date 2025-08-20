@@ -5,58 +5,67 @@ import { ref, computed, nextTick } from 'vue'
 import DFSDetail from './DFSDetail.vue'
 // 导入BFS详情组件
 import BFSDetail from './BFSDetail.vue'
+// 导入Dijkstra详情组件
+import DijkstraDetail from './DijkstraDetail.vue'
+// 导入Bellman-Ford详情组件
+import BellmanFordDetail from './BellmanFordDetail.vue'
+// 导入Floyd-Warshall详情组件
+import FloydWarshallDetail from './FloydWarshallDetail.vue'
+// 导入A*算法详情组件
+import AStarDetail from './AStarDetail.vue'
 
 // 当前选中的算法ID
 const selectedAlgorithm = ref(null)
 
 // 滚动到详情区域
 const scrollToDetail = () => {
-  // 尝试查找并滚动到详情元素的函数
-  const attemptScroll = (retryCount = 0) => {
-    let detailElement;
-    if (selectedAlgorithm.value === 1) {
-      detailElement = document.querySelector('.dfs-detail');
-    } else if (selectedAlgorithm.value === 2) {
-      detailElement = document.querySelector('.bfs-detail');
-    } else if (selectedAlgorithm.value === 3) {
-      detailElement = document.querySelector('.dijkstra-detail');
-    } else if (selectedAlgorithm.value === 4) {
-      detailElement = document.querySelector('.bellman-ford-detail');
-    } else if (selectedAlgorithm.value === 5) {
-      detailElement = document.querySelector('.floyd-warshall-detail');
-    } else if (selectedAlgorithm.value === 6) {
-      detailElement = document.querySelector('.a-star-detail');
-    } else if (selectedAlgorithm.value === 7) {
-      detailElement = document.querySelector('.prim-detail');
-    } else if (selectedAlgorithm.value === 8) {
-      detailElement = document.querySelector('.kruskal-detail');
-    } else if (selectedAlgorithm.value === 9) {
-      detailElement = document.querySelector('.ford-fulkerson-detail');
-    } else if (selectedAlgorithm.value === 10) {
-      detailElement = document.querySelector('.edmonds-karp-detail');
-    } else if (selectedAlgorithm.value === 11) {
-      detailElement = document.querySelector('.topological-sort-detail');
-    } else if (selectedAlgorithm.value === 12) {
-      detailElement = document.querySelector('.tarjan-detail');
-    } else if (selectedAlgorithm.value === 13) {
-      detailElement = document.querySelector('.kosaraju-detail');
+  console.log('scrollToDetail called, selectedAlgorithm:', selectedAlgorithm.value);
+  
+  // 直接显示详情区域，不依赖滚动
+  const showDetail = () => {
+    console.log('尝试直接显示详情区域');
+    // 确保selectedAlgorithm被正确设置
+    let detailElement = null;
+    
+    switch(selectedAlgorithm.value) {
+      case 1:
+        detailElement = document.querySelector('.dfs-detail');
+        break;
+      case 2:
+        detailElement = document.querySelector('.bfs-detail');
+        break;
+      case 3:
+        detailElement = document.querySelector('.dijkstra-detail');
+        break;
+      case 4:
+        detailElement = document.querySelector('.bellman-ford-detail');
+        break;
+      case 5:
+        detailElement = document.querySelector('.floyd-warshall-detail');
+        break;
+      case 6:
+        detailElement = document.querySelector('.a-star-detail');
+        break;
+      default:
+        console.warn('未找到对应的算法详情元素');
+        return;
     }
-
+    
     if (detailElement) {
+      console.log('找到算法详情元素，滚动到视图');
       detailElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else if (retryCount < 3) {
-      // 如果未找到元素且重试次数小于3，则延迟后重试
-      console.warn(`未找到详情元素，${100 * (retryCount + 1)}ms后重试`);
-      setTimeout(() => attemptScroll(retryCount + 1), 100 * (retryCount + 1));
+      // 确保元素可见
+      detailElement.style.display = 'block';
+      detailElement.style.visibility = 'visible';
+      detailElement.style.opacity = '1';
     } else {
-      console.error('多次尝试后仍未找到详情元素');
+      console.error('未找到算法详情元素');
+      alert('无法找到算法详情区域，请尝试刷新页面或稍后再试。');
     }
   };
 
-  // 首先等待nextTick确保DOM更新
-  nextTick(() => {
-    attemptScroll();
-  });
+  // 强制重绘后执行
+  nextTick(showDetail);
 }
 
 // 图算法数据
@@ -244,10 +253,18 @@ const filteredAlgorithms = computed(() => {
         <DFSDetail v-if="selectedAlgorithm === 1" @close="selectedAlgorithm = null" />
         <!-- 广度优先搜索详情 -->
         <BFSDetail v-else-if="selectedAlgorithm === 2" @close="selectedAlgorithm = null" class="bfs-detail" />
-        <!-- 其他算法详情（待实现） -->
-        <div v-else>
-          <p>该算法的详细实现将在后续添加。</p>
-        </div>
+        <!-- Dijkstra算法详情 -->
+        <DijkstraDetail v-else-if="selectedAlgorithm === 3" @close="selectedAlgorithm = null" class="dijkstra-detail" />
+      <!-- Bellman-Ford算法详情 -->
+      <BellmanFordDetail v-else-if="selectedAlgorithm === 4" @close="selectedAlgorithm = null" class="bellman-ford-detail" />
+      <!-- Floyd-Warshall算法详情 -->
+      <FloydWarshallDetail v-else-if="selectedAlgorithm === 5" @close="selectedAlgorithm = null" class="floyd-warshall-detail" />
+      <!-- A*算法详情 -->
+      <AStarDetail v-else-if="selectedAlgorithm === 6" @close="selectedAlgorithm = null" class="a-star-detail" />
+      <!-- 其他算法详情（待实现） -->
+      <div v-else>
+        <p>该算法的详细实现将在后续添加。</p>
+      </div>
       </div>
     </div>
   </div>

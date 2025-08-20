@@ -1,3 +1,11 @@
+<style scoped >
+ .mst-edge-weight {
+  color: #1E88E5 !important;
+  font-size: 1.5em !important;
+  font-weight: bold !important;
+}
+</style>
+<style scoped src="./bfs-styles.css"></style>
 <template>
   <div class="algorithm-detail-container detail-container">
    <div class="modal-header">
@@ -200,20 +208,14 @@ mst.forEach(edge => {
                         fill="none"
                         :class="{ 'mst-edge': isMSTEdge(node, neighbor) }"
                       />
-                      <!-- 箭头路径 -->
-                      <path
-                        :d="getEdgePath(nodesPositions[node], nodesPositions[neighbor]).arrowPath"
-                        :stroke="isMSTEdge(node, neighbor) ? '#1E88E5' : '#666'"
-                        stroke-width="2"
-                        fill="none"
-                      />
+        
                       <!-- 边权重 -->
                       <text
                         :x="(nodesPositions[node].x + nodesPositions[neighbor].x) / 2"
                         :y="(nodesPositions[node].y + nodesPositions[neighbor].y) / 2 - 10"
                         text-anchor="middle"
                         dominant-baseline="middle"
-                        class="edge-weight"
+                        :class="{'edge-weight': true, 'mst-edge-weight': isMSTEdge(node, neighbor)}"
                       >
                         {{ weight }}
                       </text>
@@ -527,6 +529,14 @@ function isMSTEdge(from, to) {
   );
 }
 
+// // 检查边是否在MST中
+// const isMSTEdge = (from, to, weight) => {
+//   // 因为边是无向的，所以需要检查两种顺序
+//   return mstEdges.value.some(edge => 
+//     (edge.from === from && edge.to === to && edge.weight === weight) || 
+//     (edge.from === to && edge.to === from && edge.weight === weight)
+//   );
+// };
 // 检查节点是否在MST中
 function isMSTNode(node) {
   return visitedNodes.value.includes(node);
@@ -652,4 +662,3 @@ onMounted(() => {
 });
 </script>
 
-<style scoped src="./bfs-styles.css"></style>

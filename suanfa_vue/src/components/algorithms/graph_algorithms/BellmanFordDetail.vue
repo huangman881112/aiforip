@@ -818,12 +818,15 @@ onMounted(() => {
 
           <h3>与其他算法的对比</h3>
           <table border="1">
+           <thead>
             <tr>
               <th>算法</th>
               <th>适用场景</th>
               <th>时间复杂度</th>
               <th>特点</th>
             </tr>
+            </thead>
+            <tbody>
             <tr>
               <td>Bellman-Ford</td>
               <td>带权图（可含负权边）</td>
@@ -842,6 +845,7 @@ onMounted(() => {
               <td>O(V³)</td>
               <td>可处理负权边，不能检测负权环</td>
             </tr>
+          </tbody>
           </table>
 
           <h3>实现注意事项</h3>

@@ -19,6 +19,10 @@ import PrimDetail from './PrimDetail.vue'
 import KruskalDetail from './KruskalDetail.vue'
 // 导入Ford-Fulkerson算法详情组件
 import FordFulkersonDetail from './FordFulkersonDetail.vue'
+// 导入Edmonds-Karp算法详情组件
+import EdmondsKarpDetail from './EdmondsKarpDetail.vue'
+// 导入拓扑排序算法详情组件
+import TopologicalSortDetail from './TopologicalSortDetail.vue'
 
 // 当前选中的算法ID
 const selectedAlgorithm = ref(null)
@@ -61,6 +65,12 @@ const scrollToDetail = () => {
       case 9:
         detailElement = document.querySelector('.ford-fulkerson-detail');
         break;
+      case 10:
+        detailElement = document.querySelector('.edmonds-karp-detail');
+        break;
+      case 11:
+        detailElement = document.querySelector('.topological-sort-detail');
+        break;  
       default:
         console.warn('未找到对应的算法详情元素');
         return;
@@ -282,6 +292,10 @@ const filteredAlgorithms = computed(() => {
       <KruskalDetail v-else-if="selectedAlgorithm === 8" @close="selectedAlgorithm = null" class="kruskal-detail" />
       <!-- Ford-Fulkerson算法详情 -->
       <FordFulkersonDetail v-else-if="selectedAlgorithm === 9" @close="selectedAlgorithm = null" class="ford-fulkerson-detail" />
+      <!-- Edmonds-Karp算法详情 -->
+      <EdmondsKarpDetail v-else-if="selectedAlgorithm === 10" @close="selectedAlgorithm = null" class="edmonds-karp-detail" />
+      <!-- 拓扑排序算法详情 -->
+      <TopologicalSortDetail v-else-if="selectedAlgorithm === 11" @close="selectedAlgorithm = null" class="topological-sort-detail" />
       <!-- 其他算法详情（待实现） -->
       <div v-else>
         <p>该算法的详细实现将在后续添加。</p>

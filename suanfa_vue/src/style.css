@@ -76,8 +76,8 @@
 }
 
 .complexity-subitems li span:first-child {
-  width: 80px;
-  text-align: right;
+  width: 100px;
+  text-align: left;
   margin-right: 10px;
   font-weight: 500;
 }

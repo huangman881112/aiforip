@@ -55,7 +55,7 @@ const routes = [
   {    path: '/algorithms/graph/prim',    name: 'PrimDetail',    component: PrimDetail  },
   {    path: '/algorithms/graph/astar',    name: 'AStarDetail',    component: AStarDetail  },
   {    path: '/algorithms/graph/dfs',    name: 'DFSDetail',    component: DFSDetail  },
-  {    path: '/algorithms/graph/kruskal',    name: 'KruskalDetail',    component: KruskalDetail  },
+  {    path: '/algorithms/graph/kruskal',    name: 'KruskalDetail',    component: KruskalDetail  },  {    path: '/algorithms/graph/ford-fulkerson',    name: 'FordFulkersonDetail',    component: () => import('../components/algorithms/graph_algorithms/FordFulkersonDetail.vue')  },
   // 搜索算法相关路由
   {
     path: '/algorithms/searching',

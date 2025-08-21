@@ -846,12 +846,15 @@ function dijkstra(graph, start) {
 
           <h3>与其他算法的对比</h3>
           <table border="1" cellspacing="0" cellpadding="5" style="width: 100%; border-collapse: collapse;">
+            <thead>
             <tr>
               <th>算法</th>
               <th>适用场景</th>
               <th>优点</th>
               <th>缺点</th>
             </tr>
+            </thead>
+            <tbody>
             <tr>
               <td>Dijkstra</td>
               <td>加权图最短路径(无负权边)</td>
@@ -876,6 +879,7 @@ function dijkstra(graph, start) {
               <td>结合启发式，效率更高</td>
               <td>启发式函数设计困难</td>
             </tr>
+            </tbody>
           </table>
 
           <h3>实现注意事项</h3>

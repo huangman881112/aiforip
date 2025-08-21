@@ -17,6 +17,8 @@ import AStarDetail from './AStarDetail.vue'
 import PrimDetail from './PrimDetail.vue'
 // 导入Kruskal算法详情组件
 import KruskalDetail from './KruskalDetail.vue'
+// 导入Ford-Fulkerson算法详情组件
+import FordFulkersonDetail from './FordFulkersonDetail.vue'
 
 // 当前选中的算法ID
 const selectedAlgorithm = ref(null)
@@ -55,6 +57,9 @@ const scrollToDetail = () => {
         break;
       case 8:
         detailElement = document.querySelector('.kruskal-detail');
+        break;
+      case 9:
+        detailElement = document.querySelector('.ford-fulkerson-detail');
         break;
       default:
         console.warn('未找到对应的算法详情元素');
@@ -275,6 +280,8 @@ const filteredAlgorithms = computed(() => {
       <PrimDetail v-else-if="selectedAlgorithm === 7" @close="selectedAlgorithm = null" class="prim-detail" />
       <!-- Kruskal算法详情 -->
       <KruskalDetail v-else-if="selectedAlgorithm === 8" @close="selectedAlgorithm = null" class="kruskal-detail" />
+      <!-- Ford-Fulkerson算法详情 -->
+      <FordFulkersonDetail v-else-if="selectedAlgorithm === 9" @close="selectedAlgorithm = null" class="ford-fulkerson-detail" />
       <!-- 其他算法详情（待实现） -->
       <div v-else>
         <p>该算法的详细实现将在后续添加。</p>

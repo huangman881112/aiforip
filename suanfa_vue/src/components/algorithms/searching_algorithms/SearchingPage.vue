@@ -172,7 +172,7 @@ const filteredAlgorithms = computed(() => {
 
 <style scoped>
 /* 引入公共样式文件 */
-@import './common-algorithm-page.css';
+@import './common-searching-page.css';
 
 
 

@@ -364,7 +364,7 @@ buildHashTable()
 </script>
 
 <style scoped>
-@import './common-algorithm-page.css';
+@import './common-searching-page.css';
 </style>
 
 <template>

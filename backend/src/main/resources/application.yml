@@ -1,0 +1,29 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:sqlite:data/suanfa.db
+    driver-class-name: org.sqlite.JDBC
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+  jackson:
+    default-property-inclusion: non_null
+
+# 自定义应用配置
+suanfa:
+  jwt:
+    # 生产环境必须通过环境变量覆盖（dev 默认值仅用于本地开发）
+    secret: "suanfa-dev-secret-key-change-me-in-production-0123456789abcdef"
+    # cookie 过期天数
+    expiry-days: 7
+  cors:
+    # 逗号分隔的允许来源（dev 默认值，生产用环境变量覆盖）
+    allowed-origins: "http://localhost:5173"
+
+logging:
+  level:
+    root: info
+    com.suanfa: debug

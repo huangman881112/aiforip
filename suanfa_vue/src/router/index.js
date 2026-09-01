@@ -29,6 +29,19 @@ const PrimDetail = () => import('../components/algorithms/graph_algorithms/PrimD
 const AStarDetail = () => import('../components/algorithms/graph_algorithms/AStarDetail.vue')
 const DFSDetail = () => import('../components/algorithms/graph_algorithms/DFSDetail.vue')
 const KruskalDetail = () => import('../components/algorithms/graph_algorithms/KruskalDetail.vue')
+// 导入排序详情页组件
+const BubbleSortDetail = () => import('../components/algorithms/sorting_algorithms/BubbleSortDetail.vue')
+const QuickSortDetail = () => import('../components/algorithms/sorting_algorithms/QuickSortDetail.vue')
+const MergeSortDetail = () => import('../components/algorithms/sorting_algorithms/MergeSortDetail.vue')
+const HeapSortDetail = () => import('../components/algorithms/sorting_algorithms/HeapSortDetail.vue')
+const ShellSortDetail = () => import('../components/algorithms/sorting_algorithms/ShellSortDetail.vue')
+const CountingSortDetail = () => import('../components/algorithms/sorting_algorithms/CountingSortDetail.vue')
+const BucketSortDetail = () => import('../components/algorithms/sorting_algorithms/BucketSortDetail.vue')
+const RadixSortDetail = () => import('../components/algorithms/sorting_algorithms/RadixSortDetail.vue')
+// 导入图算法详情页组件
+const BellmanFordDetail = () => import('../components/algorithms/graph_algorithms/BellmanFordDetail.vue')
+const FloydWarshallDetail = () => import('../components/algorithms/graph_algorithms/FloydWarshallDetail.vue')
+const TopologicalSortDetail = () => import('../components/algorithms/graph_algorithms/TopologicalSortDetail.vue')
 
 // 定义路由
 const routes = [
@@ -42,19 +55,131 @@ const routes = [
     name: 'About',
     component: About
   },
-  {    path: '/algorithms',    name: 'AlgorithmList',    component: SortingPage  },
-  {    path: '/algorithms/sorting/simple-bubble-sort',    name: 'SimpleBubbleSort',    component: SimpleBubbleSort  },
-  {    path: '/algorithms/sorting/insertion-sort',    name: 'InsertionSortDetail',    component: InsertionSortDetail  },
-  {    path: '/algorithms/sorting/selection-sort',    name: 'SelectionSortDetail',    component: SelectionSortDetail  },
-  {    path: '/algorithms/sorting',    name: 'SortingPage',    component: SortingPage  },  
-  // 图算法相关路由
-  {    path: '/algorithms/graph',    name: 'GraphPage',    component: GraphPage  },
-  {    path: '/algorithms/graph/bfs',    name: 'BFSDetail',    component: BFSDetail  },
-  {    path: '/algorithms/graph/dijkstra',    name: 'DijkstraDetail',    component: DijkstraDetail  },
-  {    path: '/algorithms/graph/prim',    name: 'PrimDetail',    component: PrimDetail  },
-  {    path: '/algorithms/graph/astar',    name: 'AStarDetail',    component: AStarDetail  },
-  {    path: '/algorithms/graph/dfs',    name: 'DFSDetail',    component: DFSDetail  },
-  {    path: '/algorithms/graph/kruskal',    name: 'KruskalDetail',    component: KruskalDetail  },  {    path: '/algorithms/graph/edmonds-karp',    name: 'EdmondsKarpDetail',    component: () => import('../components/algorithms/graph_algorithms/EdmondsKarpDetail.vue')  },  {    path: '/algorithms/graph/ford-fulkerson',    name: 'FordFulkersonDetail',    component: () => import('../components/algorithms/graph_algorithms/FordFulkersonDetail.vue')  },
+  {
+    path: '/algorithms',
+    name: 'AlgorithmList',
+    redirect: '/algorithms/sorting'
+  },
+  {
+    path: '/algorithms/sorting',
+    name: 'SortingPage',
+    component: SortingPage
+  },
+  {
+    path: '/algorithms/sorting/simple-bubble-sort',
+    name: 'SimpleBubbleSort',
+    component: SimpleBubbleSort
+  },
+  {
+    path: '/algorithms/sorting/bubble-sort',
+    name: 'BubbleSortDetail',
+    component: BubbleSortDetail
+  },
+  {
+    path: '/algorithms/sorting/quick-sort',
+    name: 'QuickSortDetail',
+    component: QuickSortDetail
+  },
+  {
+    path: '/algorithms/sorting/merge-sort',
+    name: 'MergeSortDetail',
+    component: MergeSortDetail
+  },
+  {
+    path: '/algorithms/sorting/heap-sort',
+    name: 'HeapSortDetail',
+    component: HeapSortDetail
+  },
+  {
+    path: '/algorithms/sorting/shell-sort',
+    name: 'ShellSortDetail',
+    component: ShellSortDetail
+  },
+  {
+    path: '/algorithms/sorting/counting-sort',
+    name: 'CountingSortDetail',
+    component: CountingSortDetail
+  },
+  {
+    path: '/algorithms/sorting/bucket-sort',
+    name: 'BucketSortDetail',
+    component: BucketSortDetail
+  },
+  {
+    path: '/algorithms/sorting/radix-sort',
+    name: 'RadixSortDetail',
+    component: RadixSortDetail
+  },
+  {
+    path: '/algorithms/sorting/insertion-sort',
+    name: 'InsertionSortDetail',
+    component: InsertionSortDetail
+  },
+  {
+    path: '/algorithms/sorting/selection-sort',
+    name: 'SelectionSortDetail',
+    component: SelectionSortDetail
+  },
+  {
+    path: '/algorithms/graph',
+    name: 'GraphPage',
+    component: GraphPage
+  },
+  {
+    path: '/algorithms/graph/bfs',
+    name: 'BFSDetail',
+    component: BFSDetail
+  },
+  {
+    path: '/algorithms/graph/dijkstra',
+    name: 'DijkstraDetail',
+    component: DijkstraDetail
+  },
+  {
+    path: '/algorithms/graph/prim',
+    name: 'PrimDetail',
+    component: PrimDetail
+  },
+  {
+    path: '/algorithms/graph/astar',
+    name: 'AStarDetail',
+    component: AStarDetail
+  },
+  {
+    path: '/algorithms/graph/dfs',
+    name: 'DFSDetail',
+    component: DFSDetail
+  },
+  {
+    path: '/algorithms/graph/kruskal',
+    name: 'KruskalDetail',
+    component: KruskalDetail
+  },
+  {
+    path: '/algorithms/graph/edmonds-karp',
+    name: 'EdmondsKarpDetail',
+    component: () => import('../components/algorithms/graph_algorithms/EdmondsKarpDetail.vue')
+  },
+  {
+    path: '/algorithms/graph/ford-fulkerson',
+    name: 'FordFulkersonDetail',
+    component: () => import('../components/algorithms/graph_algorithms/FordFulkersonDetail.vue')
+  },
+  {
+    path: '/algorithms/graph/bellman-ford',
+    name: 'BellmanFordDetail',
+    component: BellmanFordDetail
+  },
+  {
+    path: '/algorithms/graph/floyd-warshall',
+    name: 'FloydWarshallDetail',
+    component: FloydWarshallDetail
+  },
+  {
+    path: '/algorithms/graph/topological-sort',
+    name: 'TopologicalSortDetail',
+    component: TopologicalSortDetail
+  },
   // 搜索算法相关路由
   {
     path: '/algorithms/searching',

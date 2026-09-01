@@ -52,7 +52,7 @@ const generateNewList = () => {
     buckets.value = []
     sortingStatus.value = '就绪'
     currentStepDetails.value = ''
-    console.log('[DEBUG] 生成新列表:', sortedData.value)
+
   } catch (error) {
     console.error('[ERROR] 生成新列表失败:', error)
     errorMessage.value = `生成新列表失败: ${error.message}`
@@ -153,7 +153,6 @@ const radixSort = async () => {
     isButtonClicked.value = false
     sortingStatus.value = '排序完成'
     const finishDetails = `排序完成，最终结果: [${sortedData.value.slice(0, 10).join(', ')}${sortedData.value.length > 10 ? ', ...' : ''}]，共进行了 ${comparisonCount.value} 次比较和 ${swapCount.value} 次交换`
-    console.log(finishDetails);
     currentStepDetails.value = finishDetails
     isSorting.value = false
   } catch (error) {
@@ -189,7 +188,6 @@ const testSort = () => {
     isButtonClicked.value = false
     sortingStatus.value = '测试排序完成'
     const finishDetails = `测试排序完成，最终结果: [${sortedData.value.slice(0, 10).join(', ')}${sortedData.value.length > 10 ? ', ...' : ''}]，共进行了 ${comparisonCount.value} 次比较和 ${swapCount.value} 次交换`
-    console.log(finishDetails);
     currentStepDetails.value = finishDetails
   } catch (error) {
     console.error('[ERROR] 测试排序失败:', error)
@@ -216,7 +214,7 @@ const resetSort = () => {
       throw new Error('无法创建数据副本');
     }
 
-    console.log('[DEBUG] 开始打乱数组，长度:', shuffled.length)
+
 
     for (let i = shuffled.length - 1; i > 0; i--) {
       let j = Math.floor(Math.random() * (i + 1))
@@ -226,7 +224,7 @@ const resetSort = () => {
         throw new Error(`无效的随机索引: ${j}，数组长度: ${shuffled.length}`);
       }
 
-      console.log(`[DEBUG] 交换索引 ${i} 和 ${j}`)
+
 
       // 安全地交换元素
       const temp = shuffled[i];
@@ -249,7 +247,7 @@ const resetSort = () => {
     buckets.value = []
     sortingStatus.value = '就绪'
     currentStepDetails.value = ''
-    console.log('[DEBUG] 重置排序 - 数组已打乱:', sortedData.value)
+
   } catch (error) {
     console.error('[ERROR] 重置排序失败:', error)
     errorMessage.value = `重置排序失败: ${error.message}`
@@ -418,7 +416,7 @@ function getDigit(num, digit):
               :class="{
                 'compared': comparedIndices.includes(index),
                 'selected': selectedIndices.includes(index),
-                'sorted': isSorting && data.value && sortedData[index] === data.value.slice().sort((a, b) => a - b)[index]
+                'sorted': isSorting && data && sortedData[index] === data.slice().sort((a, b) => a - b)[index]
               }" 
               :style="{ height: `${value * 0.5}px` }"
               :data-value="value"
@@ -436,7 +434,7 @@ function getDigit(num, digit):
             <button @click="generateNewList" :disabled="isSorting">生成新列表</button>
             <button @click="radixSort" :disabled="isSorting" :class="{ 'clicked': isButtonClicked }" ref="sortButton">开始排序</button>
             <button @click="testSort" :disabled="isSorting">测试排序</button>
-            <button @click="resetSort" :disabled="!isSorting && sortedData && data.value && sortedData.join(',') === data.value.join(',')">重置排序</button>
+            <button @click="resetSort" :disabled="!isSorting && sortedData && data && sortedData.join(',') === data.join(',')">重置排序</button>
             <div class="speed-control">
               <label>动画速度:</label>
               <input type="range" min="100" max="1000" v-model="animationSpeed" :disabled="isSorting">

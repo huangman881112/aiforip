@@ -12,9 +12,9 @@
             <li><router-link to="/algorithms/sorting" active-class="active-link">排序算法</router-link></li>
             <li><router-link to="/algorithms/searching" active-class="active-link">搜索算法</router-link></li>
             <li><router-link to="/algorithms/graph" active-class="active-link">图算法</router-link></li>
-            <li><router-link to="/algorithms">动态规划</router-link></li>
-            <li><router-link to="/algorithms">贪心算法</router-link></li>
-            <li><router-link to="/algorithms">更多分类</router-link></li>
+            <li><span class="nav-disabled">动态规划 <small>敬请期待</small></span></li>
+            <li><span class="nav-disabled">贪心算法 <small>敬请期待</small></span></li>
+            <li><span class="nav-disabled">更多分类 <small>敬请期待</small></span></li>
           </ul>
         </nav>
       </div>
@@ -32,9 +32,9 @@
           <h4>快速链接</h4>
           <ul>
             <li><router-link to="/">首页</router-link></li>
-            <li><router-link to="/algorithms">排序算法</router-link></li>
+            <li><router-link to="/algorithms/sorting">排序算法</router-link></li>
             <li><router-link to="/algorithms/searching">搜索算法</router-link></li>
-            <li><router-link to="/algorithms">图算法</router-link></li>
+            <li><router-link to="/algorithms/graph">图算法</router-link></li>
             <li><router-link to="/about">关于我们</router-link></li>
           </ul>
         </div>
@@ -109,6 +109,20 @@
 .app-nav a.active-link {
   background-color: #1e88e5;
   color: white;
+}
+
+.nav-disabled {
+  color: #999;
+  cursor: not-allowed;
+  padding: 8px 16px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.nav-disabled small {
+  font-size: 0.7em;
+  color: #1e88e5;
+  margin-left: 4px;
 }
 
 .app-main {

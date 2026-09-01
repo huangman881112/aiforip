@@ -7,7 +7,7 @@
     <section class="hero">
       <h1>探索计算机算法的奥秘</h1>
       <p>从基础到进阶，全面学习各类算法的原理、实现和应用场景</p>
-      <router-link to="/algorithms" class="btn-primary">开始学习</router-link>
+      <router-link to="/algorithms/sorting" class="btn-primary">开始学习</router-link>
     </section>
 
     <section class="algorithm-categories">
@@ -16,7 +16,7 @@
     <div class="category-card">
           <h3>排序算法</h3>
           <p>比较类排序（冒泡、选择、插入、希尔、归并、快速、堆排序）和非比较类排序（计数、桶、基数排序）</p>
-          <router-link to="/algorithms">查看详情</router-link>
+          <router-link to="/algorithms/sorting">查看详情</router-link>
         </div>
         <div class="category-card">
           <h3>搜索与查找算法</h3>
@@ -28,20 +28,20 @@
           <p>DFS、BFS、最短路径算法、最小生成树、网络流和拓扑排序算法</p>
           <router-link to="/algorithms/graph">查看详情</router-link>
         </div>
-        <div class="category-card">
+        <div class="category-card disabled-card">
           <h3>动态规划</h3>
           <p>背包问题、最长公共子序列、最长递增子序列、编辑距离和矩阵链乘</p>
-          <router-link to="/algorithms">查看详情</router-link>
+          <span class="card-disabled">敬请期待</span>
         </div>
-        <div class="category-card">
+        <div class="category-card disabled-card">
           <h3>贪心算法</h3>
           <p>活动选择问题、霍夫曼编码、最小生成树和分数背包问题</p>
-          <router-link to="/algorithms">查看详情</router-link>
+          <span class="card-disabled">敬请期待</span>
         </div>
-        <div class="category-card">
+        <div class="category-card disabled-card">
           <h3>更多分类</h3>
           <p>分治算法、数学与数论算法、字符串算法、机器学习算法等</p>
-          <router-link to="/algorithms">查看详情</router-link>
+          <span class="card-disabled">敬请期待</span>
         </div>
       </div>
     </section>
@@ -192,6 +192,16 @@
 
 .category-card a:hover {
   text-decoration: underline;
+}
+
+.disabled-card {
+  opacity: 0.6;
+}
+
+.card-disabled {
+  color: #999;
+  cursor: not-allowed;
+  font-weight: 500;
 }
 
 .feature-grid {

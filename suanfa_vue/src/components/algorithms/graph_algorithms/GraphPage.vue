@@ -23,61 +23,19 @@ import FordFulkersonDetail from './FordFulkersonDetail.vue'
 import EdmondsKarpDetail from './EdmondsKarpDetail.vue'
 // 导入拓扑排序算法详情组件
 import TopologicalSortDetail from './TopologicalSortDetail.vue'
+// 单一数据源
+import { graphAlgorithms } from '../../../data/algorithms'
+import ProgressMark from '../../common/ProgressMark.vue'
 
-// 当前选中的算法ID
+// 当前选中的算法ID（语义 id，如 'dfs'）
 const selectedAlgorithm = ref(null)
 
 // 滚动到详情区域
 const scrollToDetail = () => {
-  console.log('scrollToDetail called, selectedAlgorithm:', selectedAlgorithm.value);
-  
   // 直接显示详情区域，不依赖滚动
   const showDetail = () => {
-    console.log('尝试直接显示详情区域');
-    // 确保selectedAlgorithm被正确设置
-    let detailElement = null;
-    
-    switch(selectedAlgorithm.value) {
-      case 1:
-        detailElement = document.querySelector('.dfs-detail');
-        break;
-      case 2:
-        detailElement = document.querySelector('.bfs-detail');
-        break;
-      case 3:
-        detailElement = document.querySelector('.dijkstra-detail');
-        break;
-      case 4:
-        detailElement = document.querySelector('.bellman-ford-detail');
-        break;
-      case 5:
-        detailElement = document.querySelector('.floyd-warshall-detail');
-        break;
-      case 6:
-        detailElement = document.querySelector('.a-star-detail');
-        break;
-      case 7:
-        detailElement = document.querySelector('.prim-detail');
-        break;
-      case 8:
-        detailElement = document.querySelector('.kruskal-detail');
-        break;
-      case 9:
-        detailElement = document.querySelector('.ford-fulkerson-detail');
-        break;
-      case 10:
-        detailElement = document.querySelector('.edmonds-karp-detail');
-        break;
-      case 11:
-        detailElement = document.querySelector('.topological-sort-detail');
-        break;  
-      default:
-        console.warn('未找到对应的算法详情元素');
-        return;
-    }
-    
+    const detailElement = document.querySelector('.detail-container');
     if (detailElement) {
-      console.log('找到算法详情元素，滚动到视图');
       detailElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
       // 确保元素可见
       detailElement.style.display = 'block';
@@ -85,121 +43,12 @@ const scrollToDetail = () => {
       detailElement.style.opacity = '1';
     } else {
       console.error('未找到算法详情元素');
-      alert('无法找到算法详情区域，请尝试刷新页面或稍后再试。');
     }
   };
 
   // 强制重绘后执行
   nextTick(showDetail);
 }
-
-// 图算法数据
-const graphAlgorithms = [
-  {
-    id: 1,
-    name: '深度优先搜索(DFS)',
-    difficulty: '简单',
-    category: '图遍历',
-    description: '深度优先搜索是一种用于遍历或搜索树或图的算法。它尽可能深地搜索树的分支，当节点v的所有边都已被探寻过，搜索将回溯到发现节点v的那条边的起始节点。',
-    complexity: 'O(V + E)'
-  },
-  {
-    id: 2,
-    name: '广度优先搜索(BFS)',
-    difficulty: '简单',
-    category: '图遍历',
-    description: '广度优先搜索是一种图形搜索算法。它从根节点开始，沿着树的宽度遍历树的节点。如果所有节点均被访问，则算法中止。',
-    complexity: 'O(V + E)'
-  },
-  {
-    id: 3,
-    name: 'Dijkstra算法',
-    difficulty: '中等',
-    category: '最短路径',
-    description: 'Dijkstra算法是一种用于寻找带权图中单源最短路径的算法。它以起点为中心，逐步向外扩展，每次选择距离起点最近的节点加入已访问集合。',
-    complexity: 'O((V + E) log V)'
-  },
-  {
-    id: 4,
-    name: 'Bellman-Ford算法',
-    difficulty: '中等',
-    category: '最短路径',
-    description: 'Bellman-Ford算法用于寻找带权图中单源最短路径，能够处理包含负权边的图，但不能处理包含负权环的图。',
-    complexity: 'O(V * E)'
-  },
-  {
-    id: 5,
-    name: 'Floyd-Warshall算法',
-    difficulty: '中等',
-    category: '最短路径',
-    description: 'Floyd-Warshall算法是一种用于寻找加权图中所有顶点对之间最短路径的动态规划算法。',
-    complexity: 'O(V³)'
-  },
-  {
-    id: 6,
-    name: 'A*算法',
-    difficulty: '较难',
-    category: '最短路径',
-    description: 'A*算法是一种启发式搜索算法，它结合了Dijkstra算法和贪心最佳优先搜索的优点，使用启发式函数来引导搜索方向。',
-    complexity: 'O(E) 最坏情况 O(V²)'
-  },
-  {
-    id: 7,
-    name: 'Prim算法',
-    difficulty: '中等',
-    category: '最小生成树',
-    description: 'Prim算法是一种用于构建加权无向图的最小生成树的贪心算法。它从一个顶点开始，每次选择与当前生成树相邻且权值最小的边加入生成树。',
-    complexity: 'O(E log V)'
-  },
-  {
-    id: 8,
-    name: 'Kruskal算法',
-    difficulty: '中等',
-    category: '最小生成树',
-    description: 'Kruskal算法是一种用于构建加权无向图的最小生成树的贪心算法。它按权值从小到大选择边，确保每次选择的边不会形成环。',
-    complexity: 'O(E log E)'
-  },
-  {
-    id: 9,
-    name: 'Ford-Fulkerson算法',
-    difficulty: '较难',
-    category: '网络流',
-    description: 'Ford-Fulkerson算法是一种用于计算网络最大流的贪心算法。它通过不断寻找增广路径来增加流量，直到没有增广路径为止。',
-    complexity: 'O(E * F) F为最大流'
-  },
-  {
-    id: 10,
-    name: 'Edmonds-Karp算法',
-    difficulty: '较难',
-    category: '网络流',
-    description: 'Edmonds-Karp算法是Ford-Fulkerson算法的一个特例，它使用广度优先搜索来寻找增广路径，时间复杂度更为稳定。',
-    complexity: 'O(V * E²)'
-  },
-  {
-    id: 11,
-    name: '拓扑排序',
-    difficulty: '中等',
-    category: '拓扑结构',
-    description: '拓扑排序是一种对有向无环图(DAG)中的顶点进行排序的算法，使得对于每条有向边(u, v)，顶点u在排序结果中都出现在顶点v之前。',
-    complexity: 'O(V + E)'
-  },
-  {
-    id: 12,
-    name: 'Tarjan算法',
-    difficulty: '较难',
-    category: '拓扑结构',
-    description: 'Tarjan算法用于寻找有向图中的强连通分量。它通过一次深度优先搜索就能找出所有的强连通分量。',
-    complexity: 'O(V + E)'
-  },
-  {
-    id: 13,
-    name: 'Kosaraju算法',
-    difficulty: '较难',
-    category: '拓扑结构',
-    description: 'Kosaraju算法用于寻找有向图中的强连通分量。它需要进行两次深度优先搜索，第一次在原图上进行，第二次在转置图上进行。',
-    complexity: 'O(V + E)'
-  }
-]
 
 // 分类标签
 const categories = [
@@ -219,15 +68,15 @@ const filteredAlgorithms = computed(() => {
   if (currentCategory.value === 'all') {
     return graphAlgorithms
   } else if (currentCategory.value === 'traversal') {
-    return graphAlgorithms.filter(algo => algo.category === '图遍历')
+    return graphAlgorithms.filter(algo => algo.subCategory === '图遍历')
   } else if (currentCategory.value === 'shortest-path') {
-    return graphAlgorithms.filter(algo => algo.category === '最短路径')
+    return graphAlgorithms.filter(algo => algo.subCategory === '最短路径')
   } else if (currentCategory.value === 'mst') {
-    return graphAlgorithms.filter(algo => algo.category === '最小生成树')
+    return graphAlgorithms.filter(algo => algo.subCategory === '最小生成树')
   } else if (currentCategory.value === 'network-flow') {
-    return graphAlgorithms.filter(algo => algo.category === '网络流')
+    return graphAlgorithms.filter(algo => algo.subCategory === '网络流')
   } else if (currentCategory.value === 'topology') {
-    return graphAlgorithms.filter(algo => algo.category === '拓扑结构')
+    return graphAlgorithms.filter(algo => algo.subCategory === '拓扑结构')
   }
   return graphAlgorithms
 })
@@ -259,12 +108,13 @@ const filteredAlgorithms = computed(() => {
           <h3>{{ algorithm.name }}</h3>
           <div class="tags-container">
             <span class="tag difficulty-tag">{{ algorithm.difficulty }}</span>
-            <span class="tag category-tag">{{ algorithm.category }}</span>
+            <span class="tag category-tag">{{ algorithm.subCategory }}</span>
           </div>
         </div>
         <p class="card-description">{{ algorithm.description }}</p>
         <div class="card-footer">
           <span class="complexity">{{ algorithm.complexity }}</span>
+          <ProgressMark :algorithm-id="algorithm.id" />
           <button class="detail-btn" @click.stop="selectedAlgorithm = algorithm.id; scrollToDetail()">查看详情</button>
         </div>
       </div>
@@ -275,31 +125,27 @@ const filteredAlgorithms = computed(() => {
       
       <div class="detail-content">
         <!-- 深度优先搜索详情 -->
-        <DFSDetail v-if="selectedAlgorithm === 1" @close="selectedAlgorithm = null" />
+        <DFSDetail v-if="selectedAlgorithm === 'dfs'" @close="selectedAlgorithm = null" />
         <!-- 广度优先搜索详情 -->
-        <BFSDetail v-else-if="selectedAlgorithm === 2" @close="selectedAlgorithm = null" class="bfs-detail" />
+        <BFSDetail v-else-if="selectedAlgorithm === 'bfs'" @close="selectedAlgorithm = null" class="bfs-detail" />
         <!-- Dijkstra算法详情 -->
-        <DijkstraDetail v-else-if="selectedAlgorithm === 3" @close="selectedAlgorithm = null" class="dijkstra-detail" />
+        <DijkstraDetail v-else-if="selectedAlgorithm === 'dijkstra'" @close="selectedAlgorithm = null" class="dijkstra-detail" />
       <!-- Bellman-Ford算法详情 -->
-      <BellmanFordDetail v-else-if="selectedAlgorithm === 4" @close="selectedAlgorithm = null" class="bellman-ford-detail" />
+      <BellmanFordDetail v-else-if="selectedAlgorithm === 'bellman-ford'" @close="selectedAlgorithm = null" class="bellman-ford-detail" />
       <!-- Floyd-Warshall算法详情 -->
-      <FloydWarshallDetail v-else-if="selectedAlgorithm === 5" @close="selectedAlgorithm = null" class="floyd-warshall-detail" />
+      <FloydWarshallDetail v-else-if="selectedAlgorithm === 'floyd-warshall'" @close="selectedAlgorithm = null" class="floyd-warshall-detail" />
       <!-- A*算法详情 -->
-      <AStarDetail v-else-if="selectedAlgorithm === 6" @close="selectedAlgorithm = null" class="a-star-detail" />
+      <AStarDetail v-else-if="selectedAlgorithm === 'astar'" @close="selectedAlgorithm = null" class="a-star-detail" />
       <!-- Prim算法详情 -->
-      <PrimDetail v-else-if="selectedAlgorithm === 7" @close="selectedAlgorithm = null" class="prim-detail" />
+      <PrimDetail v-else-if="selectedAlgorithm === 'prim'" @close="selectedAlgorithm = null" class="prim-detail" />
       <!-- Kruskal算法详情 -->
-      <KruskalDetail v-else-if="selectedAlgorithm === 8" @close="selectedAlgorithm = null" class="kruskal-detail" />
+      <KruskalDetail v-else-if="selectedAlgorithm === 'kruskal'" @close="selectedAlgorithm = null" class="kruskal-detail" />
       <!-- Ford-Fulkerson算法详情 -->
-      <FordFulkersonDetail v-else-if="selectedAlgorithm === 9" @close="selectedAlgorithm = null" class="ford-fulkerson-detail" />
+      <FordFulkersonDetail v-else-if="selectedAlgorithm === 'ford-fulkerson'" @close="selectedAlgorithm = null" class="ford-fulkerson-detail" />
       <!-- Edmonds-Karp算法详情 -->
-      <EdmondsKarpDetail v-else-if="selectedAlgorithm === 10" @close="selectedAlgorithm = null" class="edmonds-karp-detail" />
+      <EdmondsKarpDetail v-else-if="selectedAlgorithm === 'edmonds-karp'" @close="selectedAlgorithm = null" class="edmonds-karp-detail" />
       <!-- 拓扑排序算法详情 -->
-      <TopologicalSortDetail v-else-if="selectedAlgorithm === 11" @close="selectedAlgorithm = null" class="topological-sort-detail" />
-      <!-- 其他算法详情（待实现） -->
-      <div v-else>
-        <p>该算法的详细实现将在后续添加。</p>
-      </div>
+      <TopologicalSortDetail v-else-if="selectedAlgorithm === 'topological-sort'" @close="selectedAlgorithm = null" class="topological-sort-detail" />
       </div>
     </div>
   </div>

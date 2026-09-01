@@ -11,136 +11,22 @@ import ShellSortDetail from './ShellSortDetail.vue'
 import CountingSortDetail from './CountingSortDetail.vue'
 import BucketSortDetail from './BucketSortDetail.vue'
 import RadixSortDetail from './RadixSortDetail.vue'
+// 单一数据源
+import { sortingAlgorithms } from '../../../data/algorithms'
+import ProgressMark from '../../common/ProgressMark.vue'
 
-// 当前选中的算法ID
+// 当前选中的算法ID（语义 id，如 'bubble-sort'）
 const selectedAlgorithm = ref(null)
 
 // 滚动到详情区域
 const scrollToDetail = () => {
   setTimeout(() => {
-    let detailElement;
-    if (selectedAlgorithm.value === 1) {
-      detailElement = document.querySelector('.bubble-sort-detail');
-    } else if (selectedAlgorithm.value === 2) {
-      detailElement = document.querySelector('.quick-sort-detail');
-    } else if (selectedAlgorithm.value === 3) {
-      detailElement = document.querySelector('.merge-sort-detail');
-    } else// 堆排序详情
-    if (selectedAlgorithm.value === 4) {
-      detailElement = document.querySelector('.heap-sort-detail');
-    } else if (selectedAlgorithm.value === 5) {
-      detailElement = document.querySelector('.insertion-sort-detail');
-    } else if (selectedAlgorithm.value === 6) {
-      detailElement = document.querySelector('.selection-sort-detail');
-    } else if (selectedAlgorithm.value === 7) {
-      detailElement = document.querySelector('.shell-sort-detail');
-    } else if (selectedAlgorithm.value === 8) {
-      detailElement = document.querySelector('.counting-sort-detail');
-    } else if (selectedAlgorithm.value === 9) {
-      detailElement = document.querySelector('.bucket-sort-detail');
-    } else if (selectedAlgorithm.value === 10) {
-      detailElement = document.querySelector('.radix-sort-detail');
-    }
-
+    const detailElement = document.querySelector('.detail-container');
     if (detailElement) {
       detailElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, 100);
 }
-
-// 排序算法数据
-const sortingAlgorithms = [
-  {
-    id: 1,
-    name: '冒泡排序',
-    difficulty: '简单',
-    category: '比较类排序',
-    stability: '稳定',
-    description: '冒泡排序是一种简单的排序算法。它重复地走访过要排序的数列，一次比较两个元素，如果它们的顺序错误就把它们交换过来。',
-    complexity: 'O(n²)'
-  },
-  {
-    id: 2,
-    name: '快速排序',
-    difficulty: '中等',
-    category: '比较类排序',
-    stability: '不稳定',
-    description: '快速排序是一种高效的排序算法，采用了分治的思想。它选择一个基准元素，将数组分为两个子数组，小于基准的元素放在左边，大于基准的元素放在右边。',
-    complexity: 'O(n log n)'
-  },
-  {
-    id: 3,
-    name: '归并排序',
-    difficulty: '中等',
-    category: '比较类排序',
-    stability: '稳定',
-    description: '归并排序是建立在归并操作上的一种有效的排序算法。该算法是采用分治法的一个非常典型的应用。',
-    complexity: 'O(n log n)'
-  },
-  {
-    id: 4,
-    name: '堆排序',
-    difficulty: '中等',
-    category: '比较类排序',
-    stability: '不稳定',
-    description: '堆排序是利用堆这种数据结构所设计的一种排序算法。堆是一个近似完全二叉树的结构，并同时满足堆的性质。',
-    complexity: 'O(n log n)'
-  },
-  {
-    id: 5,
-    name: '插入排序',
-    difficulty: '简单',
-    category: '比较类排序',
-    stability: '稳定',
-    description: '插入排序是一种简单直观的排序算法。它的工作原理是通过构建有序序列，对于未排序数据，在已排序序列中从后向前扫描，找到相应位置并插入。',
-    complexity: 'O(n²)'
-  },
-  {
-    id: 6,
-    name: '选择排序',
-    difficulty: '简单',
-    category: '比较类排序',
-    stability: '不稳定',
-    description: '选择排序是一种简单直观的排序算法。它的工作原理是每一次从待排序的数据元素中选出最小（或最大）的一个元素，存放在序列的起始位置。',
-    complexity: 'O(n²)'
-  },
-  {
-    id: 7,
-    name: '希尔排序',
-    difficulty: '中等',
-    category: '比较类排序',
-    stability: '不稳定',
-    description: '希尔排序是插入排序的一种改进版本，它通过比较相距一定间隔的元素来进行排序，逐渐减小这个间隔直到为1。',
-    complexity: 'O(n^1.3)'
-  },
-  {
-    id: 8,
-    name: '计数排序',
-    difficulty: '中等',
-    category: '非比较类排序',
-    stability: '稳定',
-    description: '计数排序是一种非比较排序算法，它通过计算每个元素出现的次数来进行排序，适用于已知范围的整数排序。',
-    complexity: 'O(n + k)' 
-  },
-  {
-    id: 9,
-    name: '桶排序',
-    difficulty: '中等',
-    category: '非比较类排序',
-    stability: '稳定',
-    description: '桶排序是一种分布式排序算法，它将元素分配到一定数量的桶中，然后对每个桶中的元素进行排序，最后合并所有桶中的元素。',
-    complexity: 'O(n + k)' 
-  },
-  {
-    id: 10,
-    name: '基数排序',
-    difficulty: '中等',
-    category: '非比较类排序',
-    stability: '稳定',
-    description: '基数排序是一种非比较排序算法，它通过按位排序来进行排序，从最低有效位开始，到最高有效位结束。',
-    complexity: 'O(n * k)' 
-  }
-]
 
 // 分类标签
 const categories = [
@@ -159,9 +45,9 @@ const filteredAlgorithms = computed(() => {
   if (currentCategory.value === 'all') {
     return sortingAlgorithms
   } else if (currentCategory.value === 'comparison') {
-    return sortingAlgorithms.filter(algo => algo.category === '比较类排序')
+    return sortingAlgorithms.filter(algo => algo.subCategory === '比较类排序')
   } else if (currentCategory.value === 'non-comparison') {
-    return sortingAlgorithms.filter(algo => algo.category === '非比较类排序')
+    return sortingAlgorithms.filter(algo => algo.subCategory === '非比较类排序')
   } else if (currentCategory.value === 'stable') {
     return sortingAlgorithms.filter(algo => algo.stability === '稳定')
   } else if (currentCategory.value === 'unstable') {
@@ -197,7 +83,7 @@ const filteredAlgorithms = computed(() => {
           <h3>{{ algorithm.name }}</h3>
           <div class="tags-container">
             <span class="tag difficulty-tag">{{ algorithm.difficulty }}</span>
-            <span class="tag category-tag">{{ algorithm.category }}</span>
+            <span class="tag category-tag">{{ algorithm.subCategory }}</span>
             <span :class="['tag', algorithm.stability === '稳定' ? 'stable-tag' : 'unstable-tag']">
               {{ algorithm.stability }}
             </span>
@@ -206,31 +92,32 @@ const filteredAlgorithms = computed(() => {
         <p class="card-description">{{ algorithm.description }}</p>
         <div class="card-footer">
           <span class="complexity">{{ algorithm.complexity }}</span>
+          <ProgressMark :algorithm-id="algorithm.id" />
           <button class="detail-btn" @click.stop="selectedAlgorithm = algorithm.id; scrollToDetail()">查看详情</button>
         </div>
       </div>
     </div>
 
     <!-- 冒泡排序详情 -->
-    <BubbleSortDetail v-if="selectedAlgorithm === 1" @close="selectedAlgorithm = null" />
+    <BubbleSortDetail v-if="selectedAlgorithm === 'bubble-sort'" @close="selectedAlgorithm = null" />
     <!-- 快速排序详情 -->
-    <QuickSortDetail v-if="selectedAlgorithm === 2" @close="selectedAlgorithm = null" />
+    <QuickSortDetail v-if="selectedAlgorithm === 'quick-sort'" @close="selectedAlgorithm = null" />
     <!-- 归并排序详情 -->
-    <MergeSortDetail v-if="selectedAlgorithm === 3" @close="selectedAlgorithm = null" />
+    <MergeSortDetail v-if="selectedAlgorithm === 'merge-sort'" @close="selectedAlgorithm = null" />
     <!-- 堆排序详情 -->
-    <HeapSortDetail v-if="selectedAlgorithm === 4" @close="selectedAlgorithm = null" />
+    <HeapSortDetail v-if="selectedAlgorithm === 'heap-sort'" @close="selectedAlgorithm = null" />
     <!-- 插入排序详情 -->
-    <InsertionSortDetail v-if="selectedAlgorithm === 5" @close="selectedAlgorithm = null" />
+    <InsertionSortDetail v-if="selectedAlgorithm === 'insertion-sort'" @close="selectedAlgorithm = null" />
     <!-- 选择排序详情 -->
-    <SelectionSortDetail v-if="selectedAlgorithm === 6" @close="selectedAlgorithm = null" />
+    <SelectionSortDetail v-if="selectedAlgorithm === 'selection-sort'" @close="selectedAlgorithm = null" />
     <!-- 希尔排序详情 -->
-    <ShellSortDetail v-if="selectedAlgorithm === 7" @close="selectedAlgorithm = null" />
+    <ShellSortDetail v-if="selectedAlgorithm === 'shell-sort'" @close="selectedAlgorithm = null" />
     <!-- 计数排序详情 -->
-    <CountingSortDetail v-if="selectedAlgorithm === 8" @close="selectedAlgorithm = null" />
+    <CountingSortDetail v-if="selectedAlgorithm === 'counting-sort'" @close="selectedAlgorithm = null" />
     <!-- 桶排序详情 -->
-    <BucketSortDetail v-if="selectedAlgorithm === 9" @close="selectedAlgorithm = null" />
+    <BucketSortDetail v-if="selectedAlgorithm === 'bucket-sort'" @close="selectedAlgorithm = null" />
     <!-- 基数排序详情 -->
-    <RadixSortDetail v-if="selectedAlgorithm === 10" @close="selectedAlgorithm = null" />
+    <RadixSortDetail v-if="selectedAlgorithm === 'radix-sort'" @close="selectedAlgorithm = null" />
   </div>
 </template>
 

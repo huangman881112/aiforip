@@ -1,4 +1,12 @@
 <script setup>
+import { onMounted } from 'vue'
+import { useUserStore } from './stores/user.js'
+
+const userStore = useUserStore()
+
+onMounted(() => {
+  userStore.init()
+})
 </script>
 
 <template style="height: 100%; width: 1980px">
@@ -12,6 +20,14 @@
             <li><router-link to="/algorithms/sorting" active-class="active-link">排序算法</router-link></li>
             <li><router-link to="/algorithms/searching" active-class="active-link">搜索算法</router-link></li>
             <li><router-link to="/algorithms/graph" active-class="active-link">图算法</router-link></li>
+            <li><router-link to="/progress" active-class="active-link">我的进度</router-link></li>
+            <li class="nav-auth">
+              <template v-if="userStore.isLoggedIn">
+                <span class="nav-user">{{ userStore.user.username }}</span>
+                <a href="#" class="nav-logout" @click.prevent="userStore.logout()">退出</a>
+              </template>
+              <router-link v-else to="/login" active-class="active-link">登录</router-link>
+            </li>
             <li><span class="nav-disabled">动态规划 <small>敬请期待</small></span></li>
             <li><span class="nav-disabled">贪心算法 <small>敬请期待</small></span></li>
             <li><span class="nav-disabled">更多分类 <small>敬请期待</small></span></li>
@@ -123,6 +139,30 @@
   font-size: 0.7em;
   color: #1e88e5;
   margin-left: 4px;
+}
+
+.nav-auth {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-user {
+  color: #555;
+  font-size: 0.9rem;
+  padding: 8px 8px 8px 16px;
+}
+
+.nav-logout {
+  color: #1e88e5;
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.nav-logout:hover {
+  background: #e3f2fd;
 }
 
 .app-main {

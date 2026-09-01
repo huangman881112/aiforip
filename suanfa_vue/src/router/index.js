@@ -1,8 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useUserStore } from '../stores/user.js'
 
 // 导入组件
 const Home = () => import('../components/common/Home.vue')
 const About = () => import('../components/common/About.vue')
+const Login = () => import('../components/common/Login.vue')
+const ProgressPage = () => import('../components/common/ProgressPage.vue')
 // AlgorithmList 组件已删除，使用 SortingPage 替代
 const SortingPage = () => import('../components/algorithms/sorting_algorithms/SortingPage.vue')
 const SimpleBubbleSort = () => import('../components/algorithms/sorting_algorithms/SimpleBubbleSort.vue')
@@ -15,8 +18,6 @@ const SearchingPage = () => import('../components/algorithms/searching_algorithm
 const LinearSearchDetail = () => import('../components/algorithms/searching_algorithms/LinearSearchDetail.vue')
 const BinarySearchDetail = () => import('../components/algorithms/searching_algorithms/BinarySearchDetail.vue')
 const InterpolationSearchDetail = () => import('../components/algorithms/searching_algorithms/InterpolationSearchDetail.vue')
-// 导入任务导出组件
-const TaskExportComponent = () => import('../components/common/TaskExportComponent.vue')
 const JumpSearchDetail = () => import('../components/algorithms/searching_algorithms/JumpSearchDetail.vue')
 const ExponentialSearchDetail = () => import('../components/algorithms/searching_algorithms/ExponentialSearchDetail.vue')
 const HashingSearchDetail = () => import('../components/algorithms/searching_algorithms/HashingSearchDetail.vue')
@@ -54,6 +55,18 @@ const routes = [
     path: '/about',
     name: 'About',
     component: About
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login,
+    meta: { public: true }
+  },
+  {
+    path: '/progress',
+    name: 'ProgressPage',
+    component: ProgressPage,
+    meta: { requiresAuth: true }
   },
   {
     path: '/algorithms',
@@ -215,11 +228,6 @@ const routes = [
     path: '/algorithms/searching/hashing-search',
     name: 'HashingSearchDetail',
     component: HashingSearchDetail
-  },
-  {
-    path: '/task-export',
-    name: 'TaskExport',
-    component: TaskExportComponent
   }
 ]
 
@@ -227,6 +235,19 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+// 路由守卫：先恢复会话，再按 meta 判断是否需要登录
+router.beforeEach(async (to) => {
+  const userStore = useUserStore()
+  await userStore.init()
+
+  if (to.meta.requiresAuth && !userStore.isLoggedIn) {
+    return { name: 'Login', query: { redirect: to.fullPath } }
+  }
+  if (to.meta.public && userStore.isLoggedIn && (to.name === 'Login')) {
+    return { name: 'Home' }
+  }
 })
 
 // 导出路由实例

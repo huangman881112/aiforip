@@ -17,28 +17,7 @@
       <div v-if="activeTab === 'basic'" class="basic-section">
         <p>堆排序是一种基于比较的排序算法，它利用堆这种数据结构来进行排序。堆是一个近似完全二叉树的结构，并同时满足堆的性质：即子节点的键值或索引总是小于（或者大于）它的父节点。</p>
 
-        <div class="complexity-analysis">
-          <h3>复杂度分析</h3>
-          <div class="complexity-item merged-complexity">
-            <div class="complexity-row">
-              <p class="complexity-title" style="text-align: left;">时间复杂度</p>
-              <ul class="complexity-subitems">
-                <li><span>最坏情况:</span> O(n log n)</li>
-                <li><span>最好情况:</span> O(n log n)</li>
-                <li><span>平均情况:</span> O(n log n)</li>
-              </ul>
-            </div>
-            <div class="complexity-row">
-              <p><span class="complexity-title">空间复杂度:</span> O(1)</p>
-            </div>
-            <div class="complexity-row">
-              <p><span class="complexity-title">稳定性:</span> 不稳定</p>
-            </div>
-            <div class="complexity-row">
-              <p><span class="complexity-title">难度:</span> 中等</p>
-            </div>
-          </div>
-        </div>
+        <AlgorithmComplexity algorithm-id="heap-sort" />
         
         <div class="code-examples">
             <h3>伪代码</h3>
@@ -308,240 +287,255 @@ function heapSort(arr) {
 }
 </style>
 
-<script>
-export default {
-  name: 'HeapSortDetail',
-  emits: ['close'],
-  data() {
-    return {
-      activeTab: 'basic',
-      codeTab: 'pseudo',
-      listSize: 20,
-      list: [],
-      originalList: [],
-      isSorting: false,
-      sortingStatus: 'idle', // idle, sorting, completed, failed
-      animationSpeed: 500,
-      comparedIndices: [],
-      swappedIndices: [],
-      sortedIndices: [],
-      heapifyCount: 0,
-      swapCount: 0,
-      stepsHistory: [],
-      sortInterval: null
-    };
-  },
-  mounted() {
-    this.generateNewList();
-  },
-  methods: {
-    closeDetail() {
-      this.$emit('close');
-    },
-    generateNewList() {
-      this.list = [];
-      this.originalList = [];
-      this.comparedIndices = [];
-      this.swappedIndices = [];
-      this.sortedIndices = [];
-      this.heapifyCount = 0;
-      this.swapCount = 0;
-      this.stepsHistory = [];
-      this.sortingStatus = 'idle';
-      this.isSorting = false;
-      clearInterval(this.sortInterval);
+<script setup>
+import { ref } from 'vue'
+import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 
-      // 生成随机数据
-      for (let i = 0; i < this.listSize; i++) {
-        const value = Math.floor(Math.random() * 100) + 1;
-        this.list.push(value);
-        this.originalList.push(value);
-      }
-    },
-    async startSorting() {
-      if (this.isSorting) return;
+// 定义emits
+const emit = defineEmits(['close'])
 
-      this.isSorting = true;
-      this.sortingStatus = 'sorting';
-      this.comparedIndices = [];
-      this.swappedIndices = [];
-      this.sortedIndices = [];
-      this.heapifyCount = 0;
-      this.swapCount = 0;
-      this.stepsHistory = [];
-      this.list = [...this.originalList];
+// 控制标签页切换
+const activeTab = ref('basic')
 
-      try {
-        await this.heapSort(this.list);
-        this.sortingStatus = 'completed';
-      } catch (error) {
-        console.error('排序出错:', error);
-        this.sortingStatus = 'failed';
-      } finally {
-        this.isSorting = false;
-      }
-    },
-    testSorting() {
-      const testList = [...this.originalList];
-      const sortedList = [...testList].sort((a, b) => a - b);
-      const result = this.heapSortSync(testList);
+// 堆排序专属状态（可视化模型与共享 composable 不同：originalList + stepsHistory 字符串 + 枚举状态，保持独立）
+const listSize = ref(20)
+const list = ref([])
+const originalList = ref([])
+const isSorting = ref(false)
+const sortingStatus = ref('idle') // idle, sorting, completed, failed
+const animationSpeed = ref(500)
+const comparedIndices = ref([])
+const swappedIndices = ref([])
+const sortedIndices = ref([])
+const heapifyCount = ref(0)
+const swapCount = ref(0)
+const stepsHistory = ref([])
 
-      if (JSON.stringify(result) === JSON.stringify(sortedList)) {
-        alert('排序算法正确！');
-      } else {
-        alert('排序算法错误！');
-      }
-    },
-    resetSorting() {
-      clearInterval(this.sortInterval);
-      this.isSorting = false;
-      this.sortingStatus = 'idle';
-      this.list = [...this.originalList];
-      this.comparedIndices = [];
-      this.swappedIndices = [];
-      this.sortedIndices = [];
-      this.stepsHistory = [];
-    },
-    async heapSort(arr) {
-      const n = arr.length;
-      this.stepsHistory.push('开始构建最大堆');
+// 关闭详情
+const closeDetail = () => {
+  emit('close')
+}
 
-      // 构建最大堆
-      for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
-        await this.heapify(arr, n, i);
-      }
+// 生成新列表
+const generateNewList = () => {
+  list.value = []
+  originalList.value = []
+  comparedIndices.value = []
+  swappedIndices.value = []
+  sortedIndices.value = []
+  heapifyCount.value = 0
+  swapCount.value = 0
+  stepsHistory.value = []
+  sortingStatus.value = 'idle'
+  isSorting.value = false
 
-      this.stepsHistory.push('最大堆构建完成，开始排序');
+  // 生成随机数据
+  for (let i = 0; i < listSize.value; i++) {
+    const value = Math.floor(Math.random() * 100) + 1
+    list.value.push(value)
+    originalList.value.push(value)
+  }
+}
 
-      // 一个个提取堆顶元素
-      for (let i = n - 1; i > 0; i--) {
-        // 将当前堆顶（最大值）移到数组末尾
-        [arr[0], arr[i]] = [arr[i], arr[0]];
-        this.swapCount++;
-        this.swappedIndices = [0, i];
-        this.stepsHistory.push(`将最大元素 ${arr[i]} 移到位置 ${i}`);
-        this.sortedIndices.push(i);
+// 初始化数据
+generateNewList()
 
-        await this.sleep(this.animationSpeed);
+// 开始排序
+const startSorting = async () => {
+  if (isSorting.value) return
 
-        // 在减小的堆中调用heapify
-        await this.heapify(arr, i, 0);
-      }
+  isSorting.value = true
+  sortingStatus.value = 'sorting'
+  comparedIndices.value = []
+  swappedIndices.value = []
+  sortedIndices.value = []
+  heapifyCount.value = 0
+  swapCount.value = 0
+  stepsHistory.value = []
+  list.value = [...originalList.value]
 
-      // 最后一个元素也已排序
-      this.sortedIndices.push(0);
-      this.stepsHistory.push('排序完成');
-    },
-    async heapify(arr, n, i) {
-      let largest = i;
-      const left = 2 * i + 1;
-      const right = 2 * i + 2;
+  try {
+    await heapSort(list.value)
+    sortingStatus.value = 'completed'
+  } catch (error) {
+    console.error('排序出错:', error)
+    sortingStatus.value = 'failed'
+  } finally {
+    isSorting.value = false
+  }
+}
 
-      this.comparedIndices = [i];
-      this.stepsHistory.push(`堆化节点 ${i}`);
+// 测试排序
+const testSorting = () => {
+  const testList = [...originalList.value]
+  const sortedList = [...testList].sort((a, b) => a - b)
+  const result = heapSortSync(testList)
 
-      // 检查左子节点是否大于根节点
-      if (left < n) {
-        this.comparedIndices.push(left);
-        await this.sleep(this.animationSpeed / 2);
+  if (JSON.stringify(result) === JSON.stringify(sortedList)) {
+    alert('排序算法正确！')
+  } else {
+    alert('排序算法错误！')
+  }
+}
 
-        if (arr[left] > arr[largest]) {
-          largest = left;
-          this.stepsHistory.push(`左子节点 ${left} 大于当前最大值，更新最大值索引为 ${largest}`);
-        }
-      }
+// 重置排序
+const resetSorting = () => {
+  isSorting.value = false
+  sortingStatus.value = 'idle'
+  list.value = [...originalList.value]
+  comparedIndices.value = []
+  swappedIndices.value = []
+  sortedIndices.value = []
+  stepsHistory.value = []
+}
 
-      // 检查右子节点是否大于目前的最大节点
-      if (right < n) {
-        this.comparedIndices.push(right);
-        await this.sleep(this.animationSpeed / 2);
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
-        if (arr[right] > arr[largest]) {
-          largest = right;
-          this.stepsHistory.push(`右子节点 ${right} 大于当前最大值，更新最大值索引为 ${largest}`);
-        }
-      }
+// 异步堆排序（可视化）
+async function heapSort(arr) {
+  const n = arr.length
+  stepsHistory.value.push('开始构建最大堆')
 
-      // 如果最大节点不是根节点
-      if (largest !== i) {
-        [arr[i], arr[largest]] = [arr[largest], arr[i]];
-        this.swapCount++;
-        this.swappedIndices = [i, largest];
-        this.stepsHistory.push(`交换节点 ${i} 和节点 ${largest}`);
-        this.heapifyCount++;
+  // 构建最大堆
+  for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+    await heapify(arr, n, i)
+  }
 
-        await this.sleep(this.animationSpeed);
+  stepsHistory.value.push('最大堆构建完成，开始排序')
 
-        // 递归地堆化受影响的子树
-        await this.heapify(arr, n, largest);
-      } else {
-        this.heapifyCount++;
-      }
-    },
-    heapSortSync(arr) {
-      const n = arr.length;
+  // 一个个提取堆顶元素
+  for (let i = n - 1; i > 0; i--) {
+    // 将当前堆顶（最大值）移到数组末尾
+    [arr[0], arr[i]] = [arr[i], arr[0]]
+    swapCount.value++
+    swappedIndices.value = [0, i]
+    stepsHistory.value.push(`将最大元素 ${arr[i]} 移到位置 ${i}`)
+    sortedIndices.value.push(i)
 
-      // 构建最大堆
-      for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
-        this.heapifySync(arr, n, i);
-      }
+    await sleep(animationSpeed.value)
 
-      // 一个个提取堆顶元素
-      for (let i = n - 1; i > 0; i--) {
-        [arr[0], arr[i]] = [arr[i], arr[0]];
-        this.heapifySync(arr, i, 0);
-      }
+    // 在减小的堆中调用heapify
+    await heapify(arr, i, 0)
+  }
 
-      return arr;
-    },
-    heapifySync(arr, n, i) {
-      let largest = i;
-      const left = 2 * i + 1;
-      const right = 2 * i + 2;
+  // 最后一个元素也已排序
+  sortedIndices.value.push(0)
+  stepsHistory.value.push('排序完成')
+}
 
-      if (left < n && arr[left] > arr[largest]) {
-        largest = left;
-      }
+// 堆化（可视化）
+async function heapify(arr, n, i) {
+  let largest = i
+  const left = 2 * i + 1
+  const right = 2 * i + 2
 
-      if (right < n && arr[right] > arr[largest]) {
-        largest = right;
-      }
+  comparedIndices.value = [i]
+  stepsHistory.value.push(`堆化节点 ${i}`)
 
-      if (largest !== i) {
-        [arr[i], arr[largest]] = [arr[largest], arr[i]];
-        this.heapifySync(arr, n, largest);
-      }
-    },
-    sleep(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    },
-    getSortingStatusText() {
-      switch (this.sortingStatus) {
-        case 'idle':
-          return '就绪';
-        case 'sorting':
-          return '排序中...';
-        case 'completed':
-          return '排序完成';
-        case 'failed':
-          return '排序失败';
-        default:
-          return '未知状态';
-      }
-    },
-    getBarColor(index) {
-      if (this.sortedIndices.includes(index)) {
-        return '#4CAF50'; // 绿色表示已排序
-      } else if (this.swappedIndices.includes(index)) {
-        return '#FF5722'; // 橙色表示刚交换
-      } else if (this.comparedIndices.includes(index)) {
-        return '#2196F3'; // 蓝色表示正在比较
-      } else {
-        return '#9E9E9E'; // 灰色表示未处理
-      }
+  // 检查左子节点是否大于根节点
+  if (left < n) {
+    comparedIndices.value.push(left)
+    await sleep(animationSpeed.value / 2)
+
+    if (arr[left] > arr[largest]) {
+      largest = left
+      stepsHistory.value.push(`左子节点 ${left} 大于当前最大值，更新最大值索引为 ${largest}`)
     }
   }
-};
+
+  // 检查右子节点是否大于目前的最大节点
+  if (right < n) {
+    comparedIndices.value.push(right)
+    await sleep(animationSpeed.value / 2)
+
+    if (arr[right] > arr[largest]) {
+      largest = right
+      stepsHistory.value.push(`右子节点 ${right} 大于当前最大值，更新最大值索引为 ${largest}`)
+    }
+  }
+
+  // 如果最大节点不是根节点
+  if (largest !== i) {
+    [arr[i], arr[largest]] = [arr[largest], arr[i]]
+    swapCount.value++
+    swappedIndices.value = [i, largest]
+    stepsHistory.value.push(`交换节点 ${i} 和节点 ${largest}`)
+    heapifyCount.value++
+
+    await sleep(animationSpeed.value)
+
+    // 递归地堆化受影响的子树
+    await heapify(arr, n, largest)
+  } else {
+    heapifyCount.value++
+  }
+}
+
+// 同步堆排序（测试用）
+function heapSortSync(arr) {
+  const n = arr.length
+
+  // 构建最大堆
+  for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+    heapifySync(arr, n, i)
+  }
+
+  // 一个个提取堆顶元素
+  for (let i = n - 1; i > 0; i--) {
+    [arr[0], arr[i]] = [arr[i], arr[0]]
+    heapifySync(arr, i, 0)
+  }
+
+  return arr
+}
+
+function heapifySync(arr, n, i) {
+  let largest = i
+  const left = 2 * i + 1
+  const right = 2 * i + 2
+
+  if (left < n && arr[left] > arr[largest]) {
+    largest = left
+  }
+
+  if (right < n && arr[right] > arr[largest]) {
+    largest = right
+  }
+
+  if (largest !== i) {
+    [arr[i], arr[largest]] = [arr[largest], arr[i]]
+    heapifySync(arr, n, largest)
+  }
+}
+
+// 排序状态文本
+const getSortingStatusText = () => {
+  switch (sortingStatus.value) {
+    case 'idle':
+      return '就绪'
+    case 'sorting':
+      return '排序中...'
+    case 'completed':
+      return '排序完成'
+    case 'failed':
+      return '排序失败'
+    default:
+      return '未知状态'
+  }
+}
+
+// 柱子颜色
+const getBarColor = (index) => {
+  if (sortedIndices.value.includes(index)) {
+    return '#4CAF50' // 绿色表示已排序
+  } else if (swappedIndices.value.includes(index)) {
+    return '#FF5722' // 橙色表示刚交换
+  } else if (comparedIndices.value.includes(index)) {
+    return '#2196F3' // 蓝色表示正在比较
+  } else {
+    return '#9E9E9E' // 灰色表示未处理
+  }
+}
 </script>
 
 <style scoped>

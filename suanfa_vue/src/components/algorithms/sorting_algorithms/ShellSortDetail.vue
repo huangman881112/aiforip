@@ -1,6 +1,8 @@
 <script setup>
 // 希尔排序详情组件
-import { ref, computed, onMounted, defineEmits } from 'vue'
+import { ref, onMounted } from 'vue'
+import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
+import { useSortingVisualization } from '../../../composables/useSortingVisualization.js'
 
 // 定义emits
 const emit = defineEmits(['close'])
@@ -8,51 +10,27 @@ const emit = defineEmits(['close'])
 // 标签页管理
 const activeTab = ref('basic')
 
-// 排序状态管理
-const isSorting = ref(false)
-const isButtonClicked = ref(false)
-const sortingStatus = ref('就绪')
-const comparisonCount = ref(0)
-const swapCount = ref(0)
-const currentStep = ref(0)
-const sortedData = ref([])
-const data = ref([])
-const comparedIndices = ref([])
-const selectedIndices = ref([])
-const minIndex = ref(-1)
-const sortingSteps = ref([])
-const currentStepDetails = ref('')
-const errorMessage = ref('')
-
-// 动画控制
-const animationSpeed = ref(500)
-const listSize = ref(10)
-const minSize = ref(5)
-const maxSize = ref(20)
-
-// 生成新列表
-const generateNewList = () => {
-  try {
-    isSorting.value = false
-    const newData = Array.from({ length: listSize.value }, () => Math.floor(Math.random() * 100) + 1)
-    data.value = [...newData]
-    sortedData.value = [...newData]
-    comparisonCount.value = 0
-    swapCount.value = 0
-    currentStep.value = 0
-    comparedIndices.value = []
+// 可视化共享脚手架（列表大小/随机数据/统计状态/生成新列表/重置排序）
+const {
+  listSize, minSize, maxSize,
+  errorMessage, sortingSteps, currentStepDetails,
+  data, sortedData,
+  generateNewList, resetSort,
+  isSorting, isButtonClicked, sortingStatus, animationSpeed,
+  comparisonCount, swapCount, currentStep, comparedIndices,
+} = useSortingVisualization({
+  defaultSize: 10,
+  minSize: 5,
+  maxSize: 20,
+  onReset: () => {
     selectedIndices.value = []
     minIndex.value = -1
-    sortingStatus.value = '就绪'
-    sortingSteps.value = []
-    currentStepDetails.value = ''
-
-  } catch (error) {
-    console.error('[ERROR] 生成新列表失败:', error)
-    errorMessage.value = `生成新列表失败: ${error.message}`
-    setTimeout(() => { errorMessage.value = '' }, 3000)
   }
-}
+})
+
+// 希尔排序专属状态
+const selectedIndices = ref([])
+const minIndex = ref(-1)
 
 // 希尔排序实现
 const shellSort = async () => {
@@ -171,65 +149,6 @@ const testSort = () => {
   }
 }
 
-// 重置排序 - 打乱数组
-const resetSort = () => {
-  try {
-    isSorting.value = false
-
-    // 检查data.value是否存在且是数组
-    if (!data || typeof data.value === 'undefined' || !Array.isArray(data.value)) {
-      throw new Error('数据对象未正确初始化或不是数组');
-    }
-
-    // 使用Fisher-Yates洗牌算法打乱数组
-    const shuffled = [...data.value]
-
-    // 检查shuffled是否是有效数组
-    if (!Array.isArray(shuffled)) {
-      throw new Error('无法创建数据副本');
-    }
-
-
-
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      let j = Math.floor(Math.random() * (i + 1))
-
-      // 检查索引是否有效
-      if (j < 0 || j >= shuffled.length) {
-        throw new Error(`无效的随机索引: ${j}，数组长度: ${shuffled.length}`);
-      }
-
-
-
-      // 安全地交换元素
-      const temp = shuffled[i];
-      shuffled[i] = shuffled[j];
-      shuffled[j] = temp;
-    }
-
-    // 检查sortedData是否存在
-    if (!sortedData || typeof sortedData.value === 'undefined') {
-      throw new Error('排序数据对象未正确初始化');
-    }
-
-    sortedData.value = shuffled
-    comparisonCount.value = 0
-    swapCount.value = 0
-    currentStep.value = 0
-    comparedIndices.value = []
-    selectedIndices.value = []
-    minIndex.value = -1
-    sortingStatus.value = '就绪'
-    sortingSteps.value = []
-    currentStepDetails.value = ''
-
-  } catch (error) {
-    console.error('[ERROR] 重置排序失败:', error)
-    errorMessage.value = `重置排序失败: ${error.message}`
-    setTimeout(() => { errorMessage.value = '' }, 3000)
-  }
-}
-
 // 关闭详情
 const closeDetail = () => {
   // 触发父组件的close事件
@@ -260,28 +179,7 @@ onMounted(() => {
         <div class="markdown-content" style="text-align: left;">
           <p>希尔排序是插入排序的一种改进版本，也称为"缩小增量排序"。</p>
 
-          <div class="complexity-analysis">
-            <h3>复杂度分析</h3>
-            <div class="complexity-item merged-complexity">
-              <div class="complexity-row">
-                <p class="complexity-title" style="text-align: left;">时间复杂度</p>
-                <ul class="complexity-subitems" style="text-align: left;">
-                  <li><span>最坏情况:</span> O(n²)</li>
-                  <li><span>最好情况:</span> O(n log² n)</li>
-                  <li><span>平均情况:</span> O(n^1.3)</li>
-                </ul>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">空间复杂度:</span> O(1)</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">稳定性:</span> 不稳定</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">难度:</span> 中等</p>
-              </div>
-            </div>
-          </div>
+          <AlgorithmComplexity algorithm-id="shell-sort" />
 
           <div class="code-examples">
             <h3>伪代码</h3>

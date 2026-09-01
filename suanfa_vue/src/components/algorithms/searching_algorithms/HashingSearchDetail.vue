@@ -1,78 +1,30 @@
 <script setup>
-import { ref, computed, nextTick, watch } from 'vue'
+import { ref } from 'vue'
+import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
+import { useSearchingVisualization } from '../../../composables/useSearchingVisualization.js'
 
 // 定义emits
 const emit = defineEmits(['close'])
 
-// 列表大小控制
-const listSize = ref(10)
-const minSize = ref(5)
-const maxSize = ref(20)
-
-// 目标值控制
-const targetValue = ref(13)
-const minTarget = ref(1)
-const maxTarget = ref(100)
-
-// 哈希表参数
-const hashTableSize = ref(11)
-const collisionHandling = ref('chaining') // 'chaining' or 'linearProbing'
-
-// 确保listSize始终是数字类型
-watch(listSize, (newValue) => {
-  if (typeof newValue !== 'number' || isNaN(newValue)) {
-    console.warn('[WARNING] 列表大小不是有效数字，已重置为默认值');
-    listSize.value = 10;
-  } else {
-    // 确保值在有效范围内
-    listSize.value = Math.max(minSize.value, Math.min(maxSize.value, Math.round(newValue)));
-  }
-})
-
-// 确保targetValue始终是数字类型
-watch(targetValue, (newValue) => {
-  if (typeof newValue !== 'number' || isNaN(newValue)) {
-    console.warn('[WARNING] 目标值不是有效数字，已重置为默认值');
-    targetValue.value = 13;
-  } else {
-    // 确保值在有效范围内
-    targetValue.value = Math.max(minTarget.value, Math.min(maxTarget.value, Math.round(newValue)));
-  }
-})
-
-// 错误信息
-const errorMessage = ref('')
-
-// 搜索步骤记录
-const searchSteps = ref([])
-const currentStepDetails = ref('')
-
-// 控制标签页切换
-const activeTab = ref('basic')
-
-// 搜索状态
-const isSearching = ref(false)
-const isButtonClicked = ref(false)
-const searchStatus = ref('就绪')
-const animationSpeed = ref(500)
-const currentStep = ref(0)
-const foundIndex = ref(-1)
-const isAnimating = ref(false)
-
-// 数据和哈希表
-const data = ref([])
-const searchData = ref([])
-const hashTable = ref(Array(hashTableSize.value).fill(null).map(() => []))
-
-// 生成随机数据函数
-const generateRandomData = (size) => {
-  try {
-    if (typeof size !== 'number' || size < 1) {
-      throw new Error('无效的数组大小: ' + size);
-    }
+// 可视化共享脚手架（列表大小/目标值/随机数据/统计状态/生成新列表/重置搜索）
+const {
+  listSize, minSize, maxSize,
+  targetValue, minTarget, maxTarget,
+  errorMessage, searchSteps, currentStepDetails,
+  data, searchData,
+  generateRandomData,
+  generateNewList: sharedGenerateNewList,
+  resetSearch,
+  isSearching, isButtonClicked, searchStatus, animationSpeed,
+  currentStep, foundIndex,
+} = useSearchingVisualization({
+  defaultSize: 10,
+  minSize: 5,
+  defaultTarget: 13,
+  // 哈希查找需要互不重复的数据
+  generateRandomData: (size) => {
     const result = []
     const usedNumbers = new Set()
-
     while (result.length < size) {
       const num = Math.floor(Math.random() * 100) + 1
       if (!usedNumbers.has(num)) {
@@ -80,12 +32,28 @@ const generateRandomData = (size) => {
         result.push(num)
       }
     }
-    return result;
-  } catch (error) {
-    console.error('生成随机数据失败:', error.message);
-    throw error;
-  }
-}
+    return result
+  },
+  // 重置搜索时清除算法专属状态（哈希动画标记）
+  onReset: () => {
+    isAnimating.value = false
+  },
+})
+
+// 哈希表参数（算法专属）
+const hashTableSize = ref(11)
+const collisionHandling = ref('chaining') // 'chaining' or 'linearProbing'
+
+// 哈希动画状态（算法专属）
+const isAnimating = ref(false)
+
+// 数据和哈希表
+const hashTable = ref(Array(hashTableSize.value).fill(null).map(() => []))
+
+// 控制标签页切换
+const activeTab = ref('basic')
+
+// 生成随机数据由 useSearchingVisualization 提供（generateRandomData 覆盖：互不重复数据）
 
 // 哈希函数
 const hashFunction = (key) => {
@@ -142,41 +110,17 @@ const buildHashTable = () => {
   }, 100)
 }
 
-// 生成新列表
+// 生成新列表：复用共享脚手架（数据生成/校验/重置搜索），随后重建哈希表
 const generateNewList = async () => {
-  try {
-    errorMessage.value = ''; // 清除之前的错误
-    isButtonClicked.value = true;
-    searchStatus.value = '生成新列表中...'
+  isButtonClicked.value = true;
+  searchStatus.value = '生成新列表中...'
+  await sharedGenerateNewList();
+  buildHashTable();
 
-    // 强制转换listSize为数字
-    const size = Number(listSize.value);
-    const clampedSize = Math.max(minSize.value, Math.min(maxSize.value, Math.round(size)));
-    if (clampedSize !== size) {
-      console.warn(`[WARNING] 列表大小${size}超出范围，已调整为${clampedSize}`);
-      listSize.value = clampedSize;
-    }
-
-    // 生成新数据
-    const newData = generateRandomData(listSize.value);
-    data.value = newData;
-    searchData.value = [...newData];
-
-    // 等待DOM更新后再重置搜索
-    await nextTick();
-    resetSearch();
-    buildHashTable();
-
-    // 100ms后重置按钮状态
-    setTimeout(() => {
-      isButtonClicked.value = false;
-    }, 100);
-  } catch (error) {
-    console.error('[ERROR] 生成新列表失败:', error);
-    errorMessage.value = `生成新列表失败: ${error.message}`;
-    currentStepDetails.value = errorMessage.value;
+  // 100ms后重置按钮状态
+  setTimeout(() => {
     isButtonClicked.value = false;
-  }
+  }, 100);
 }
 
 // 哈希查找算法
@@ -330,35 +274,13 @@ const hashingSearch = async () => {
   }, animationSpeed.value)
 }
 
-// 重置搜索
-const resetSearch = () => {
-  try {
-    isSearching.value = false
-    isAnimating.value = false
-
-    // 重置搜索状态
-    searchStatus.value = '就绪'
-    currentStep.value = 0
-    foundIndex.value = -1
-    searchSteps.value = []
-    currentStepDetails.value = ''
-
-    // 重新复制原始数据
-    searchData.value = [...data.value]
-  } catch (error) {
-    console.error('[ERROR] 重置搜索失败:', error)
-    throw error
-  }
-}
-
+// 重置搜索由 useSearchingVisualization 提供（公共状态清零 + 通过 onReset 清除哈希动画标记）
 // 关闭详情
 const closeDetail = () => {
   emit('close')
 }
 
-// 初始化数据
-data.value = generateRandomData(listSize.value)
-searchData.value = [...data.value]
+// 初始化数据由 useSearchingVisualization 完成（generateRandomData 覆盖）
 // 初始化哈希表
 buildHashTable()
 </script>
@@ -385,25 +307,7 @@ buildHashTable()
         <div class="markdown-content" style="text-align: left;">
           <p>哈希查找是一种基于哈希表的高效查找算法。它通过哈希函数将键值映射到表中的特定位置，从而实现O(1)时间复杂度的查找。当多个键值映射到同一位置时，需要通过碰撞处理技术解决冲突。</p>
 
-          <div class="complexity-analysis">
-            <h3>复杂度分析</h3>
-            <div class="complexity-item merged-complexity">
-              <div class="complexity-row">
-                <p class="complexity-title" style="text-align: left;">时间复杂度</p>
-                <ul class="complexity-subitems" style="text-align: left;">
-                  <li><span>最坏情况:</span> O(n)</li>
-                  <li><span>最好情况:</span> O(1)</li>
-                  <li><span>平均情况:</span> O(1)</li>
-                </ul>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">空间复杂度:</span> O(n)</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">难度:</span> 中等</p>
-              </div>
-            </div>
-          </div>
+          <AlgorithmComplexity algorithm-id="hashing-search" />
 
           <div class="code-examples">
             <h3>伪代码</h3>

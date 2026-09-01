@@ -50,6 +50,7 @@
 
 <script setup>
 import { ref, nextTick, watch, onMounted } from 'vue'
+import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 
 // 定义emits
 const emit = defineEmits(['close'])
@@ -633,25 +634,7 @@ onMounted(() => {
         <div class="markdown-content" style="text-align: left;">
           <p>拓扑排序(Topological Sort)是一种对有向无环图(DAG)中的节点进行排序的算法，使得对于每一条有向边(u, v)，节点u在排序结果中都出现在节点v之前。</p>
 
-          <div class="complexity-analysis">
-            <h3>复杂度分析</h3>
-            <div class="complexity-item merged-complexity">
-              <div class="complexity-row">
-                <p class="complexity-title" style="text-align: left;">时间复杂度</p>
-                <ul class="complexity-subitems" style="text-align: left;">
-                  <li><span>最坏情况:</span> O(V + E)</li>
-                  <li><span>最好情况:</span> O(V + E)</li>
-                  <li><span>平均情况:</span> O(V + E)</li>
-                </ul>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">空间复杂度:</span> O(V)</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">难度:</span> 中等</p>
-              </div>
-            </div>
-          </div>
+          <AlgorithmComplexity algorithm-id="topological-sort" />
 
           <div class="code-examples">
             <h3>伪代码</h3>

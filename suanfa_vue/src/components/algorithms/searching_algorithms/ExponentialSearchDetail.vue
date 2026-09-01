@@ -1,60 +1,56 @@
-<script setup>import { ref, nextTick, watch, computed } from 'vue'
+<script setup>
+import { ref, computed } from 'vue'
+import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
+import { useSearchingVisualization } from '../../../composables/useSearchingVisualization.js'
 
 // 定义emits
 const emit = defineEmits(['close'])
 
-// 列表大小控制
-const listSize = ref(10)
-const minSize = ref(3)
-const maxSize = ref(20)
-
-// 目标值控制
-const targetValue = ref(50)
-const minTarget = ref(1)
-const maxTarget = ref(100)
-
-// 动画速度控制
-const animationSpeed = ref(500)
-
-// 确保listSize始终是数字类型
-watch(listSize, (newValue) => {
-  if (typeof newValue !== 'number' || isNaN(newValue)) {
-    console.warn('[WARNING] 列表大小不是有效数字，已重置为默认值');
-    listSize.value = 10;
-  } else {
-    // 确保值在有效范围内
-    listSize.value = Math.max(minSize.value, Math.min(maxSize.value, Math.round(newValue)));
-  }
+// 可视化共享脚手架（列表大小/目标值/随机数据/统计状态/生成新列表/重置搜索）
+const {
+  listSize, minSize, maxSize,
+  targetValue, minTarget, maxTarget,
+  errorMessage, searchSteps, currentStepDetails,
+  data, searchData,
+  generateNewList, resetSearch,
+  isSearching, isButtonClicked, searchStatus, animationSpeed,
+  comparisonCount, currentStep, currentIndex, foundIndex,
+} = useSearchingVisualization({
+  defaultSize: 10,
+  defaultTarget: 50,
+  // 指数搜索需要递增有序数据
+  generateRandomData: (size) => {
+    const result = []
+    let current = Math.floor(Math.random() * 10)
+    result.push(current)
+    for (let i = 1; i < size; i++) {
+      current += Math.floor(Math.random() * 5) + 1
+      result.push(current)
+    }
+    return result
+  },
+  // 重置搜索时清除算法专属状态（二分搜索子过程 + 消息提示）
+  onReset: () => {
+    binarySearchSteps.value = []
+    binaryCurrentStep.value = 0
+    binaryLeft.value = 0
+    binaryRight.value = 0
+    binaryMiddle.value = 0
+    isBinarySearching.value = false
+    binaryFound.value = false
+    binarySearchIndex.value = -1
+    errorMessage.value = ''
+    successMessage.value = ''
+  },
 })
 
-// 确保targetValue始终是数字类型
-watch(targetValue, (newValue) => {
-  if (typeof newValue !== 'number' || isNaN(newValue)) {
-    console.warn('[WARNING] 目标值不是有效数字，已重置为默认值');
-    targetValue.value = 50;
-  } else {
-    // 确保值在有效范围内
-    targetValue.value = Math.max(minTarget.value, Math.min(maxTarget.value, Math.round(newValue)));
-  }
-})
-
-// 错误信息
-const errorMessage = ref('')
+// 成功提示信息（算法专属）
 const successMessage = ref('')
 
-// 搜索步骤记录
-const searchSteps = ref([])
-const currentStepDetails = ref('')
-const comparisonCount = ref(0)
-const currentStep = ref(0)
-const currentIndex = ref(-1)
-const foundIndex = ref(-1)
-const isSearching = ref(false)
-const isButtonClicked = ref(false)
-const searchStatus = ref('就绪')
+// 数组是否已排序标记
 const isArraySorted = ref(true)
 
-// 二分搜索相关状态
+// 二分搜索相关状态（指数搜索内部调用的子过程）
 const binarySearchSteps = ref([])
 const binaryCurrentStep = ref(0)
 const binaryLeft = ref(0)
@@ -64,8 +60,6 @@ const isBinarySearching = ref(false)
 const binaryFound = ref(false)
 const binarySearchIndex = ref(-1)
 
-
-
 // 关闭详情
 const closeDetail = () => {
   emit('close')
@@ -74,98 +68,8 @@ const closeDetail = () => {
 // 控制标签页切换
 const activeTab = ref('basic')
 
-// 生成随机数据函数
-const generateRandomData = (size) => {
-  try {
-    if (typeof size !== 'number' || size < 1) {
-      throw new Error('无效的数组大小: ' + size);
-    }
-    const result = [];
-    let current = Math.floor(Math.random() * 10);
-    result.push(current);
-    for (let i = 1; i < size; i++) {
-      current += Math.floor(Math.random() * 5) + 1;
-      result.push(current);
-    }
-    return result;
-  } catch (error) {
-    console.error('生成随机数据失败:', error.message);
-    throw error; // 重新抛出错误以便上层处理
-  }
-}
-
-// 模拟搜索数据
-const data = ref(generateRandomData(listSize.value))
-const searchData = ref([...data.value])
-
-// 生成新列表
-const generateNewList = async () => {
-  try {
-    errorMessage.value = ''; // 清除之前的错误
-    successMessage.value = '';
-
-    // 强制转换listSize为数字
-    const size = Number(listSize.value);
-
-    // 验证listSize
-    if (typeof size !== 'number' || isNaN(size)) {
-      const err = new Error('列表大小必须是数字类型');
-      console.error('[ERROR]', err);
-      throw err;
-    }
-    const clampedSize = Math.max(minSize.value, Math.min(maxSize.value, Math.round(size)));
-    if (clampedSize !== size) {
-      console.warn(`[WARNING] 列表大小${size}超出范围，已调整为${clampedSize}`);
-      listSize.value = clampedSize;
-    }
-
-    // 生成新数据
-    const newData = generateRandomData(listSize.value);
-
-    // 更新数据
-    data.value = newData;
-
-    // 等待DOM更新后再重置搜索
-    await nextTick();
-    resetSearch();
-  } catch (error) {
-    console.error('[ERROR] 生成新列表失败:', error);
-    errorMessage.value = `生成新列表失败: ${error.message}`;
-    currentStepDetails.value = errorMessage.value;
-  }
-}
-
-// 重置搜索
-const resetSearch = () => {
-  try {
-    isSearching.value = false;
-    isBinarySearching.value = false;
-
-    // 重置搜索状态
-    searchStatus.value = '就绪'
-    comparisonCount.value = 0
-    currentStep.value = 0
-    currentIndex.value = -1
-    foundIndex.value = -1
-    searchSteps.value = []
-    currentStepDetails.value = ''
-    binarySearchSteps.value = []
-    binaryCurrentStep.value = 0
-    binaryLeft.value = 0
-    binaryRight.value = 0
-    binaryMiddle.value = 0
-    binaryFound.value = false
-    binarySearchIndex.value = -1
-    errorMessage.value = ''
-    successMessage.value = ''
-
-    // 重新复制原始数据
-    searchData.value = [...data.value]
-  } catch (error) {
-    console.error('[ERROR] 重置搜索失败:', error)
-    throw error
-  }
-}
+// 生成新列表/重置搜索由 useSearchingVisualization 提供
+// （生成新列表调用上方 generateRandomData 覆盖；重置搜索通过 onReset 钩子清除二分搜索子过程状态）
 
 // 二分搜索算法
 const binarySearch = async (arr, target, left, right) => {
@@ -368,25 +272,7 @@ const arrayIsEmpty = computed(() => searchData.value.length === 0);
         <div class="markdown-content" style="text-align: left;">
           <p>指数搜索是一种结合了线性搜索和二分搜索优点的搜索算法，特别适用于大规模有序数组。</p>
 
-          <div class="complexity-analysis">
-            <h3>复杂度分析</h3>
-            <div class="complexity-item merged-complexity">
-              <div class="complexity-row">
-                <p class="complexity-title" style="text-align: left;">时间复杂度</p>
-                <ul class="complexity-subitems" style="text-align: left;">
-                  <li><span>最坏情况:</span> O(log n)</li>
-                  <li><span>最好情况:</span> O(1)</li>
-                  <li><span>平均情况:</span> O(log n)</li>
-                </ul>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">空间复杂度:</span> O(1)</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">难度:</span> 中等</p>
-              </div>
-            </div>
-          </div>
+          <AlgorithmComplexity algorithm-id="exponential-search" />
 
           <div class="code-examples">
             <h3>伪代码</h3>

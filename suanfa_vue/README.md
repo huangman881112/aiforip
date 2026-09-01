@@ -7,7 +7,6 @@
 - Vue 3（Composition API，`<script setup>` 语法）
 - Vite 7（开发服务器与构建工具）
 - Vue Router 4（前端路由）
-- xlsx（任务数据导出）
 
 ## 运行方式
 
@@ -56,7 +55,7 @@ suanfa_vue/
     ├── router/
     │   └── index.js              # 路由配置
     └── components/
-        ├── common/               # 首页、关于页、任务导出等通用组件
+        ├── common/               # 首页、关于页等通用组件
         └── algorithms/
             ├── sorting_algorithms/     # 排序：SortingPage 分类页 + 10 个 *Detail.vue 详情组件
             ├── searching_algorithms/   # 搜索：SearchingPage 分类页 + 6 个 *Detail.vue 详情组件

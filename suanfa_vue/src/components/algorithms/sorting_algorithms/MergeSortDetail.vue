@@ -1,5 +1,7 @@
 <script setup>
-import { ref, defineEmits, nextTick, watch } from 'vue'
+import { ref } from 'vue'
+import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
+import { useSortingVisualization } from '../../../composables/useSortingVisualization.js'
 
 // 定义emits
 const emit = defineEmits(['close'])
@@ -12,115 +14,24 @@ const closeDetail = () => {
 // 控制标签页切换
 const activeTab = ref('basic')
 
-// 列表大小控制
-const listSize = ref(7)
-const minSize = ref(3)
-const maxSize = ref(20)
-
-// 确保listSize始终是数字类型
-watch(listSize, (newValue) => {
-  if (typeof newValue !== 'number' || isNaN(newValue)) {
-    console.warn('[WARNING] 列表大小不是有效数字，已重置为默认值');
-    listSize.value = 7;
-  } else {
-    // 确保值在有效范围内
-    listSize.value = Math.max(minSize.value, Math.min(maxSize.value, Math.round(newValue)));
+// 可视化共享脚手架（列表大小/随机数据/统计状态/生成新列表/重置排序）
+const {
+  listSize, minSize, maxSize,
+  errorMessage, sortingSteps, currentStepDetails,
+  data, sortedData,
+  generateNewList, resetSort,
+  isSorting, isButtonClicked, sortingStatus, animationSpeed,
+  comparisonCount, currentStep,
+} = useSortingVisualization({
+  onReset: () => {
+    mergeCount.value = 0
+    mergedIndices.value = []
+    currentMergeRange.value = { start: 0, end: 0 }
   }
 })
 
-// 错误信息
-const errorMessage = ref('')
-
-// 排序步骤记录
-const sortingSteps = ref([])
-const currentStepDetails = ref('')
-
-// 生成随机数据函数
-const generateRandomData = (size) => {
-  try {
-    console.log('生成随机数据 - 开始，size:', size);
-    if (typeof size !== 'number' || size < 1) {
-      throw new Error('无效的数组大小: ' + size);
-    }
-    const result = Array.from({ length: size }, () => Math.floor(Math.random() * 100) + 1);
-    console.log('生成随机数据 - 完成，结果:', result);
-    return result;
-  } catch (error) {
-    console.error('生成随机数据失败:', error.message);
-    throw error; // 重新抛出错误以便上层处理
-  }
-}
-
-// 模拟排序数据
-const data = ref(generateRandomData(listSize.value))
-const sortedData = ref([...data.value])
-
-// 生成新列表
-const generateNewList = async () => {
-  try {
-    errorMessage.value = ''; // 清除之前的错误
-    console.log('[DEBUG] 生成新列表按钮被点击');
-    
-    // 强制转换listSize为数字
-    const size = Number(listSize.value);
-    console.log('[DEBUG] 当前listSize:', size, '类型:', typeof size);
-    
-    // 验证listSize
-    if (typeof size !== 'number' || isNaN(size)) {
-      const err = new Error('列表大小必须是数字类型');
-      console.error('[ERROR]', err);
-      throw err;
-    }
-    const clampedSize = Math.max(minSize.value, Math.min(maxSize.value, Math.round(size)));
-    if (clampedSize !== size) {
-      console.warn(`[WARNING] 列表大小${size}超出范围，已调整为${clampedSize}`);
-      listSize.value = clampedSize;
-    }
-    
-    // 生成新数据
-    console.log('[DEBUG] 开始生成随机数据');
-    const newData = generateRandomData(listSize.value);
-    console.log('[DEBUG] 生成的新数据:', newData);
-    
-    // 检查data是否存在
-    if (!data || typeof data.value === 'undefined') {
-      const err = new Error('数据对象未正确初始化');
-      console.error('[ERROR]', err);
-      throw err;
-    }
-    
-    // 更新数据
-    data.value = newData;
-    console.log('[DEBUG] 数据已更新:', data.value);
-    
-    // 等待DOM更新后再重置排序
-    console.log('[DEBUG] 等待DOM更新');
-    await nextTick();
-    console.log('[DEBUG] 重置排序');
-    try {
-      resetSort();
-      console.log('[DEBUG] 重置排序完成');
-    } catch (resetError) {
-      console.error('[ERROR] 重置排序失败:', resetError);
-      throw new Error(`重置排序时出错: ${resetError.message}`);
-    }
-    console.log('[DEBUG] 生成新列表 - 完成');
-  } catch (error) {
-    console.error('[ERROR] 生成新列表失败:', error);
-    console.error('[ERROR] 错误堆栈:', error.stack);
-    errorMessage.value = `生成新列表失败: ${error.message}`;
-    currentStepDetails.value = errorMessage.value;
-    // 强制显示错误信息
-    alert(errorMessage.value);
-  }
-}
-const isSorting = ref(false)
-const isButtonClicked = ref(false)
-const sortingStatus = ref('就绪')
-const animationSpeed = ref(500)
-const comparisonCount = ref(0)
+// 归并排序专属状态
 const mergeCount = ref(0)
-const currentStep = ref(0)
 const mergedIndices = ref([])
 const currentMergeRange = ref({ start: 0, end: 0 })
 
@@ -251,63 +162,6 @@ const testSort = async () => {
   currentStepDetails.value = finishDetails
 }
 
-// 重置排序 - 打乱数组
-const resetSort = () => {
-  try {
-    isSorting.value = false
-    
-    // 检查data.value是否存在且是数组
-    if (!data || typeof data.value === 'undefined' || !Array.isArray(data.value)) {
-      throw new Error('数据对象未正确初始化或不是数组');
-    }
-    
-    // 使用Fisher-Yates洗牌算法打乱数组
-    const shuffled = [...data.value]
-    
-    // 检查shuffled是否是有效数组
-    if (!Array.isArray(shuffled)) {
-      throw new Error('无法创建数据副本');
-    }
-    
-    console.log('[DEBUG] 开始打乱数组，长度:', shuffled.length)
-    
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      let j = Math.floor(Math.random() * (i + 1))
-      
-      // 检查索引是否有效
-      if (j < 0 || j >= shuffled.length) {
-        throw new Error(`无效的随机索引: ${j}，数组长度: ${shuffled.length}`);
-      }
-      
-      console.log(`[DEBUG] 交换索引 ${i} 和 ${j}`)
-      
-      // 安全地交换元素
-      const temp = shuffled[i];
-      shuffled[i] = shuffled[j];
-      shuffled[j] = temp;
-    }
-    
-    // 检查sortedData是否存在
-    if (!sortedData || typeof sortedData.value === 'undefined') {
-      throw new Error('排序数据对象未正确初始化');
-    }
-    
-    sortedData.value = shuffled
-    comparisonCount.value = 0
-    mergeCount.value = 0
-    currentStep.value = 0
-    mergedIndices.value = []
-    currentMergeRange.value = { start: 0, end: 0 }
-    sortingStatus.value = '就绪'
-    sortingSteps.value = []
-    currentStepDetails.value = ''
-    console.log('[DEBUG] 重置排序 - 数组已打乱:', sortedData.value)
-  } catch (error) {
-    console.error('[ERROR] 重置排序失败:', error)
-    console.error('[ERROR] 错误堆栈:', error.stack)
-    throw error
-  }
-}
 </script>
 
 <template>
@@ -329,28 +183,7 @@ const resetSort = () => {
           <h2>归并排序</h2>
           <p>归并排序是一种高效、稳定的排序算法，基于分治法的思想。</p>
 
-          <div class="complexity-analysis">
-            <h3>复杂度分析</h3>
-            <div class="complexity-item merged-complexity">
-              <div class="complexity-row">
-                <p class="complexity-title" style="text-align: left;">时间复杂度</p>
-                <ul class="complexity-subitems" style="text-align: left;">
-                  <li><span>最坏情况:</span> O(n log n)</li>
-                  <li><span>最好情况:</span> O(n log n)</li>
-                  <li><span>平均情况:</span> O(n log n)</li>
-                </ul>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">空间复杂度:</span> O(n)</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">稳定性:</span> 稳定</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">难度:</span> 中等</p>
-              </div>
-            </div>
-          </div>
+          <AlgorithmComplexity algorithm-id="merge-sort" />
 
           <div class="code-examples">
             <h3>伪代码</h3>

@@ -1,6 +1,8 @@
 <script setup>
 // 基数排序详情组件
-import { ref, computed, onMounted, defineEmits } from 'vue'
+import { ref, onMounted } from 'vue'
+import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
+import { useSortingVisualization } from '../../../composables/useSortingVisualization.js'
 
 // 定义emits
 const emit = defineEmits(['close'])
@@ -8,57 +10,35 @@ const emit = defineEmits(['close'])
 // 标签页管理
 const activeTab = ref('basic')
 
-// 排序状态管理
-const isSorting = ref(false)
-const isButtonClicked = ref(false)
-const sortingStatus = ref('就绪')
-const comparisonCount = ref(0)
-const swapCount = ref(0)
-const currentStep = ref(0)
-const sortedData = ref([])
-const data = ref([])
-const comparedIndices = ref([])
+// 基数排序专属状态（数据生成器闭包引用，须在脚手架之前声明）
+const maxDataValue = ref(1000) // 基数排序的数据范围上限
+
+// 可视化共享脚手架（列表大小/随机数据/统计状态/生成新列表/重置排序）
+const {
+  listSize, minSize, maxSize,
+  errorMessage, currentStepDetails,
+  data, sortedData,
+  generateNewList, resetSort,
+  isSorting, isButtonClicked, sortingStatus, animationSpeed,
+  comparisonCount, swapCount, currentStep, comparedIndices,
+} = useSortingVisualization({
+  defaultSize: 10, minSize: 5, maxSize: 20,
+  generateRandomData: (size) => Array.from({ length: size }, () => Math.floor(Math.random() * maxDataValue.value)),
+  onReset: () => {
+    selectedIndices.value = []
+    currentDigit.value = 0
+    buckets.value = []
+    maxDigits.value = Math.max(...data.value.map(num => num.toString().length), 0)
+  },
+})
+
+// 基数排序专属状态
 const selectedIndices = ref([])
 const currentDigit = ref(0)
 const buckets = ref([])
 const bucketsHistory = ref([])  // 存储每轮排序的桶状态
 const maxDigits = ref(0)
-const currentStepDetails = ref('')
-const errorMessage = ref('')
 const activeHistoryDigit = ref(-1)  // 当前查看的历史位数
-
-// 动画控制
-const animationSpeed = ref(500)
-const listSize = ref(10)
-const minSize = ref(5)
-const maxSize = ref(20)
-const maxDataValue = ref(1000) // 基数排序的数据范围上限
-
-// 生成新列表
-const generateNewList = () => {
-  try {
-    isSorting.value = false
-    const newData = Array.from({ length: listSize.value }, () => Math.floor(Math.random() * maxDataValue.value))
-    data.value = [...newData]
-    sortedData.value = [...newData]
-    // 计算最大位数
-    maxDigits.value = Math.max(...data.value.map(num => num.toString().length))
-    comparisonCount.value = 0
-    swapCount.value = 0
-    currentStep.value = 0
-    comparedIndices.value = []
-    selectedIndices.value = []
-    currentDigit.value = 0
-    buckets.value = []
-    sortingStatus.value = '就绪'
-    currentStepDetails.value = ''
-
-  } catch (error) {
-    console.error('[ERROR] 生成新列表失败:', error)
-    errorMessage.value = `生成新列表失败: ${error.message}`
-    setTimeout(() => { errorMessage.value = '' }, 3000)
-  }
-}
 
 // 获取指定位数的数字
 const getDigit = (num, digit) => {
@@ -196,64 +176,7 @@ const testSort = () => {
   }
 }
 
-// 重置排序 - 打乱数组
-const resetSort = () => {
-  try {
-    isSorting.value = false
-
-    // 检查data.value是否存在且是数组
-    if (!data || typeof data.value === 'undefined' || !Array.isArray(data.value)) {
-      throw new Error('数据对象未正确初始化或不是数组');
-    }
-
-    // 使用Fisher-Yates洗牌算法打乱数组
-    const shuffled = [...data.value]
-
-    // 检查shuffled是否是有效数组
-    if (!Array.isArray(shuffled)) {
-      throw new Error('无法创建数据副本');
-    }
-
-
-
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      let j = Math.floor(Math.random() * (i + 1))
-
-      // 检查索引是否有效
-      if (j < 0 || j >= shuffled.length) {
-        throw new Error(`无效的随机索引: ${j}，数组长度: ${shuffled.length}`);
-      }
-
-
-
-      // 安全地交换元素
-      const temp = shuffled[i];
-      shuffled[i] = shuffled[j];
-      shuffled[j] = temp;
-    }
-
-    // 检查sortedData是否存在
-    if (!sortedData || typeof sortedData.value === 'undefined') {
-      throw new Error('排序数据对象未正确初始化');
-    }
-
-    sortedData.value = shuffled
-    comparisonCount.value = 0
-    swapCount.value = 0
-    currentStep.value = 0
-    comparedIndices.value = []
-    selectedIndices.value = []
-    currentDigit.value = 0
-    buckets.value = []
-    sortingStatus.value = '就绪'
-    currentStepDetails.value = ''
-
-  } catch (error) {
-    console.error('[ERROR] 重置排序失败:', error)
-    errorMessage.value = `重置排序失败: ${error.message}`
-    setTimeout(() => { errorMessage.value = '' }, 3000)
-  }
-}
+// 重置排序由 useSortingVisualization 提供（Fisher-Yates 打乱 + 公共统计清零）
 
 // 关闭详情
 const closeDetail = () => {
@@ -285,28 +208,7 @@ onMounted(() => {
         <div class="markdown-content" style="text-align: left;">
           <p>基数排序是一种非比较排序算法，它通过按位排序来对数字进行排序。基数排序通常从最低有效位（个位）开始，依次对每一位进行排序。</p>
 
-          <div class="complexity-analysis">
-            <h3>复杂度分析</h3>
-            <div class="complexity-item merged-complexity">
-              <div class="complexity-row">
-                <p class="complexity-title" style="text-align: left;">时间复杂度</p>
-                <ul class="complexity-subitems" style="text-align: left;">
-                  <li><span>最坏情况:</span> O(nk)</li>
-                  <li><span>最好情况:</span> O(nk)</li>
-                  <li><span>平均情况:</span> O(nk)</li>
-                </ul>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">空间复杂度:</span> O(n + k)</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">稳定性:</span> 稳定</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">难度:</span> 中等</p>
-              </div>
-            </div>
-          </div>
+          <AlgorithmComplexity algorithm-id="radix-sort" />
 
           <div class="code-examples">
             <h3>伪代码</h3>

@@ -8,6 +8,7 @@
 
 <script setup>
 import { ref, nextTick, watch, onMounted } from 'vue'
+import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 
 // 定义emits
 const emit = defineEmits(['close'])
@@ -428,25 +429,7 @@ onMounted(() => {
         <div class="markdown-content" style="text-align: left;">
           <p>克鲁斯卡尔算法(Kruskal)是一种用于寻找加权无向图的最小生成树的算法。它的核心思想是将图中所有边按权重从小到大排序，然后依次添加边到最小生成树中，同时确保不会形成环。</p>
 
-          <div class="complexity-analysis">
-            <h3>复杂度分析</h3>
-            <div class="complexity-item merged-complexity">
-              <div class="complexity-row">
-                <p class="complexity-title" style="text-align: left;">时间复杂度</p>
-                <ul class="complexity-subitems" style="text-align: left;">
-                  <li><span>最坏情况:</span> O(E log E)</li>
-                  <li><span>最好情况:</span> O(E log E)</li>
-                  <li><span>平均情况:</span> O(E log E)</li>
-                </ul>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">空间复杂度:</span> O(V + E)</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">难度:</span> 中等</p>
-              </div>
-            </div>
-          </div>
+          <AlgorithmComplexity algorithm-id="kruskal" />
 
           <div class="code-examples">
             <h3>伪代码</h3>

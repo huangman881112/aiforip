@@ -1,47 +1,32 @@
 <script setup>
-import { ref, defineEmits, nextTick, watch } from 'vue'
+import { ref } from 'vue'
+import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
+import { useSearchingVisualization } from '../../../composables/useSearchingVisualization.js'
 
 // 定义emits
 const emit = defineEmits(['close'])
 
-// 列表大小控制
-const listSize = ref(7)
-const minSize = ref(3)
-const maxSize = ref(20)
-
-// 目标值控制
-const targetValue = ref(35)
-const minTarget = ref(1)
-const maxTarget = ref(100)
-
-// 确保listSize始终是数字类型
-watch(listSize, (newValue) => {
-  if (typeof newValue !== 'number' || isNaN(newValue)) {
-    console.warn('[WARNING] 列表大小不是有效数字，已重置为默认值');
-    listSize.value = 7;
-  } else {
-    // 确保值在有效范围内
-    listSize.value = Math.max(minSize.value, Math.min(maxSize.value, Math.round(newValue)));
-  }
+// 可视化共享脚手架（列表大小/目标值/随机数据/统计状态/生成新列表/重置搜索）
+const {
+  listSize, minSize, maxSize,
+  targetValue, minTarget, maxTarget,
+  errorMessage, searchSteps, currentStepDetails,
+  data, searchData,
+  generateNewList, resetSearch,
+  isSearching, isButtonClicked, searchStatus, animationSpeed,
+  comparisonCount, currentStep, foundIndex,
+} = useSearchingVisualization({
+  generateRandomData: (size) => {
+    const result = Array.from({ length: size }, () => Math.floor(Math.random() * 100) + 1)
+    result.sort((a, b) => a - b)
+    return result
+  },
+  onReset: () => {
+    currentLeft.value = 0
+    currentRight.value = searchData.value.length - 1
+    currentMid.value = Math.floor((currentLeft.value + currentRight.value) / 2)
+  },
 })
-
-// 确保targetValue始终是数字类型
-watch(targetValue, (newValue) => {
-  if (typeof newValue !== 'number' || isNaN(newValue)) {
-    console.warn('[WARNING] 目标值不是有效数字，已重置为默认值');
-    targetValue.value = 35;
-  } else {
-    // 确保值在有效范围内
-    targetValue.value = Math.max(minTarget.value, Math.min(maxTarget.value, Math.round(newValue)));
-  }
-})
-
-// 错误信息
-const errorMessage = ref('')
-
-// 搜索步骤记录
-const searchSteps = ref([])
-const currentStepDetails = ref('')
 
 // 关闭详情
 const closeDetail = () => {
@@ -51,97 +36,10 @@ const closeDetail = () => {
 // 控制标签页切换
 const activeTab = ref('basic')
 
-// 生成随机数据函数
-const generateRandomData = (size) => {
-  try {
-    console.log('生成随机数据 - 开始，size:', size);
-    if (typeof size !== 'number' || size < 1) {
-      throw new Error('无效的数组大小: ' + size);
-    }
-    const result = Array.from({ length: size }, () => Math.floor(Math.random() * 100) + 1);
-    // 二分查找需要数组有序，所以这里排序
-    result.sort((a, b) => a - b);
-    console.log('生成随机数据 - 完成，结果:', result);
-    return result;
-  } catch (error) {
-    console.error('生成随机数据失败:', error.message);
-    throw error; // 重新抛出错误以便上层处理
-  }
-}
-
-// 模拟搜索数据
-const data = ref(generateRandomData(listSize.value))
-const searchData = ref([...data.value])
+// 二分查找专属状态
 const left = ref(0)
 const right = ref(searchData.value.length - 1)
 const mid = ref(0)
-
-// 生成新列表
-const generateNewList = async () => {
-  try {
-    errorMessage.value = ''; // 清除之前的错误
-    console.log('[DEBUG] 生成新列表按钮被点击');
-    
-    // 强制转换listSize为数字
-    const size = Number(listSize.value);
-    console.log('[DEBUG] 当前listSize:', size, '类型:', typeof size);
-    
-    // 验证listSize
-    if (typeof size !== 'number' || isNaN(size)) {
-      const err = new Error('列表大小必须是数字类型');
-      console.error('[ERROR]', err);
-      throw err;
-    }
-    const clampedSize = Math.max(minSize.value, Math.min(maxSize.value, Math.round(size)));
-    if (clampedSize !== size) {
-      console.warn(`[WARNING] 列表大小${size}超出范围，已调整为${clampedSize}`);
-      listSize.value = clampedSize;
-    }
-    
-    // 生成新数据
-    console.log('[DEBUG] 开始生成随机数据');
-    const newData = generateRandomData(listSize.value);
-    console.log('[DEBUG] 生成的新数据:', newData);
-    
-    // 检查data是否存在
-    if (!data || typeof data.value === 'undefined') {
-      const err = new Error('数据对象未正确初始化');
-      console.error('[ERROR]', err);
-      throw err;
-    }
-    
-    // 更新数据
-    data.value = newData;
-    console.log('[DEBUG] 数据已更新:', data.value);
-    
-    // 等待DOM更新后再重置搜索
-    console.log('[DEBUG] 等待DOM更新');
-    await nextTick();
-    console.log('[DEBUG] 重置搜索');
-    try {
-      resetSearch();
-      console.log('[DEBUG] 重置搜索完成');
-    } catch (resetError) {
-      console.error('[ERROR] 重置搜索失败:', resetError);
-      throw new Error(`重置搜索时出错: ${resetError.message}`);
-    }
-    console.log('[DEBUG] 生成新列表 - 完成');
-  } catch (error) {
-    console.error('[ERROR] 生成新列表失败:', error);
-    console.error('[ERROR] 错误堆栈:', error.stack);
-    errorMessage.value = `生成新列表失败: ${error.message}`;
-    currentStepDetails.value = errorMessage.value;
-    // 强制显示错误信息
-    alert(errorMessage.value);
-  }
-}
-const isSearching = ref(false)
-const isButtonClicked = ref(false)
-const searchStatus = ref('就绪')
-const animationSpeed = ref(500)
-const comparisonCount = ref(0)
-const currentStep = ref(0)
-const foundIndex = ref(-1)
 const currentLeft = ref(-1)
 const currentRight = ref(-1)
 const currentMid = ref(-1)
@@ -284,31 +182,7 @@ const testSearch = async () => {
   }
 }
 
-// 重置搜索
-const resetSearch = () => {
-  try {
-    isSearching.value = false
-    
-    // 重置搜索状态
-    searchStatus.value = '就绪'
-    comparisonCount.value = 0
-    currentStep.value = 0
-    foundIndex.value = -1
-    searchSteps.value = []
-    currentStepDetails.value = ''
-    currentLeft.value = 0
-    currentRight.value = searchData.value.length - 1
-    currentMid.value = Math.floor((currentLeft.value + currentRight.value) / 2)
-    
-    // 重新复制原始数据
-    searchData.value = [...data.value]
-    console.log('[DEBUG] 重置搜索 - 数据已重置:', searchData.value)
-  } catch (error) {
-    console.error('[ERROR] 重置搜索失败:', error)
-    console.error('[ERROR] 错误堆栈:', error.stack)
-    throw error
-  }
-}
+// 重置搜索由 useSearchingVisualization 提供（公共状态清零 + 重新复制原始数据）
 </script>
 
 <style scoped>
@@ -333,25 +207,7 @@ const resetSearch = () => {
         <div class="markdown-content" style="text-align: left;">
           <p>二分查找是一种高效的搜索算法，它通过反复将搜索区间划分为两半来查找目标值。它要求数组必须是有序的。</p>
 
-          <div class="complexity-analysis">
-            <h3>复杂度分析</h3>
-            <div class="complexity-item merged-complexity">
-              <div class="complexity-row">
-                <p class="complexity-title" style="text-align: left;">时间复杂度</p>
-                <ul class="complexity-subitems" style="text-align: left;">
-                  <li><span>最坏情况:</span> O(log n)</li>
-                  <li><span>最好情况:</span> O(1)</li>
-                  <li><span>平均情况:</span> O(log n)</li>
-                </ul>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">空间复杂度:</span> O(1)</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">难度:</span> 中等</p>
-              </div>
-            </div>
-          </div>
+          <AlgorithmComplexity algorithm-id="binary-search" />
 
           <div class="code-examples">
             <h3>伪代码</h3>

@@ -36,27 +36,7 @@
           </ol>
         </div>
 
-        <div class="complexity-analysis">
-          <h3>复杂度分析</h3>
-          <div class="complexity-item merged-complexity">
-            <div class="complexity-row">
-              <p class="complexity-title" style="text-align: left;">时间复杂度</p>
-              <ul class="complexity-subitems" style="text-align: left;">
-                <li><span>一般实现:</span> O(E log V)</li>
-                <li><span>使用斐波那契堆:</span> O(E + V log V)</li>
-              </ul>
-            </div>
-            <div class="complexity-row">
-              <p><span class="complexity-title">空间复杂度:</span> O(V + E)</p>
-            </div>
-            <div class="complexity-row">
-              <p><span class="complexity-title">难度:</span> 中等</p>
-            </div>
-            <div class="complexity-row">
-              <p><strong>V:</strong> 顶点数量, <strong>E:</strong> 边的数量</p>
-            </div>
-          </div>
-        </div>
+        <AlgorithmComplexity algorithm-id="prim" />
 
       
           <div class="code-examples">
@@ -390,6 +370,7 @@ mst.forEach(edge => {
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 
 // 标签页状态
 const activeTab = ref('basic');

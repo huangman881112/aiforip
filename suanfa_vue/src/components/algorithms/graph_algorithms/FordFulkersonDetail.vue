@@ -29,6 +29,7 @@
 
 <script setup>
 import { ref, nextTick, watch, onMounted } from 'vue'
+import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 
 // 定义emits
 const emit = defineEmits(['close'])
@@ -556,24 +557,7 @@ onMounted(() => {
         <div class="markdown-content" style="text-align: left;">
           <p>福特-富尔克森算法(Ford-Fulkerson)是一种用于计算网络最大流的贪心算法。它的核心思想是通过反复寻找从源点到汇点的增广路径，并沿着这些路径增加流量，直到无法找到更多增广路径为止。</p>
 
-          <div class="complexity-analysis">
-            <h3>复杂度分析</h3>
-            <div class="complexity-item merged-complexity">
-              <div class="complexity-row">
-                <p class="complexity-title" style="text-align: left;">时间复杂度</p>
-                <ul class="complexity-subitems" style="text-align: left;">
-                  <li><span>最坏情况:</span> O(F * E)，其中F是最大流值，E是边数</li>
-                  <li><span>使用Edmonds-Karp算法变种:</span> O(V * E²)，其中V是顶点数</li>
-                </ul>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">空间复杂度:</span> O(V + E)</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">难度:</span> 中等</p>
-              </div>
-            </div>
-          </div>
+          <AlgorithmComplexity algorithm-id="ford-fulkerson" />
 
           <div class="code-examples">
             <h3>伪代码</h3>

@@ -1,5 +1,14 @@
 <script setup>
 // Home组件逻辑
+import { getAlgorithmById } from '../../data/algorithms'
+
+// 特色内容：复杂度对比表（数据驱动，从单一数据源取）
+const complexityCompareRows = [
+  'bubble-sort',
+  'quick-sort',
+  'merge-sort',
+  'binary-search',
+].map((id) => getAlgorithmById(id)).filter(Boolean)
 </script>
 
 <template>
@@ -62,25 +71,10 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>冒泡排序</td>
-                  <td>O(n²)</td>
-                  <td>O(1)</td>
-                </tr>
-                <tr>
-                  <td>快速排序</td>
-                  <td>O(n log n)</td>
-                  <td>O(log n)</td>
-                </tr>
-                <tr>
-                  <td>归并排序</td>
-                  <td>O(n log n)</td>
-                  <td>O(n)</td>
-                </tr>
-                <tr>
-                  <td>二分查找</td>
-                  <td>O(log n)</td>
-                  <td>O(1)</td>
+                <tr v-for="algorithm in complexityCompareRows" :key="algorithm.id">
+                  <td>{{ algorithm.name }}</td>
+                  <td>{{ algorithm.complexity }}</td>
+                  <td>{{ algorithm.complexityDetails.space }}</td>
                 </tr>
               </tbody>
             </table>

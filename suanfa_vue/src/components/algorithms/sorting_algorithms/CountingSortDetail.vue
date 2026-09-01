@@ -1,62 +1,46 @@
 <script setup>
 // 计数排序详情组件
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
+import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
+import { useSortingVisualization } from '../../../composables/useSortingVisualization.js'
 
 const emit = defineEmits(['close'])
+
+// 计数排序专属状态（数据生成器闭包引用，须在脚手架之前声明）
+const maxDataValue = ref(20) // 计数排序的数据范围上限
 
 // 标签页管理
 const activeTab = ref('basic')
 
-// 排序状态管理
-const isSorting = ref(false)
-const isButtonClicked = ref(false)
-const sortingStatus = ref('就绪')
-const comparisonCount = ref(0)
-const swapCount = ref(0)
-const currentStep = ref(0)
-const sortedData = ref([])
-const data = ref([])
-const comparedIndices = ref([])
-const selectedIndices = ref([])
-const minIndex = ref(-1)
-const sortingSteps = ref([])
-const currentStepDetails = ref('')
-const errorMessage = ref('')
-const counts = ref([])
-const maxValue = ref(0)
-
-// 动画控制
-const animationSpeed = ref(500)
-const listSize = ref(10)
-const minSize = ref(5)
-const maxSize = ref(20)
-const maxDataValue = ref(20) // 计数排序的数据范围上限
-
-// 生成新列表
-const generateNewList = () => {
-  try {
-    isSorting.value = false
-    const newData = Array.from({ length: listSize.value }, () => Math.floor(Math.random() * maxDataValue.value) + 1)
-    data.value = [...newData]
-    sortedData.value = [...newData]
-    maxValue.value = Math.max(...newData)
-    comparisonCount.value = 0
-    swapCount.value = 0
-    currentStep.value = 0
-    comparedIndices.value = []
+// 可视化共享脚手架（列表大小/随机数据/统计状态/生成新列表/重置排序）
+const {
+  listSize, minSize, maxSize,
+  errorMessage, sortingSteps, currentStepDetails,
+  data, sortedData,
+  generateNewList, resetSort,
+  isSorting, isButtonClicked, sortingStatus, animationSpeed,
+  comparisonCount, swapCount, currentStep, comparedIndices,
+} = useSortingVisualization({
+  defaultSize: 10, minSize: 5, maxSize: 20,
+  generateRandomData: (size) => Array.from({ length: size }, () => Math.floor(Math.random() * maxDataValue.value) + 1),
+  onReset: () => {
     selectedIndices.value = []
     minIndex.value = -1
     counts.value = []
-    sortingStatus.value = '就绪'
-    sortingSteps.value = []
-    currentStepDetails.value = ''
+    maxValue.value = Math.max(...data.value)
+  },
+})
 
-  } catch (error) {
-    console.error('[ERROR] 生成新列表失败:', error)
-    errorMessage.value = `生成新列表失败: ${error.message}`
-    setTimeout(() => { errorMessage.value = '' }, 3000)
-  }
-}
+// 计数排序专属状态
+const selectedIndices = ref([])
+const minIndex = ref(-1)
+const counts = ref([])
+const maxValue = ref(0)
+
+// 初始化
+onMounted(() => {
+  generateNewList()
+})
 
 // 计数排序实现
 const countingSort = async () => {
@@ -183,65 +167,7 @@ const testSort = () => {
   }
 }
 
-// 重置排序 - 打乱数组
-const resetSort = () => {
-  try {
-    isSorting.value = false
-
-    // 检查data.value是否存在且是数组
-    if (!data || typeof data.value === 'undefined' || !Array.isArray(data.value)) {
-      throw new Error('数据对象未正确初始化或不是数组');
-    }
-
-    // 使用Fisher-Yates洗牌算法打乱数组
-    const shuffled = [...data.value]
-
-    // 检查shuffled是否是有效数组
-    if (!Array.isArray(shuffled)) {
-      throw new Error('无法创建数据副本');
-    }
-
-
-
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      let j = Math.floor(Math.random() * (i + 1))
-
-      // 检查索引是否有效
-      if (j < 0 || j >= shuffled.length) {
-        throw new Error(`无效的随机索引: ${j}，数组长度: ${shuffled.length}`);
-      }
-
-
-
-      // 安全地交换元素
-      const temp = shuffled[i];
-      shuffled[i] = shuffled[j];
-      shuffled[j] = temp;
-    }
-
-    // 检查sortedData是否存在
-    if (!sortedData || typeof sortedData.value === 'undefined') {
-      throw new Error('排序数据对象未正确初始化');
-    }
-
-    sortedData.value = shuffled
-    comparisonCount.value = 0
-    swapCount.value = 0
-    currentStep.value = 0
-    comparedIndices.value = []
-    selectedIndices.value = []
-    minIndex.value = -1
-    counts.value = []
-    sortingStatus.value = '就绪'
-    sortingSteps.value = []
-    currentStepDetails.value = ''
-
-  } catch (error) {
-    console.error('[ERROR] 重置排序失败:', error)
-    errorMessage.value = `重置排序失败: ${error.message}`
-    setTimeout(() => { errorMessage.value = '' }, 3000)
-  }
-}
+// 重置排序由 useSortingVisualization 提供（Fisher-Yates 打乱 + 公共统计清零）
 
 // 关闭详情
 const closeDetail = () => {
@@ -273,28 +199,7 @@ onMounted(() => {
         <div class="markdown-content" style="text-align: left;">
           <p>计数排序是一种非比较排序算法，它通过计算每个元素出现的次数来进行排序。</p>
 
-          <div class="complexity-analysis">
-            <h3>复杂度分析</h3>
-            <div class="complexity-item merged-complexity">
-              <div class="complexity-row">
-                <p class="complexity-title" style="text-align: left;">时间复杂度</p>
-                <ul class="complexity-subitems" style="text-align: left;">
-                  <li><span>最坏情况:</span> O(n + k)</li>
-                  <li><span>最好情况:</span> O(n + k)</li>
-                  <li><span>平均情况:</span> O(n + k)</li>
-                </ul>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">空间复杂度:</span> O(n + k)</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">稳定性:</span> 稳定</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">难度:</span> 中等</p>
-              </div>
-            </div>
-          </div>
+          <AlgorithmComplexity algorithm-id="counting-sort" />
 
           <div class="code-examples">
             <h3>伪代码</h3>
@@ -466,7 +371,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-@import '../../common/button-styles.css';
 @import './common-sort-styles.css';
 
 /* 计数排序特有样式 */

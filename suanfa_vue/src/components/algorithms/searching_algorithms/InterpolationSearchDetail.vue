@@ -1,34 +1,49 @@
 <script setup>
-import { ref, nextTick, computed, watchEffect } from 'vue'
+import { ref, computed } from 'vue'
+import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
+import { useSearchingVisualization } from '../../../composables/useSearchingVisualization.js'
 
 // 定义emits
 const emit = defineEmits(['close'])
 
+// 可视化共享脚手架（列表大小/目标值/随机数据/统计状态/生成新列表/重置搜索）
+const {
+  listSize, minSize, maxSize,
+  targetValue, minTarget, maxTarget,
+  searchSteps, comparisonCount, currentStep,
+  searchData,
+  generateNewList: sharedGenerateNewList,
+  resetSearch,
+  isSearching, isButtonClicked, searchStatus, animationSpeed,
+  foundIndex,
+} = useSearchingVisualization({
+  defaultSize: 10,
+  defaultTarget: 13,
+  // 插值查找需要递增有序数据
+  generateRandomData: (size) => {
+    const result = []
+    let current = Math.floor(Math.random() * 10)
+    result.push(current)
+    for (let i = 1; i < size; i++) {
+      current += Math.floor(Math.random() * 5) + 1
+      result.push(current)
+    }
+    return result
+  },
+  // 重置搜索时清除算法专属状态（动画标记）
+  onReset: () => {
+    isAnimating.value = false
+  },
+})
+
+// 插值查找专属状态
+const isAnimating = ref(false)
+
 // 控制标签页切换
 const activeTab = ref('basic')
 
-// 算法参数
-const arraySize = ref(10)
-const array = ref([1, 3, 5, 7, 9, 11, 13, 15, 17, 19])
-const target = ref(13)
-const result = ref(-1)
-const isSearching = ref(false)
-const isButtonClicked = ref(false)
-const steps = ref([])
-const currentStep = ref(0)
-const animationSpeed = ref(1000)
-const isAnimating = ref(false)
-const searchStatus = ref('就绪')
-const comparisonCount = ref(0)
-const buttonStates = ref({
-  generate: false,
-  search: false,
-  test: false,
-  reset: false
-})
-
-// 生成随机有序数组
-const generateRandomArray = async () => {
+// 生成新列表：复用共享脚手架（数据生成/校验/重置搜索），并将目标值设为数组中的随机元素
+const generateNewList = async () => {
   try {
     if (isSearching.value || isAnimating.value) {
       console.warn('[WARNING] 正在搜索或动画中，无法生成新数组')
@@ -37,56 +52,23 @@ const generateRandomArray = async () => {
 
     // 更新按钮状态
     isButtonClicked.value = true
+
+    await sharedGenerateNewList()
+
+    // 更新目标值为数组中的一个随机元素
+    if (searchData.value.length > 0) {
+      targetValue.value = searchData.value[Math.floor(Math.random() * searchData.value.length)]
+    }
+
     setTimeout(() => {
       isButtonClicked.value = false
     }, 200)
-
-    console.log('[DEBUG] 生成随机数组')
-    const length = parseInt(arraySize.value) || 10
-    const newArray = []
-    let current = Math.floor(Math.random() * 10)
-    newArray.push(current)
-    for (let i = 1; i < length; i++) {
-      current += Math.floor(Math.random() * 5) + 1
-      newArray.push(current)
-    }
-    array.value = newArray
-    console.log('[DEBUG] 生成的随机数组:', newArray)
-
-    // 更新目标值为数组中的一个随机元素
-    if (newArray.length > 0) {
-      target.value = newArray[Math.floor(Math.random() * newArray.length)]
-    }
-
-    // 等待DOM更新后再重置搜索
-    await nextTick()
-    resetSearch()
   } catch (error) {
     console.error('[ERROR] 生成随机数组失败:', error)
   }
 }
 
-// 重置搜索
-const resetSearch = () => {
-  try {
-    // 更新按钮状态
-    isButtonClicked.value = true
-    setTimeout(() => {
-      isButtonClicked.value = false
-    }, 200)
-
-    isSearching.value = false
-    isAnimating.value = false
-    result.value = -1
-    steps.value = []
-    currentStep.value = 0
-    comparisonCount.value = 0
-    searchStatus.value = '就绪'
-    console.log('[DEBUG] 搜索已重置')
-  } catch (error) {
-    console.error('[ERROR] 重置搜索失败:', error)
-  }
-}
+// 重置搜索由 useSearchingVisualization 提供（公共状态清零 + 通过 onReset 清除动画标记）
 
 // 插值查找算法
 const interpolationSearch = async () => {
@@ -94,10 +76,7 @@ const interpolationSearch = async () => {
   if (isSearching.value || isAnimating.value) return
   isButtonClicked.value = true;
   isSearching.value = true;
-  // 更新按钮状态
-  isButtonClicked.value = true
   setTimeout(() => {
-    buttonStates.value = false
     isButtonClicked.value = false;
   }, 200)
 
@@ -106,14 +85,14 @@ const interpolationSearch = async () => {
   searchStatus.value = '查找中...'
   comparisonCount.value = 0
 
-  const arr = [...array.value].sort((a, b) => a - b) // 确保数组有序
-  const tar = target.value
+  const arr = [...searchData.value].sort((a, b) => a - b) // 确保数组有序
+  const tar = targetValue.value
   let left = 0
   let right = arr.length - 1
-  let foundIndex = -1
+  let foundIdx = -1
 
   console.log('查找开始前的数组:', arr);
-  steps.value.push({ step: 0, type: 'info', details: `查找开始，初始数组: [${arr.join(', ')}]，目标值: ${tar}` })
+  searchSteps.value.push({ step: 0, type: 'info', details: `查找开始，初始数组: [${arr.join(', ')}]，目标值: ${tar}` })
 
   // 记录每一步的状态
   while (left <= right && tar >= arr[left] && tar <= arr[right]) {
@@ -124,17 +103,17 @@ const interpolationSearch = async () => {
     if (arr[left] === arr[right]) {
       const stepDetails = `第 ${currentStep.value} 步: 左边界 ${left} 和右边界 ${right} 的值相等 (${arr[left]})`
       console.log(stepDetails);
-      steps.value.push({ step: currentStep.value, type: 'check', details: stepDetails, left, right })
+      searchSteps.value.push({ step: currentStep.value, type: 'check', details: stepDetails, left, right })
 
       if (arr[left] === tar) {
-        foundIndex = left
+        foundIdx = left
         const foundDetails = `第 ${currentStep.value} 步: 在索引 ${left} 找到目标值 ${tar}`
         console.log(foundDetails);
-        steps.value.push({ step: currentStep.value, type: 'found', details: foundDetails, pos: left, left, right })
+        searchSteps.value.push({ step: currentStep.value, type: 'found', details: foundDetails, pos: left, left, right })
       } else {
         const notFoundDetails = `第 ${currentStep.value} 步: 索引 ${left} (值: ${arr[left]}) 不是目标值 ${tar}`
         console.log(notFoundDetails);
-        steps.value.push({ step: currentStep.value, type: 'notFound', details: notFoundDetails, pos: left, left, right })
+        searchSteps.value.push({ step: currentStep.value, type: 'notFound', details: notFoundDetails, pos: left, left, right })
       }
       break
     }
@@ -143,40 +122,40 @@ const interpolationSearch = async () => {
     const pos = left + Math.floor(((tar - arr[left]) * (right - left)) / (arr[right] - arr[left]))
     const stepDetails = `第 ${currentStep.value} 步: 计算插值位置 = ${left} + (((${tar} - ${arr[left]}) * (${right} - ${left})) / (${arr[right]} - ${arr[left]})) = ${pos}`
     console.log(stepDetails);
-    steps.value.push({ step: currentStep.value, type: 'check', details: stepDetails, left, right })
+    searchSteps.value.push({ step: currentStep.value, type: 'check', details: stepDetails, left, right })
 
     if (arr[pos] === tar) {
-      foundIndex = pos
+      foundIdx = pos
       const foundDetails = `第 ${currentStep.value} 步: 在索引 ${pos} 找到目标值 ${tar}`
       console.log(foundDetails);
-      steps.value.push({ step: currentStep.value, type: 'found', details: foundDetails, pos, left, right })
+      searchSteps.value.push({ step: currentStep.value, type: 'found', details: foundDetails, pos, left, right })
       break
     } else if (arr[pos] < tar) {
       const tooSmallDetails = `第 ${currentStep.value} 步: 索引 ${pos} (值: ${arr[pos]}) 小于目标值 ${tar}，向右查找`
       console.log(tooSmallDetails);
-      steps.value.push({ step: currentStep.value, type: 'tooSmall', details: tooSmallDetails, pos, left, right })
+      searchSteps.value.push({ step: currentStep.value, type: 'tooSmall', details: tooSmallDetails, pos, left, right })
       left = pos + 1
     } else {
       const tooBigDetails = `第 ${currentStep.value} 步: 索引 ${pos} (值: ${arr[pos]}) 大于目标值 ${tar}，向左查找`
       console.log(tooBigDetails);
-      steps.value.push({ step: currentStep.value, type: 'tooBig', details: tooBigDetails, pos, left, right })
+      searchSteps.value.push({ step: currentStep.value, type: 'tooBig', details: tooBigDetails, pos, left, right })
       right = pos - 1
     }
   }
 
-  result.value = foundIndex
+  foundIndex.value = foundIdx
   isSearching.value = false
-  if (foundIndex !== -1) {
+  if (foundIdx !== -1) {
     searchStatus.value = '查找完成'
-    steps.value.push({ step: currentStep.value + 1, type: 'finish', details: `查找完成，在索引 ${foundIndex} 找到目标值 ${tar}` })
+    searchSteps.value.push({ step: currentStep.value + 1, type: 'finish', details: `查找完成，在索引 ${foundIdx} 找到目标值 ${tar}` })
   } else {
     searchStatus.value = '未找到目标'
-    steps.value.push({ step: currentStep.value + 1, type: 'finish', details: `查找完成，未找到目标值 ${tar}` })
+    searchSteps.value.push({ step: currentStep.value + 1, type: 'finish', details: `查找完成，未找到目标值 ${tar}` })
   }
   animateSteps()
 }
 
-// 测试搜索函数
+// 测试搜索函数：生成包含目标值的新数组后立即搜索
 const testSearch = async () => {
   try {
     if (isSearching.value || isAnimating.value) {
@@ -184,31 +163,7 @@ const testSearch = async () => {
       return
     }
 
-    // 更新按钮状态
-    isButtonClicked.value = true
-    setTimeout(() => {
-      isButtonClicked.value = false
-    }, 200)
-
-    // 生成一个包含目标值的数组
-    const length = parseInt(arraySize.value) || 10
-    const newArray = []
-    let current = Math.floor(Math.random() * 10)
-    newArray.push(current)
-    for (let i = 1; i < length; i++) {
-      current += Math.floor(Math.random() * 5) + 1
-      newArray.push(current)
-    }
-    array.value = newArray
-
-    // 确保目标值存在于数组中
-    const randomIndex = Math.floor(Math.random() * newArray.length)
-    target.value = newArray[randomIndex]
-
-    console.log(`[DEBUG] 测试搜索: 目标值 ${target.value} 存在于数组索引 ${randomIndex}`)
-
-    // 等待DOM更新后再开始搜索
-    await nextTick()
+    await generateNewList()
     interpolationSearch()
   } catch (error) {
     console.error('[ERROR] 测试搜索失败:', error)
@@ -217,19 +172,19 @@ const testSearch = async () => {
 
 // 动画展示步骤
 const animateSteps = () => {
-  if (steps.value.length === 0) return
+  if (searchSteps.value.length === 0) return
 
   isAnimating.value = true
   currentStep.value = 0
 
   const animateNextStep = () => {
-    if (currentStep.value >= steps.value.length) {
+    if (currentStep.value >= searchSteps.value.length) {
       isAnimating.value = false
       return
     }
 
     currentStep.value++
-    console.log(`[动画] 执行步骤 ${currentStep.value}: ${steps.value[currentStep.value - 1].details}`)
+    console.log(`[动画] 执行步骤 ${currentStep.value}: ${searchSteps.value[currentStep.value - 1].details}`)
 
     setTimeout(animateNextStep, animationSpeed.value)
   }
@@ -244,18 +199,11 @@ const closeDetail = () => {
 
 // 计算当前动画步骤的信息
 const currentStepInfo = computed(() => {
-  if (currentStep.value === 0 || currentStep.value > steps.value.length) {
+  if (currentStep.value === 0 || currentStep.value > searchSteps.value.length) {
     return null
   }
-  const step = steps.value[currentStep.value - 1]
-  console.log('[DEBUG] 当前步骤信息:', step)
+  const step = searchSteps.value[currentStep.value - 1]
   return step
-})
-
-// 添加数组调试信息
-watchEffect(() => {
-  console.log('[DEBUG] 数组更新:', array.value)
-  console.log('[DEBUG] 数组长度:', array.value.length)
 })
 </script>
 
@@ -277,28 +225,7 @@ watchEffect(() => {
         <div class="markdown-content" style="text-align: left;">
           <p>插值查找是二分查找的改进版本，它根据目标值与数组边界值的关系，估计目标值可能的位置，从而加速查找过程。对于均匀分布的数据集，插值查找通常比二分查找更快。</p>
 
-          <div class="complexity-analysis">
-            <h3>复杂度分析</h3>
-            <div class="complexity-item merged-complexity">
-              <div class="complexity-row">
-                <p class="complexity-title" style="text-align: left;">时间复杂度</p>
-                <ul class="complexity-subitems" style="text-align: left;">
-                  <li><span>最佳情况:</span> O(1)</li>
-                  <li><span>平均情况:</span> O(log log n) - 对于均匀分布的数据</li>
-                  <li><span>最坏情况:</span> O(n) - 对于非均匀分布的数据</li>
-                </ul>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">空间复杂度:</span> O(1)</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">稳定性:</span> 不稳定</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">难度:</span> 中等</p>
-              </div>
-            </div>
-          </div>
+          <AlgorithmComplexity algorithm-id="interpolation-search" />
 
           <div class="code-examples">
             <h3>伪代码</h3>
@@ -394,20 +321,20 @@ watchEffect(() => {
           </div>
           <div class="stat-item">
             <span class="stat-label">找到索引:</span>
-            <span class="stat-value">{{ result !== -1 ? result : '未找到' }}</span>
+            <span class="stat-value">{{ foundIndex !== -1 ? foundIndex : '未找到' }}</span>
           </div>
         </div>
        
           <div class="slider-controls">
             <div class="slider-group">
-              <label>列表大小: {{ arraySize }}</label>
-              <input type="text" :min="3" :max="20" v-model.number="arraySize" :disabled="isSearching || isAnimating" @input="arraySize = Number($event.target.value)" class="short-input">
-              <span class="range-info">(3-20)</span>
+              <label>列表大小: {{ listSize }}</label>
+              <input type="text" :min="minSize" :max="maxSize" v-model.number="listSize" :disabled="isSearching || isAnimating" @input="listSize = Number($event.target.value)" class="short-input">
+              <span class="range-info">({{ minSize }}-{{ maxSize }})</span>
             </div>
             <div class="slider-group">
-              <label>目标值: {{ target }}</label>
-              <input type="text" :min="1" :max="100" v-model.number="target" :disabled="isSearching || isAnimating" @input="target = Number($event.target.value)" class="short-input">
-              <span class="range-info">(1-100)</span>
+              <label>目标值: {{ targetValue }}</label>
+              <input type="text" :min="minTarget" :max="maxTarget" v-model.number="targetValue" :disabled="isSearching || isAnimating" @input="targetValue = Number($event.target.value)" class="short-input">
+              <span class="range-info">({{ minTarget }}-{{ maxTarget }})</span>
             </div>
             <div class="slider-group">
               <label>动画速度:</label>
@@ -421,7 +348,7 @@ watchEffect(() => {
           </div>
           <div class="visualization-container">
             <div class="array-container"> 
-              <div v-for="(item, index) in array" :key="index" class="array-element" :class="{
+              <div v-for="(item, index) in searchData" :key="index" class="array-element" :class="{
                 'checking': currentStepInfo && index === currentStepInfo.pos,
                 'found': currentStepInfo && index === currentStepInfo.pos && currentStepInfo.type === 'found',
                 'not-found': currentStepInfo && index === currentStepInfo.pos && ['notFound', 'tooSmall', 'tooBig'].includes(currentStepInfo.type),
@@ -434,22 +361,22 @@ watchEffect(() => {
 
       
            <div class="button-group">
-            <button @click="generateRandomArray" :disabled="isSearching" :class="{ 'clicked': isButtonClicked }">生成新列表</button>
+            <button @click="generateNewList" :disabled="isSearching" :class="{ 'clicked': isButtonClicked }">生成新列表</button>
             <button @click="interpolationSearch" :disabled="isSearching" :class="{ 'clicked': isButtonClicked }">开始搜索</button>
             <button @click="testSearch" :disabled="isSearching" :class="{ 'clicked': isButtonClicked }">测试搜索</button>
-            <button @click="resetSearch" :disabled="!isSearching && steps.length === 0" :class="{ 'clicked': isButtonClicked }">重置搜索</button>
+            <button @click="resetSearch" :disabled="!isSearching && searchSteps.length === 0" :class="{ 'clicked': isButtonClicked }">重置搜索</button>
            </div>
 
 
           <div class="step-details">
             <h4>当前步骤详情</h4>
             {{ currentStep }}
-            <p>{{ currentStep > 0 && steps[currentStep - 1] ? steps[currentStep - 1].details : '准备开始' }}</p>
+            <p>{{ currentStep > 0 && searchSteps[currentStep - 1] ? searchSteps[currentStep - 1].details : '准备开始' }}</p>
           </div>
           <div class="steps-history">
             <h4>搜索步骤历史</h4>
             <div class="steps-container">
-              <div v-for="step in steps" :key="step.step" :class="'step-item ' + step.type">
+              <div v-for="step in searchSteps" :key="step.step" :class="'step-item ' + step.type">
                 <span class="step-number">{{ step.step }}.</span>
                 <span class="step-details">{{ step.details }}</span>
               </div>

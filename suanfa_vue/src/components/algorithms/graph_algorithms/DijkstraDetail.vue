@@ -1,54 +1,10 @@
 <script setup>
-import { ref, nextTick, watch, onMounted } from 'vue'
+import { ref } from 'vue'
+import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
+import { useGraphVisualization } from '../../../composables/useGraphVisualization.js'
 
 // 定义emits
 const emit = defineEmits(['close'])
-
-// 关闭详情
-const closeDetail = () => {
-  emit('close')
-}
-
-// 控制标签页切换
-const activeTab = ref('basic')
-
-// Dijkstra搜索可视化相关状态
-// 图结构控制
-const numNodes = ref(5)
-const minNodes = ref(3)
-const maxNodes = ref(10)
-
-// 错误信息
-const errorMessage = ref('')
-
-// 搜索步骤记录
-const searchSteps = ref([])
-const currentStepDetails = ref('')
-const isSearching = ref(false)
-const isButtonClicked = ref(false)
-const searchStatus = ref('就绪')
-const animationSpeed = ref(500)
-const currentStep = ref(0)
-const visitedNodes = ref([])
-const path = ref([])
-const found = ref(false)
-const distances = ref({})
-const predecessors = ref({})
-
-// 搜索参数
-const startNode = ref('A')
-const targetNode = ref('C')
-
-// 确保numNodes始终是数字类型
-watch(numNodes, (newValue) => {
-  if (typeof newValue !== 'number' || isNaN(newValue)) {
-    console.warn('[WARNING] 节点数量不是有效数字，已重置为默认值');
-    numNodes.value = 5;
-  } else {
-    // 确保值在有效范围内
-    numNodes.value = Math.max(minNodes.value, Math.min(maxNodes.value, Math.round(newValue)));
-  }
-})
 
 // 生成随机有向加权图
 const generateRandomWeightedGraph = (size) => {
@@ -105,101 +61,53 @@ const generateRandomWeightedGraph = (size) => {
   }
 }
 
-// 模拟图数据
-const graph = ref(generateRandomWeightedGraph(numNodes.value))
-const currentGraph = ref({...graph.value})
-const nodesPositions = ref({})
+// 搜索参数（须在脚手架之前声明，generateGraph 闭包会引用）
+const startNode = ref('A')
+const targetNode = ref('C')
 
-// 生成节点位置
-const generateNodesPositions = () => {
-  const positions = {};
-  const nodes = Object.keys(currentGraph.value);
-  // 根据SVG viewBox(800x600)和节点数量动态计算半径
-  const maxWidth = 700; // 留出边距
-  const maxHeight = 500; // 留出边距
-  const diameter = Math.min(maxWidth, maxHeight) * 0.8; // 直径为较小维度的80%
-  const radius = diameter / 2;
-  // 中心点设置为viewBox中心
-  const centerX = 400;
-  const centerY = 300;
-  console.log('生成节点位置 - 开始，nodes:', nodes);
-  nodes.forEach((node, index) => {
-    const angle = (index / nodes.length) * 2 * Math.PI;
-    positions[node] = {
-      x: centerX + radius * Math.cos(angle),
-      y: centerY + radius * Math.sin(angle)
-    };
-  });
-  console.log('生成节点位置 - 完成，positions:', positions);
-
-  return positions;
-}
-
-// 生成新图
-const generateNewGraph = async () => {
-  try {
-    errorMessage.value = ''; // 清除之前的错误
-    console.log('[DEBUG] 生成新图按钮被点击');
-    
-    // 强制转换numNodes为数字
-    const size = Number(numNodes.value);
-    console.log('[DEBUG] 当前numNodes:', size, '类型:', typeof size);
-    
-    // 验证numNodes
-    if (typeof size !== 'number' || isNaN(size)) {
-      const err = new Error('节点数量必须是数字类型');
-      console.error('[ERROR]', err);
-      throw err;
-    }
-    const clampedSize = Math.max(minNodes.value, Math.min(maxNodes.value, Math.round(size)));
-    if (clampedSize !== size) {
-      console.warn(`[WARNING] 节点数量${size}超出范围，已调整为${clampedSize}`);
-      numNodes.value = clampedSize;
-    }
-    
-    // 更新节点选择
-    const nodes = Array.from({ length: clampedSize }, (_, i) => String.fromCharCode(65 + i));
+// 可视化共享脚手架（节点数/图数据/节点位置/统计状态/生成新图/重置搜索）
+const {
+  numNodes, minNodes, maxNodes,
+  errorMessage, searchSteps, currentStepDetails,
+  currentGraph, nodesPositions,
+  generateNewGraph, resetSearch,
+  isSearching, isButtonClicked, searchStatus, animationSpeed, currentStep,
+} = useGraphVisualization({
+  generateGraph: (size) => {
+    const nodes = Array.from({ length: size }, (_, i) => String.fromCharCode(65 + i))
     if (!nodes.includes(startNode.value)) {
-      startNode.value = nodes[0];
+      startNode.value = nodes[0]
     }
     if (!nodes.includes(targetNode.value) || targetNode.value === startNode.value) {
-      targetNode.value = nodes.length > 1 ? nodes[1] : nodes[0];
+      targetNode.value = nodes.length > 1 ? nodes[1] : nodes[0]
     }
-    
-    // 生成新图
-    console.log('[DEBUG] 开始生成随机加权图');
-    const newGraph = generateRandomWeightedGraph(numNodes.value);
-    console.log('[DEBUG] 生成的新图:', newGraph);
-    
-    // 更新图
-    graph.value = newGraph;
-    console.log('[DEBUG] 图已更新:', graph.value);
-    
-    // 等待DOM更新后再重置搜索
-    console.log('[DEBUG] 等待DOM更新');
-    await nextTick();
-    console.log('[DEBUG] 重置搜索');
-    try {
-      resetSearch();
-      // 生成节点位置
-      nodesPositions.value = generateNodesPositions();
-      console.log('[DEBUG] 重置搜索完成');
-    } catch (resetError) {
-      console.error('[ERROR] 重置搜索失败:', resetError);
-      throw new Error(`重置搜索时出错: ${resetError.message}`);
-    }
-    console.log('[DEBUG] 生成新图 - 完成');
-  } catch (error) {
-    console.error('[ERROR] 生成新图失败:', error);
-    console.error('[ERROR] 错误堆栈:', error.stack);
-    errorMessage.value = `生成新图失败: ${error.message}`;
-    currentStepDetails.value = errorMessage.value;
-    // 强制显示错误信息
-    alert(errorMessage.value);
-  }
+    return generateRandomWeightedGraph(size)
+  },
+  onReset: () => {
+    visitedNodes.value = []
+    path.value = []
+    found.value = false
+    distances.value = {}
+    predecessors.value = {}
+  },
+})
+
+// 关闭详情
+const closeDetail = () => {
+  emit('close')
 }
 
-// 生成带箭头的边路径
+// 控制标签页切换
+const activeTab = ref('basic')
+
+// Dijkstra 专属状态
+const visitedNodes = ref([])
+const path = ref([])
+const found = ref(false)
+const distances = ref({})
+const predecessors = ref({})
+
+// 生成带箭头的边路径（含权重位置，Dijkstra 模板专用）
 const getEdgePath = (start, end) => {
   // 起点和终点坐标（节点中心）
   const startX = start.x + 25;
@@ -381,36 +289,7 @@ const isPathEdge = (from, to) => {
   return false;
 }
 
-// 重置搜索
-const resetSearch = () => {
-  try {
-    isSearching.value = false;
-    
-    // 重置搜索状态
-    searchStatus.value = '就绪'
-    currentStep.value = 0
-    visitedNodes.value = []
-    path.value = []
-    found.value = false
-    searchSteps.value = []
-    currentStepDetails.value = ''
-    distances.value = {}
-    predecessors.value = {}
-    
-    // 重新复制原始图
-    currentGraph.value = {...graph.value}
-    console.log('[DEBUG] 重置搜索 - 图已重置:', currentGraph.value)
-  } catch (error) {
-    console.error('[ERROR] 重置搜索失败:', error)
-    console.error('[ERROR] 错误堆栈:', error.stack)
-    throw error
-  }
-}
-
-// 组件挂载时生成节点位置
-onMounted(() => {
-  nodesPositions.value = generateNodesPositions();
-});
+// 重置搜索与 onMounted 布局由 useGraphVisualization 提供
 </script>
 
 <style scoped src="./dfs-styles.css"></style>
@@ -433,24 +312,7 @@ onMounted(() => {
         <div class="markdown-content" style="text-align: left;">
           <p>狄克斯特拉算法(Dijkstra)是一种用于寻找加权图中最短路径的算法。它从起始节点开始，逐步扩展到其他节点，始终保持当前已知的最短路径。</p>
 
-          <div class="complexity-analysis">
-            <h3>复杂度分析</h3>
-            <div class="complexity-item merged-complexity">
-              <div class="complexity-row">
-                <p class="complexity-title" style="text-align: left;">时间复杂度</p>
-                <ul class="complexity-subitems" style="text-align: left;">
-                  <li><span>朴素实现:</span> O(V²)</li>
-                  <li><span>优先队列实现:</span> O((V + E) log V)</li>
-                </ul>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">空间复杂度:</span> O(V)</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">难度:</span> 中等</p>
-              </div>
-            </div>
-          </div>
+          <AlgorithmComplexity algorithm-id="dijkstra" />
 
           <div class="code-examples">
             <h3>伪代码</h3>

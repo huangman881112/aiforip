@@ -1,110 +1,46 @@
 <script setup>
-import { ref, defineEmits, nextTick, computed, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
+import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
+import { useSearchingVisualization } from '../../../composables/useSearchingVisualization.js'
 
 // 定义emits
 const emit = defineEmits(['close'])
 
-// 控制标签页切换
-const activeTab = ref('basic')
-
-// 列表大小控制
-const listSize = ref(7)
-const minSize = ref(3)
-const maxSize = ref(20)
-
-// 目标值控制
-const targetValue = ref(13)
-const minTarget = ref(1)
-const maxTarget = ref(100)
-
-// 确保listSize始终是数字类型
-watch(listSize, (newValue) => {
-  if (typeof newValue !== 'number' || isNaN(newValue)) {
-    console.warn('[WARNING] 列表大小不是有效数字，已重置为默认值');
-    listSize.value = 7;
-  } else {
-    // 确保值在有效范围内
-    listSize.value = Math.max(minSize.value, Math.min(maxSize.value, Math.round(newValue)));
-  }
+// 可视化共享脚手架（列表大小/目标值/随机数据/统计状态/生成新列表/重置搜索）
+const {
+  listSize, minSize, maxSize,
+  targetValue, minTarget, maxTarget,
+  errorMessage, searchSteps, currentStep,
+  data, searchData,
+  generateNewList, resetSearch,
+  isSearching, isButtonClicked, searchStatus, animationSpeed,
+  comparisonCount, currentIndex, foundIndex,
+} = useSearchingVisualization({
+  defaultSize: 7,
+  defaultTarget: 13,
+  // 跳跃搜索需要递增有序数据
+  generateRandomData: (size) => {
+    const result = []
+    let current = Math.floor(Math.random() * 10)
+    result.push(current)
+    for (let i = 1; i < size; i++) {
+      current += Math.floor(Math.random() * 5) + 1
+      result.push(current)
+    }
+    return result
+  },
+  // 重置搜索时清除算法专属状态（动画标记）
+  onReset: () => {
+    isAnimating.value = false
+  },
 })
 
-// 确保targetValue始终是数字类型
-watch(targetValue, (newValue) => {
-  if (typeof newValue !== 'number' || isNaN(newValue)) {
-    console.warn('[WARNING] 目标值不是有效数字，已重置为默认值');
-    targetValue.value = 13;
-  } else {
-    // 确保值在有效范围内
-    targetValue.value = Math.max(minTarget.value, Math.min(maxTarget.value, Math.round(newValue)));
-  }
-})
-
-// 算法参数
-const array = ref([1, 3, 5, 7, 9, 11, 13, 15, 17, 19])
-const searchArray = ref([...array.value])
-const result = ref(-1)
-const isSearching = ref(false)
-const steps = ref([])
-const currentStep = ref(0)
-const animationSpeed = ref(1000)
+// 跳跃搜索专属状态
 const isAnimating = ref(false)
-const searchStatus = ref('就绪')
-const comparisonCount = ref(0)
-const errorMessage = ref('')
-const isButtonClicked = ref(false)
-const currentIndex = ref(-1)
 const isArraySorted = ref(true)
 
-// 生成随机有序数组
-const generateRandomArray = async () => {
-  try {
-    if (isSearching.value || isAnimating.value) {
-      errorMessage.value = '正在搜索或动画中，无法生成新数组'
-      setTimeout(() => errorMessage.value = '', 3000)
-      return
-    }
-
-    console.log('[DEBUG] 生成随机数组')
-    const length = listSize.value
-    const newArray = []
-    let current = Math.floor(Math.random() * 10)
-    newArray.push(current)
-    for (let i = 1; i < length; i++) {
-      current += Math.floor(Math.random() * 5) + 1
-      newArray.push(current)
-    }
-    array.value = newArray
-    searchArray.value = [...array.value]
-    console.log('[DEBUG] 生成的随机数组:', newArray)
-
-    // 等待DOM更新后再重置搜索
-    await nextTick()
-    resetSearch()
-    errorMessage.value = ''
-  } catch (error) {
-    console.error('[ERROR] 生成随机数组失败:', error)
-    errorMessage.value = `生成随机数组失败: ${error.message}`
-  }
-}
-
-// 重置搜索
-const resetSearch = () => {
-  try {
-    isSearching.value = false
-    isAnimating.value = false
-    result.value = -1
-    steps.value = []
-    currentStep.value = 0
-    comparisonCount.value = 0
-    searchStatus.value = '就绪'
-    currentIndex.value = -1
-    searchArray.value = [...array.value]
-    console.log('[DEBUG] 搜索已重置')
-  } catch (error) {
-    console.error('[ERROR] 重置搜索失败:', error)
-    errorMessage.value = `重置搜索失败: ${error.message}`
-  }
-}
+// 控制标签页切换
+const activeTab = ref('basic')
 
 // 跳跃搜索算法
 const jumpSearch = async () => {
@@ -122,21 +58,21 @@ const jumpSearch = async () => {
   comparisonCount.value = 0
   errorMessage.value = ''
 
-  const arr = [...searchArray.value]
+  const arr = [...searchData.value]
   // 确保数组有序
   if (!isArraySorted.value) {
     arr.sort((a, b) => a - b)
-    steps.value.push({ step: 0, type: 'info', details: `数组已自动排序: [${arr.join(', ')}]` })
+    searchSteps.value.push({ step: 0, type: 'info', details: `数组已自动排序: [${arr.join(', ')}]` })
   }
   const tar = targetValue.value
   const n = arr.length
   const step = Math.floor(Math.sqrt(n)) // 跳跃步长
   let prev = 0
-  let foundIndex = -1
+  let foundIdx = -1
   let found = false
 
   console.log('查找开始前的数组:', arr);
-  steps.value.push({ step: 0, type: 'info', details: `查找开始，初始数组: [${arr.join(', ')}]，目标值: ${tar}，跳跃步长: ${step}` })
+  searchSteps.value.push({ step: 0, type: 'info', details: `查找开始，初始数组: [${arr.join(', ')}]，目标值: ${tar}，跳跃步长: ${step}` })
 
   // 记录跳跃步骤
   while (arr[Math.min(prev + step, n) - 1] < tar) {
@@ -145,7 +81,7 @@ const jumpSearch = async () => {
     const curr = Math.min(prev + step, n) - 1
     const stepDetails = `第 ${currentStep.value} 步: 跳跃到位置 ${curr}，值: ${arr[curr]}，小于目标值 ${tar}`
     console.log(stepDetails);
-    steps.value.push({ step: currentStep.value, type: 'jumping', details: stepDetails, prev, curr })
+    searchSteps.value.push({ step: currentStep.value, type: 'jumping', details: stepDetails, prev, curr })
     currentIndex.value = curr
     await new Promise(resolve => setTimeout(resolve, animationSpeed.value))
     prev += step
@@ -160,7 +96,7 @@ const jumpSearch = async () => {
     currentStep.value++
     const stepDetails = `第 ${currentStep.value} 步: 检查位置 ${prev}，值: ${arr[prev]}，小于目标值 ${tar}`
     console.log(stepDetails);
-    steps.value.push({ step: currentStep.value, type: 'checking', details: stepDetails, prev, curr: prev })
+    searchSteps.value.push({ step: currentStep.value, type: 'checking', details: stepDetails, prev, curr: prev })
     currentIndex.value = prev
     await new Promise(resolve => setTimeout(resolve, animationSpeed.value))
     prev++
@@ -175,30 +111,30 @@ const jumpSearch = async () => {
     currentStep.value++
     currentIndex.value = prev
     if (arr[prev] === tar) {
-      foundIndex = prev
+      foundIdx = prev
       found = true
       const foundDetails = `第 ${currentStep.value} 步: 在位置 ${prev} 找到目标值 ${tar}`
       console.log(foundDetails);
-      steps.value.push({ step: currentStep.value, type: 'found', details: foundDetails, prev, curr: prev })
+      searchSteps.value.push({ step: currentStep.value, type: 'found', details: foundDetails, prev, curr: prev })
       await new Promise(resolve => setTimeout(resolve, animationSpeed.value))
     } else {
       const notFoundDetails = `第 ${currentStep.value} 步: 位置 ${prev} 的值 ${arr[prev]} 不是目标值 ${tar}`
       console.log(notFoundDetails);
-      steps.value.push({ step: currentStep.value, type: 'notFound', details: notFoundDetails, prev, curr: prev })
+      searchSteps.value.push({ step: currentStep.value, type: 'notFound', details: notFoundDetails, prev, curr: prev })
       await new Promise(resolve => setTimeout(resolve, animationSpeed.value))
     }
   }
 
-  result.value = foundIndex
+  foundIndex.value = foundIdx
   currentIndex.value = -1
   isSearching.value = false
   isButtonClicked.value = false
-  if (foundIndex !== -1) {
+  if (foundIdx !== -1) {
     searchStatus.value = '查找完成 - 找到目标值'
-    steps.value.push({ step: currentStep.value + 1, type: 'finish', details: `查找完成，在索引 ${foundIndex} 找到目标值 ${tar}` })
+    searchSteps.value.push({ step: currentStep.value + 1, type: 'finish', details: `查找完成，在索引 ${foundIdx} 找到目标值 ${tar}` })
   } else {
     searchStatus.value = '查找完成 - 未找到目标'
-    steps.value.push({ step: currentStep.value + 1, type: 'finish', details: `查找完成，未找到目标值 ${tar}` })
+    searchSteps.value.push({ step: currentStep.value + 1, type: 'finish', details: `查找完成，未找到目标值 ${tar}` })
   }
 }
 
@@ -209,16 +145,16 @@ const closeDetail = () => {
 
 // 计算当前动画步骤的信息
 const currentStepInfo = computed(() => {
-  if (currentStep.value === 0 || currentStep.value > steps.value.length) {
+  if (currentStep.value === 0 || currentStep.value > searchSteps.value.length) {
     return null
   }
-  return steps.value[currentStep.value - 1]
+  return searchSteps.value[currentStep.value - 1]
 })
 
 // 检查数组是否有序
 const checkArraySorted = () => {
-  for (let i = 1; i < array.value.length; i++) {
-    if (array.value[i] < array.value[i - 1]) {
+  for (let i = 1; i < data.value.length; i++) {
+    if (data.value[i] < data.value[i - 1]) {
       return false
     }
   }
@@ -226,7 +162,7 @@ const checkArraySorted = () => {
 }
 
 // 监听数组变化，检查是否有序
-watch(array, () => {
+watch(data, () => {
   isArraySorted.value = checkArraySorted()
 })
 </script>
@@ -249,28 +185,7 @@ watch(array, () => {
         <div class="markdown-content" style="text-align: left;">
           <p>跳跃搜索是一种改进的线性搜索算法，它通过跳过一定数量的元素来加速查找过程。算法首先以固定步长跳跃，直到找到一个大于或等于目标值的元素，然后在该区域内进行线性搜索。</p>
 
-          <div class="complexity-analysis">
-            <h3>复杂度分析</h3>
-            <div class="complexity-item merged-complexity">
-              <div class="complexity-row">
-                <p class="complexity-title" style="text-align: left;">时间复杂度</p>
-                <ul class="complexity-subitems" style="text-align: left;">
-                  <li><span>最佳情况:</span> O(1)</li>
-                  <li><span>平均情况:</span> O(√n) - 优于线性搜索</li>
-                  <li><span>最坏情况:</span> O(√n)</li>
-                </ul>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">空间复杂度:</span> O(1)</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">稳定性:</span> 不稳定</p>
-              </div>
-              <div class="complexity-row">
-                <p><span class="complexity-title">步长选择:</span> 通常选择√n作为步长，这是时间复杂度的最优解</p>
-              </div>
-            </div>
-          </div>
+          <AlgorithmComplexity algorithm-id="jump-search" />
 
           <div class="code-examples">
             <h3>伪代码</h3>
@@ -364,7 +279,7 @@ def jump_search(arr, target):
         <div class="stats-container">
           <div class="stat-item">
             <span class="stat-label">查找状态:</span>
-            <span class="stat-value {{ searchStatus.includes('完成') ? (result !== -1 ? 'success' : 'error') : 'warning' }}">{{ searchStatus }}</span>
+            <span class="stat-value {{ searchStatus.includes('完成') ? (foundIndex !== -1 ? 'success' : 'error') : 'warning' }}">{{ searchStatus }}</span>
           </div>
           <div class="stat-item">
             <span class="stat-label">比较次数:</span>
@@ -376,17 +291,17 @@ def jump_search(arr, target):
           </div>
           <div class="stat-item">
             <span class="stat-label">找到索引:</span>
-            <span class="stat-value {{ result !== -1 ? 'success' : '' }}">{{ result !== -1 ? result : '未找到' }}</span>
+            <span class="stat-value {{ foundIndex !== -1 ? 'success' : '' }}">{{ foundIndex !== -1 ? foundIndex : '未找到' }}</span>
           </div>
         </div>
 
         <div class="visualization-container">
           <div class="array-container">
-            <div v-for="(item, index) in searchArray" :key="index" class="array-element" :class="{
-              'jumping': currentIndex === index && steps[currentStep.value - 1]?.type === 'jumping',
-              'checking': currentIndex === index && steps[currentStep.value - 1]?.type === 'checking',
-              'found': currentIndex === index && steps[currentStep.value - 1]?.type === 'found',
-              'not-found': currentIndex === index && steps[currentStep.value - 1]?.type === 'notFound',
+            <div v-for="(item, index) in searchData" :key="index" class="array-element" :class="{
+              'jumping': currentIndex === index && searchSteps[currentStep.value - 1]?.type === 'jumping',
+              'checking': currentIndex === index && searchSteps[currentStep.value - 1]?.type === 'checking',
+              'found': currentIndex === index && searchSteps[currentStep.value - 1]?.type === 'found',
+              'not-found': currentIndex === index && searchSteps[currentStep.value - 1]?.type === 'notFound',
               'block': currentStepInfo && index >= currentStepInfo.prev && index < currentStepInfo.curr + 1 && currentStepInfo.type !== 'jumping'
             }">
               {{ item }}
@@ -420,7 +335,7 @@ def jump_search(arr, target):
             </div>
 
             <div class="button-group">
-              <button @click="generateRandomArray" :disabled="isSearching" :class="{ 'clicked': isButtonClicked }">生成新列表</button>
+              <button @click="generateNewList" :disabled="isSearching" :class="{ 'clicked': isButtonClicked }">生成新列表</button>
               <button @click="jumpSearch" :disabled="isSearching" :class="{ 'clicked': isButtonClicked }">开始查找</button>
               <button @click="resetSearch" :disabled="isSearching" :class="{ 'clicked': isButtonClicked }">重置查找</button>
             </div>
@@ -432,13 +347,13 @@ def jump_search(arr, target):
 
           <div class="step-details">
             <h4>当前步骤详情</h4>
-            <p>{{ currentStep > 0 && steps[currentStep.value - 1] ? steps[currentStep.value - 1].details : '准备开始' }}</p>
+            <p>{{ currentStep > 0 && searchSteps[currentStep.value - 1] ? searchSteps[currentStep.value - 1].details : '准备开始' }}</p>
           </div>
 
           <div class="steps-history">
             <h4>查找步骤历史</h4>
             <div class="steps-container">
-              <div v-for="step in steps" :key="step.step" :class="['step-item', step.type]">
+              <div v-for="step in searchSteps" :key="step.step" :class="['step-item', step.type]">
                 <span class="step-number">{{ step.step }}.</span>
                 <span class="step-details">{{ step.details }}</span>
               </div>

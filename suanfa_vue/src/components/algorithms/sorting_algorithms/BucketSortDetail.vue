@@ -1,6 +1,9 @@
 <script setup>
 // 桶排序详情组件
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, defineEmits } from 'vue'
+
+// 定义emits
+const emit = defineEmits(['close'])
 
 // 标签页管理
 const activeTab = ref('basic')
@@ -303,7 +306,7 @@ const resetSort = () => {
 // 关闭详情
 const closeDetail = () => {
   // 触发父组件的close事件
-  defineEmits(['close'])()
+  emit('close')
 }
 
 // 初始化

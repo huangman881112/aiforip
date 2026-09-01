@@ -2,6 +2,8 @@
 // 计数排序详情组件
 import { ref, computed, onMounted } from 'vue'
 
+const emit = defineEmits(['close'])
+
 // 标签页管理
 const activeTab = ref('basic')
 
@@ -246,7 +248,7 @@ const resetSort = () => {
 // 关闭详情
 const closeDetail = () => {
   // 触发父组件的close事件
-  defineEmits(['close'])()
+  emit('close')
 }
 
 // 初始化
@@ -476,31 +478,76 @@ onMounted(() => {
 
 /* 覆盖标签页样式以使用新的按钮样式 */
 .tabs button {
-  @extend .tab-btn;
+  padding: 8px 16px;
+  border: none;
+  background-color: #e2e8f0;
+  color: #64748b;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.tabs button:hover {
+  background-color: #cbd5e1;
 }
 
 .tabs button.active {
-  @extend .tab-btn.active;
+  background-color: #3b82f6;
+  color: white;
+  font-weight: 500;
 }
 
 /* 覆盖控件按钮样式 */
 .controls button {
-  @extend .btn;
-  @extend .btn-primary;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: #3b82f6;
+  color: white;
+}
+
+.controls button:hover {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
 }
 
 .controls button.clicked {
-  @extend .btn-primary:active;
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 .controls button:disabled {
-  @extend .btn:disabled;
+  background-color: #94a3b8;
+  color: #f8fafc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* 关闭按钮样式 */
 .close-btn {
-  @extend .btn-secondary;
+  background-color: #e2e8f0;
+  color: #64748b;
   font-size: 24px;
   padding: 4px 10px;
+}
+
+.close-btn:hover {
+  background-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.close-btn:active {
+  transform: translateY(0);
 }
 </style>

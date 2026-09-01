@@ -9,9 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "^5.0.0",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
     "vue": "^3.5.18",
     "vue-router": "^4.5.1",
     "xlsx": "^0.18.5"

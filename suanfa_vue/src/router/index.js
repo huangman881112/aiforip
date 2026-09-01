@@ -5,7 +5,6 @@ const Home = () => import('../components/common/Home.vue')
 const About = () => import('../components/common/About.vue')
 // AlgorithmList 组件已删除，使用 SortingPage 替代
 const SortingPage = () => import('../components/algorithms/sorting_algorithms/SortingPage.vue')
-const ReactTestPage = () => import('../components/common/ReactTestPage.vue')
 const SimpleBubbleSort = () => import('../components/algorithms/sorting_algorithms/SimpleBubbleSort.vue')
 // 导入排序详情页组件
 const InsertionSortDetail = () => import('../components/algorithms/sorting_algorithms/InsertionSortDetail.vue')
@@ -96,11 +95,6 @@ const routes = [
     path: '/task-export',
     name: 'TaskExport',
     component: TaskExportComponent
-  },
-  {
-    path: '/react-test',
-    name: 'ReactTestPage',
-    component: ReactTestPage
   }
 ]
 

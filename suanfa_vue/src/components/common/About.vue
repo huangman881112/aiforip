@@ -19,7 +19,6 @@
       <h3>技术栈</h3>
       <ul>
         <li>Vue 3 - 前端框架</li>
-        <li>React - 组件库</li>
         <li>Vite - 构建工具</li>
         <li>Vue Router - 路由管理</li>
       </ul>

@@ -1,5 +1,4 @@
 <script setup>
-// 不需要导入ReactWrapper，因为我们会通过路由加载
 </script>
 
 <template style="height: 100%; width: 1980px">
@@ -190,8 +189,7 @@
   font-size: 0.9rem;
 }
 
-.vue-section,
-.react-section {
+.vue-section {
   margin-bottom: 20px;
   padding: 15px;
   background-color: white;

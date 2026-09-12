@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: frontend/searching_algorithms
+title: 搜索算法可视化组件集
+scope:
+    - suanfa_vue/src/components/algorithms/searching_algorithms/
+source_files: []
+depends_on: []
+related_to:
+    - path: frontend/greedy_algorithms

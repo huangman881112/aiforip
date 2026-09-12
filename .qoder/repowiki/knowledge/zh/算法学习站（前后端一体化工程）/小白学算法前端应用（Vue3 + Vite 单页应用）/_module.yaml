@@ -1,8 +1,0 @@
-schema_version: 1
-module_path: frontend
-title: 小白学算法前端应用（Vue3 + Vite 单页应用）
-scope:
-    - suanfa_vue/
-source_files: []
-depends_on: []
-related_to: []

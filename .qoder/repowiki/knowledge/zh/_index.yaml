@@ -3,11 +3,11 @@ schema_version: 1
 locale: zh-CN
 branch: main
 nodes_managed: true
-exported_at: "2026-09-11T13:58:41Z"
+exported_at: "2026-09-12T16:48:31Z"
 modules:
     "":
-        dir_name: 算法学习站（前后端一体化工程）
-        title: 算法学习站（前后端一体化工程）
+        dir_name: 小白学算法站点根工程
+        title: 小白学算法站点根工程
         scope:
             - architecture-analysis.md
             - project_plan.md
@@ -31,19 +31,47 @@ modules:
         depends_on: []
         related_to: []
     backend:
-        dir_name: 算法学习平台后端服务（Spring Boot + SQLite + MongoDB）
-        title: 算法学习平台后端服务（Spring Boot + SQLite + MongoDB）
+        dir_name: 算法学习平台后端（Spring Boot 单体）
+        title: 算法学习平台后端（Spring Boot 单体）
         scope:
             - backend/
+        source_files: []
+        children:
+            - backend/email_service
+            - backend/user_admin
+        depends_on: []
+        related_to:
+            - path: frontend/app_shell
+            - path: scripts
+    backend/email_service:
+        dir_name: 邮箱验证码与 SMTP 发信服务
+        title: 邮箱验证码与 SMTP 发信服务
+        scope:
+            - backend/src/main/java/com/suanfa/service/MailService.java
+            - backend/src/main/java/com/suanfa/service/EmailCodeService.java
+            - backend/src/main/java/com/suanfa/config/MailProperties.java
+            - backend/src/main/java/com/suanfa/dto/EmailCodeRequest.java
+            - backend/src/main/java/com/suanfa/dto/ChangePasswordRequest.java
         source_files: []
         children: []
         depends_on: []
         related_to:
             - path: frontend/app_shell
-            - path: scripts
+    backend/user_admin:
+        dir_name: 管理员用户管理模块
+        title: 管理员用户管理模块
+        scope:
+            - backend/src/main/java/com/suanfa/controller/UserAdminController.java
+            - backend/src/main/java/com/suanfa/service/UserAdminService.java
+            - backend/src/main/java/com/suanfa/service/AdminGuard.java
+            - backend/src/main/java/com/suanfa/dto/AdminUserDto.java
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
     frontend:
-        dir_name: 小白学算法前端应用（Vue3 + Vite 单页应用）
-        title: 小白学算法前端应用（Vue3 + Vite 单页应用）
+        dir_name: 小白学算法前端应用（Vue3 单页应用）
+        title: 小白学算法前端应用（Vue3 单页应用）
         scope:
             - suanfa_vue/
         source_files: []
@@ -54,7 +82,8 @@ modules:
             - frontend/searching_algorithms
             - frontend/sorting_algorithms
         depends_on: []
-        related_to: []
+        related_to:
+            - path: scripts
     frontend/app_shell:
         dir_name: 小白学算法前端应用壳（Vue3 + Vite 单页应用）
         title: 小白学算法前端应用壳（Vue3 + Vite 单页应用）
@@ -67,7 +96,7 @@ modules:
         depends_on: []
         related_to:
             - path: backend
-            - path: scripts
+            - path: backend/email_service
     frontend/graph_algorithms:
         dir_name: 图算法可视化组件集
         title: 图算法可视化组件集
@@ -76,7 +105,8 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to: []
+        related_to:
+            - path: frontend/sorting_algorithms
     frontend/greedy_algorithms:
         dir_name: 贪心算法可视化页面
         title: 贪心算法可视化页面
@@ -85,7 +115,8 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to: []
+        related_to:
+            - path: frontend/searching_algorithms
     frontend/searching_algorithms:
         dir_name: 搜索算法可视化组件集
         title: 搜索算法可视化组件集
@@ -94,7 +125,8 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to: []
+        related_to:
+            - path: frontend/greedy_algorithms
     frontend/sorting_algorithms:
         dir_name: 排序算法可视化组件集
         title: 排序算法可视化组件集
@@ -103,7 +135,8 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to: []
+        related_to:
+            - path: frontend/graph_algorithms
     scripts:
         dir_name: 项目辅助脚本集（后端启动_样式迁移_算法内容生成_联调 Mock）
         title: 项目辅助脚本集（后端启动/样式迁移/算法内容生成/联调 Mock）
@@ -114,4 +147,4 @@ modules:
         depends_on: []
         related_to:
             - path: backend
-            - path: frontend/app_shell
+            - path: frontend

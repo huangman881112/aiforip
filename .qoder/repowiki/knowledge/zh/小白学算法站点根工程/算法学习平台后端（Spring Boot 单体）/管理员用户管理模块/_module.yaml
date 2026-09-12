@@ -1,0 +1,11 @@
+schema_version: 1
+module_path: backend/user_admin
+title: 管理员用户管理模块
+scope:
+    - backend/src/main/java/com/suanfa/controller/UserAdminController.java
+    - backend/src/main/java/com/suanfa/service/UserAdminService.java
+    - backend/src/main/java/com/suanfa/service/AdminGuard.java
+    - backend/src/main/java/com/suanfa/dto/AdminUserDto.java
+source_files: []
+depends_on: []
+related_to: []

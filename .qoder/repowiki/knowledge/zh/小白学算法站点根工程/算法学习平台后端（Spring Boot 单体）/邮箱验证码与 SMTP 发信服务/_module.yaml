@@ -1,0 +1,13 @@
+schema_version: 1
+module_path: backend/email_service
+title: 邮箱验证码与 SMTP 发信服务
+scope:
+    - backend/src/main/java/com/suanfa/service/MailService.java
+    - backend/src/main/java/com/suanfa/service/EmailCodeService.java
+    - backend/src/main/java/com/suanfa/config/MailProperties.java
+    - backend/src/main/java/com/suanfa/dto/EmailCodeRequest.java
+    - backend/src/main/java/com/suanfa/dto/ChangePasswordRequest.java
+source_files: []
+depends_on: []
+related_to:
+    - path: frontend/app_shell

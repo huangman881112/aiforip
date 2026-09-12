@@ -19,6 +19,8 @@ CREATE TABLE IF NOT EXISTS users (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     username      TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
+    email         TEXT,                                -- 绑定邮箱（修改密码时用验证码确认；可为空）
+    role          TEXT NOT NULL DEFAULT 'user',         -- admin / user（管理员在「用户管理」界面授予）
     created_at    TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

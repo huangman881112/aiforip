@@ -433,6 +433,20 @@ public class AiChatService {
     }
 
     /**
+     * 模型名（name 或 provider/name，忽略大小写）→ 所属中转站的展示名。
+     *
+     * <p>用于给普通用户屏蔽真实模型名：回传「哪个中转站答的」而不是「哪个模型答的」。
+     * 找不到（模型已从配置里删除等）返回 null，由调用方兜底文案。
+     */
+    public String providerLabelOf(String modelName) {
+        ModelSpec spec = findModel(modelName);
+        if (spec == null || spec.providerLabel() == null || spec.providerLabel().isBlank()) {
+            return null;
+        }
+        return spec.providerLabel();
+    }
+
+    /**
      * 按用户传入的标识（name 或 provider/name，忽略大小写）定位模型；找不到返回 null。
      *
      * @param privileged false 时「仅管理员可选」的模型一律当不存在（防止用户手改 token 越权）

@@ -25,6 +25,24 @@ suanfa:
   cors:
     # 允许的来源（dev 默认 "*" 全开：前端可能以 localhost/127.0.0.1/局域网 IP 访问；生产用环境变量覆盖为显式域名）
     allowed-origins: "*"
+  mail:
+    # 修改密码的邮箱验证码投递。host 留空 = 不接入 SMTP，验证码只写日志（开发模式）。
+    # 生产环境配 QQ/163 邮箱时，password 填「SMTP 授权码」而不是登录密码。
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:465}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    # 发件人，留空则用 username
+    from: ${MAIL_FROM:}
+    # true = 隐式 SSL（465）；false = 明文 + STARTTLS（25/587）
+    ssl: ${MAIL_SSL:true}
+    timeout-seconds: ${MAIL_TIMEOUT_SECONDS:10}
+    # 验证码有效期 / 重发间隔 / 最多校验尝试次数
+    code-ttl-seconds: ${MAIL_CODE_TTL:600}
+    resend-cooldown-seconds: ${MAIL_RESEND_COOLDOWN:60}
+    max-attempts: ${MAIL_MAX_ATTEMPTS:5}
+    # 未配 SMTP 时把验证码随接口响应回传前端（本地开发跑通流程用）；生产请设为 false
+    dev-echo-code: ${MAIL_DEV_ECHO_CODE:true}
   ai:
     # AI 助教：OpenAI 兼容 chat/completions 接口（默认指向局域网 API 中转站，按模型名前缀路由上游）。
     # 未配置 api-key 时接口返回 503，前端降级为「本地答疑模式」。
@@ -42,9 +60,11 @@ suanfa:
     knowledge-enabled: ${AI_KNOWLEDGE:true}
     # 每个用户每分钟最多提问次数（<=0 关闭）
     rate-per-minute: ${AI_RATE_PER_MINUTE:12}
-    # 允许在「AI 助教」页面修改中转站配置（地址/token/模型/测试连接）的用户名白名单，逗号分隔
-    # 白名单内的用户（管理员）才能看到全量模型；普通用户只能选模型上 user-visible=true（默认）的，
-    # 选「自动」时的降级链也只在这些模型里跑；/api/ai/upstream-models（上游真实清单）也仅白名单可调
+    # 管理员用户名**白名单**（逗号分隔）：配置级兜底，与 users.role='admin'（在「用户管理」页面授予）取并集，
+    # 判定收口在 AdminGuard；置空则只认页面角色。
+    # 白名单内的用户（管理员）才能看到全量模型、也才能看到真实模型名；普通用户只能选模型上 user-visible=true（默认）的，
+    # 选「自动」时的降级链也只在这些模型里跑，但 /api/ai/status 与普通用户的回答只回「中转站（供应商）」而不含模型名；
+    # /api/ai/upstream-models（上游真实清单）也仅白名单可调
     # 未登录拿不到任何模型信息：/api/ai/status、/api/ai/models 返回 loginRequired=true 且清单为空
     admin-usernames: ${AI_ADMIN_USERNAMES:admin}
 

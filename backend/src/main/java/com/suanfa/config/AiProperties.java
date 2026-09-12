@@ -50,8 +50,10 @@ public class AiProperties {
     private boolean knowledgeEnabled = true;
     private int ratePerMinute = 12;
     /**
-     * 允许在页面上修改中转站配置 / 测试连接的用户名（逗号分隔）。
-     * 本站没有角色体系，先用白名单用户名做门禁；生产环境可通过 AI_ADMIN_USERNAMES 收紧。
+     * 管理员用户名白名单（逗号分隔）：允许在页面上改中转站配置 / 测试连接，以及进入「用户管理」。
+     *
+     * <p>这是配置级兜底；常规方式已改为 {@code users.role = 'admin'}（由管理员在「用户管理」里授予），
+     * 两重身份任一命中即为管理员，判定收口在 {@code AdminGuard}。置空则只认页面角色。
      */
     private String adminUsernames = "admin";
 

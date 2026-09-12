@@ -130,6 +130,56 @@ export async function fetchCurrentUser() {
   return request('/auth/me')
 }
 
+/**
+ * 发送「修改密码」邮箱验证码（需登录）。
+ * 返回 { sent, mailConfigured, maskedEmail, expiresInSeconds, cooldownSeconds, devCode? }
+ * ——devCode 仅在后端未配置 SMTP 时出现（本地开发用）。
+ */
+export async function sendEmailCode(email) {
+  return request('/auth/email-code', { method: 'POST', body: JSON.stringify({ email }) })
+}
+
+/** 修改密码（需登录 + 邮箱验证码），成功返回最新用户信息（含新绑定邮箱）。 */
+export async function changePassword({ email, code, oldPassword, newPassword }) {
+  return request('/auth/password', {
+    method: 'PUT',
+    body: JSON.stringify({ email, code, oldPassword, newPassword }),
+  })
+}
+
+// ============================================================
+// 用户管理（仅管理员；非管理员调后端会拿 401/403）
+// ============================================================
+
+/**
+ * 用户列表。返回 { total, users: [{id, username, email, role, admin, whitelisted, createdAt,
+ * progressCount, noteCount, commentCount, trainingCount}] }。
+ */
+export async function fetchAdminUsers(keyword) {
+  const q = keyword ? `?keyword=${encodeURIComponent(keyword)}` : ''
+  return request(`/admin/users${q}`)
+}
+
+/** 新建用户：{ username, password, email?, role? } */
+export async function adminCreateUser(payload) {
+  return request('/admin/users', { method: 'POST', body: JSON.stringify(payload) })
+}
+
+/** 编辑用户：{ username?, email?, role? }（email 传空串 = 解绑） */
+export async function adminUpdateUser(id, payload) {
+  return request(`/admin/users/${id}`, { method: 'PUT', body: JSON.stringify(payload) })
+}
+
+/** 管理员重置密码（不需要原密码 / 邮箱验证码）。 */
+export async function adminResetUserPassword(id, password) {
+  return request(`/admin/users/${id}/password`, { method: 'PUT', body: JSON.stringify({ password }) })
+}
+
+/** 删除用户（连带清掉它的进度 / 笔记 / 评论 / 刷题记录）。 */
+export async function adminDeleteUser(id) {
+  return request(`/admin/users/${id}`, { method: 'DELETE' })
+}
+
 // ============================================================
 // 学习进度
 // ============================================================

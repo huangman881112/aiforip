@@ -38,9 +38,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *   <li>POST /api/ai/chat           一次性返回（离线/不支持流式的客户端用）</li>
  *   <li>POST /api/ai/chat/stream    SSE 流式返回：meta → delta* → done | error</li>
  *   <li>GET  /api/ai/status         是否可用 + 模型清单，前端据此决定降级策略，
- *       并在顶栏徽章上展示「当前中转站配置的默认模型」（{@code defaultModel}）。
- *       对话页已无模型下拉：清单只用来确定默认模型及其预算/熔断详情。
- *       清单按身份裁剪：未登录不下发、普通用户只看到管理员开放的、管理员看全量</li>
+ *       并在顶栏徽章上展示当前服务（{@code defaultModel} / {@code modelDetails}）。
+ *       清单按身份裁剪：未登录不下发、普通用户只拿到管理员开放且可用的、管理员看全量。
+ *       <b>且只有管理员能看到真实模型名</b>：普通用户拿到的清单（{@code models} /
+ *       {@code modelDetails} / {@code defaultModel} / {@code providers[].models}）只保留「中转站（供应商）」，
+ *       真实模型名、预算与备注一律屏蔽；聊天回传的 {@code model} 也换成中转站名</li>
  *   <li>GET  /api/ai/models         仅模型清单（聊天页已不用，留给排障脚本）</li>
  *   <li>GET  /api/ai/upstream-models 拉取各中转站真实可用模型（仅管理员，配置排障用）</li>
  *   <li>中转站本身的增删改与测试（仅管理员）见 {@link AiSettingsController}：/api/ai/settings*</li>
@@ -53,6 +55,10 @@ public class AiController {
     private static final Logger log = LoggerFactory.getLogger(AiController.class);
     private static final int MAX_MESSAGES = 30;
     private static final long EMITTER_TIMEOUT_MS = 5 * 60 * 1000L;
+    /** 普通用户视角下的模型标识前缀：只暴露中转站（供应商），不暴露真实模型名。 */
+    private static final String PROVIDER_TOKEN_PREFIX = "provider:";
+    /** 连中转站展示名都拿不到时的兜底文案。 */
+    private static final String GENERIC_PROVIDER_LABEL = "AI 服务";
 
     private final AiChatService aiChatService;
     private final AiRateLimiter rateLimiter;
@@ -85,7 +91,7 @@ public class AiController {
         boolean privileged = aiSettingsService.canManage(currentUserId);
         boolean guest = currentUserId == null;
         // 未登录不下发模型清单（连「配了哪些上游、还剩几个」都不给），前端据此显示「登录后可选」
-        List<AiModelInfo> models = guest ? List.of() : modelInfos(privileged);
+        List<AiModelInfo> models = guest ? List.of() : visibleModels(privileged);
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("configured", aiChatService.isConfigured(privileged));
         body.put("loginRequired", guest);
@@ -98,14 +104,14 @@ public class AiController {
         body.put("modelDetails", models);
         body.put("defaultModel", models.stream().filter(AiModelInfo::available)
                 .findFirst().map(AiModelInfo::token).orElse(null));
-        body.put("providers", providerInfos(models));
+        body.put("providers", providerInfos(models, privileged));
         body.put("ratePerMinute", rateLimiter.limit());
         // 管理员才看得到「中转站配置」入口（写入接口在 AiSettingsController 里同样会校验）
         body.put("canManage", privileged);
         return body;
     }
 
-    /** 模型清单：未登录为空；普通用户只拿到管理员开放且可用的那些；管理员拿到全量（含不可用项）。 */
+    /** 模型清单：未登录为空；普通用户只拿到开放且可用的那些（只见供应商、不见模型名）；管理员拿全量。 */
     @GetMapping("/models")
     public Map<String, Object> models(@CurrentUserId Long currentUserId) {
         boolean privileged = aiSettingsService.canManage(currentUserId);
@@ -113,7 +119,7 @@ public class AiController {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("configured", aiChatService.isConfigured(privileged));
         body.put("loginRequired", guest);
-        body.put("models", guest ? List.of() : modelInfos(privileged));
+        body.put("models", guest ? List.of() : visibleModels(privileged));
         return body;
     }
 
@@ -140,6 +146,67 @@ public class AiController {
     }
 
     // ------------------------------------------------------------ 模型清单
+
+    /**
+     * 下发给当前调用者的模型清单：管理员看真实模型，普通用户只看供应商。
+     *
+     * <p>「哪些模型在跑、预算多少、上游还剩几个」属于管理员的运维视图；普通用户只需要知道
+     * 「AI 助教由哪个中转站提供服务」，所以这里按中转站聚合（同站只留一项、也不暴露「一个站挂了几个模型」），
+     * 把模型名/展示名/预算/熔断信息换成中转站名，token 也用 {@code provider:<id>} 形式，
+     * 保证前端拿 defaultModel 仍能匹配到列表项。
+     */
+    private List<AiModelInfo> visibleModels(boolean privileged) {
+        List<AiModelInfo> list = modelInfos(privileged);
+        if (privileged) {
+            return list;
+        }
+        Map<String, List<AiModelInfo>> byProvider = new LinkedHashMap<>();
+        for (AiModelInfo m : list) {
+            byProvider.computeIfAbsent(m.provider(), k -> new ArrayList<>()).add(m);
+        }
+        return byProvider.values().stream().map(this::maskForPublic).toList();
+    }
+
+    /**
+     * 屏蔽同一中转站的一组模型项：只保留供应商信息。
+     *
+     * <p>常见误配：管理员把中转站展示名填成了模型名（或不填而回落成模型名，如 {@code qwen3.5:9b}），
+     * 那样「只露供应商」等于把模型名照旧露出去，所以这种名字也一并换成兜底文案。
+     */
+    private AiModelInfo maskForPublic(List<AiModelInfo> group) {
+        AiModelInfo first = group.get(0);
+        String label = first.providerLabel() == null ? "" : first.providerLabel().trim();
+        boolean leaksModelName = group.stream()
+                .anyMatch(m -> m.name() != null && !label.isEmpty() && m.name().equalsIgnoreCase(label));
+        String provider = label.isEmpty() || leaksModelName ? GENERIC_PROVIDER_LABEL : label;
+        return new AiModelInfo(PROVIDER_TOKEN_PREFIX + first.provider(), provider, provider,
+                first.provider(), provider, first.primary(), null, null, null, null,
+                group.stream().anyMatch(AiModelInfo::available), null, null, 0, true);
+    }
+
+    /**
+     * 普通用户拿到的是屏蔽后的标识（{@code provider:<id>}），不是真实模型名：
+     * 还原成 null（= 让服务端自动选默认模型），避免前端把脱敏 token 回传时被判成「越权选模型」。
+     */
+    private String resolveModelToken(String token, boolean privileged) {
+        if (privileged || token == null || !token.startsWith(PROVIDER_TOKEN_PREFIX)) {
+            return token;
+        }
+        return null;
+    }
+
+    /** 回答里回传给用户的模型标识：管理员看真实模型名，普通用户只看中转站名。 */
+    private String visibleModel(String model, boolean privileged) {
+        if (privileged || model == null || model.isBlank()) {
+            return model;
+        }
+        String label = aiChatService.providerLabelOf(model);
+        // 中转站展示名被配成了模型名：连供应商也不露，退回兜底文案
+        if (label == null || label.isBlank() || label.equalsIgnoreCase(model.trim())) {
+            return GENERIC_PROVIDER_LABEL;
+        }
+        return label;
+    }
 
     /**
      * 当前调用者可选的模型。
@@ -179,19 +246,24 @@ public class AiController {
         return list;
     }
 
-    private List<Map<String, Object>> providerInfos(List<AiModelInfo> models) {
+    /**
+     * 中转站聚合视图。普通用户看不到「某个供应商下挂了哪些模型」，models 一律为空数组（保持字段形状不变）。
+     */
+    private List<Map<String, Object>> providerInfos(List<AiModelInfo> models, boolean privileged) {
         Map<String, Map<String, Object>> byProvider = new LinkedHashMap<>();
         for (AiModelInfo m : models) {
-            Map<String, Object> p = byProvider.computeIfAbsent(m.provider(), k -> {
-                Map<String, Object> one = new LinkedHashMap<>();
-                one.put("id", m.provider());
-                one.put("label", m.providerLabel());
-                one.put("models", new ArrayList<String>());
-                return one;
+            Map<String, Object> one = byProvider.computeIfAbsent(m.provider(), k -> {
+                Map<String, Object> p = new LinkedHashMap<>();
+                p.put("id", m.provider());
+                p.put("label", m.providerLabel());
+                p.put("models", new ArrayList<String>());
+                return p;
             });
-            @SuppressWarnings("unchecked")
-            List<String> names = (List<String>) p.get("models");
-            names.add(m.name());
+            if (privileged) {
+                @SuppressWarnings("unchecked")
+                List<String> names = (List<String>) one.get("models");
+                names.add(m.name());
+            }
         }
         return new ArrayList<>(byProvider.values());
     }
@@ -199,13 +271,14 @@ public class AiController {
     @PostMapping("/chat")
     public ResponseEntity<?> chat(@RequestBody ChatRequest req, @CurrentUserId Long currentUserId) {
         boolean privileged = aiSettingsService.canManage(currentUserId);
-        ResponseEntity<?> guard = guard(req, currentUserId, privileged);
+        String model = resolveModelToken(req.model(), privileged);
+        ResponseEntity<?> guard = guard(req, model, currentUserId, privileged);
         if (guard != null) {
             return guard;
         }
         try {
-            AiChatService.Outcome out = aiChatService.chat(req.messages(), req.model(), privileged);
-            return ResponseEntity.ok(toResponse(out));
+            AiChatService.Outcome out = aiChatService.chat(req.messages(), model, privileged);
+            return ResponseEntity.ok(toResponse(out, privileged));
         } catch (IllegalArgumentException e) {
             rateLimiter.refund(currentUserId);
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
@@ -233,7 +306,8 @@ public class AiController {
         emitter.onError(e -> cancelled.set(true));
 
         boolean privileged = aiSettingsService.canManage(currentUserId);
-        ResponseEntity<?> guard = guard(req, currentUserId, privileged);
+        String model = resolveModelToken(req.model(), privileged);
+        ResponseEntity<?> guard = guard(req, model, currentUserId, privileged);
         if (guard != null) {
             // 先把 HTTP 状态码回给客户端（401/503/429），前端据此选择「降级本地答疑」而不是报错误
             response.setStatus(guard.getStatusCode().value());
@@ -244,7 +318,7 @@ public class AiController {
 
         try {
             streamPool.execute(
-                    () -> runStream(req.messages(), req.model(), privileged, emitter, cancelled, currentUserId));
+                    () -> runStream(req.messages(), model, privileged, emitter, cancelled, currentUserId));
         } catch (RejectedExecutionException e) {
             rateLimiter.refund(currentUserId);
             sendQuiet(emitter, "error", new ErrorResponse("AI 并发请求过多，请稍后再试"));
@@ -285,7 +359,9 @@ public class AiController {
 
                 @Override
                 public void onDone(String fullText, String model) {
-                    sendQuiet(emitter, "done", Map.of("model", String.valueOf(model)));
+                    // 普通用户只看到「哪个中转站答的」，真实模型名仅管理员可见
+                    sendQuiet(emitter, "done",
+                            Map.of("model", String.valueOf(visibleModel(model, privileged))));
                 }
             });
             emitter.complete();
@@ -319,8 +395,9 @@ public class AiController {
      *
      * @param privileged 当前用户是否管理员（能看到并使用全量模型）；模型权限放在限流前，
      *                   避免“越权请求”白扣用户额度
+     * @param model      已经 {@link #resolveModelToken} 归一化的模型标识（可为 null = 自动选择）
      */
-    private ResponseEntity<?> guard(ChatRequest req, Long currentUserId, boolean privileged) {
+    private ResponseEntity<?> guard(ChatRequest req, String model, Long currentUserId, boolean privileged) {
         if (currentUserId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ErrorResponse("登录后才能使用 AI 助教"));
@@ -334,7 +411,6 @@ public class AiController {
         if (req.messages() == null || req.messages().isEmpty() || req.messages().size() > MAX_MESSAGES) {
             return ResponseEntity.badRequest().body(new ErrorResponse("messages 不能为空且不超过 " + MAX_MESSAGES + " 条"));
         }
-        String model = req.model();
         if (model != null && !model.isBlank() && aiChatService.findModel(model, privileged) == null) {
             return ResponseEntity.badRequest().body(new ErrorResponse(privileged
                     ? "未知模型：" + model + "（请刷新模型列表或改用自动选择）"
@@ -347,8 +423,8 @@ public class AiController {
         return null;
     }
 
-    private ChatResponse toResponse(AiChatService.Outcome out) {
-        return new ChatResponse(out.reply(), out.model(), toRefs(out.refs()));
+    private ChatResponse toResponse(AiChatService.Outcome out, boolean privileged) {
+        return new ChatResponse(out.reply(), visibleModel(out.model(), privileged), toRefs(out.refs()));
     }
 
     private static List<ChatRef> toRefs(List<AiKnowledgeService.Ref> refs) {

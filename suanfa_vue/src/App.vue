@@ -16,10 +16,17 @@ const algorithmMenu = [
 const algoMenuOpen = ref(false)
 const algoMenuItemRef = ref(null)
 
+// 用户（个人中心）子菜单：登录后点开可看到「修改密码」等入口
+const userMenuOpen = ref(false)
+const userMenuItemRef = ref(null)
+
 // 当前是否处于算法相关页面（用于一级菜单高亮）
 const isAlgorithmSection = computed(() =>
   algorithmMenu.some((item) => isActive(item.to))
 )
+
+// 当前是否处于个人中心相关页面（/account、/admin 都算管理员/个人中心子菜单高亮）
+const isAccountSection = computed(() => isActive('/account') || isActive('/admin'))
 
 function isActive(path) {
   return route.path === path || route.path.startsWith(path + '/')
@@ -27,21 +34,36 @@ function isActive(path) {
 
 function toggleAlgoMenu() {
   algoMenuOpen.value = !algoMenuOpen.value
+  userMenuOpen.value = false
 }
 
 function closeAlgoMenu() {
   algoMenuOpen.value = false
 }
 
+function toggleUserMenu() {
+  userMenuOpen.value = !userMenuOpen.value
+  algoMenuOpen.value = false
+}
+
+function closeUserMenu() {
+  userMenuOpen.value = false
+}
+
 function onDocumentClick(e) {
-  if (!algoMenuOpen.value) return
-  if (algoMenuItemRef.value && !algoMenuItemRef.value.contains(e.target)) {
+  if (algoMenuOpen.value && algoMenuItemRef.value && !algoMenuItemRef.value.contains(e.target)) {
     closeAlgoMenu()
+  }
+  if (userMenuOpen.value && userMenuItemRef.value && !userMenuItemRef.value.contains(e.target)) {
+    closeUserMenu()
   }
 }
 
 function onKeydown(e) {
-  if (e.key === 'Escape') closeAlgoMenu()
+  if (e.key === 'Escape') {
+    closeAlgoMenu()
+    closeUserMenu()
+  }
 }
 
 onMounted(() => {
@@ -56,7 +78,10 @@ onBeforeUnmount(() => {
 })
 
 // 路由切换后关闭下拉
-watch(() => route.fullPath, closeAlgoMenu)
+watch(() => route.fullPath, () => {
+  closeAlgoMenu()
+  closeUserMenu()
+})
 </script>
 
 <template>
@@ -93,7 +118,43 @@ watch(() => route.fullPath, closeAlgoMenu)
             <li><router-link to="/progress" active-class="active-link">我的进度</router-link></li>
             <li class="nav-auth">
               <template v-if="userStore.isLoggedIn">
-                <span class="nav-user">{{ userStore.user.username }}</span>
+                <div class="nav-dropdown nav-user-wrap" ref="userMenuItemRef">
+                  <a
+                    href="#"
+                    class="nav-dropbtn nav-user-btn"
+                    :class="{ 'active-link': isAccountSection }"
+                    :aria-expanded="userMenuOpen ? 'true' : 'false'"
+                    aria-haspopup="true"
+                    @click.prevent="toggleUserMenu"
+                  >
+                    <span class="nav-user-name">{{ userStore.user.username }}</span>
+                    <span v-if="userStore.isAdmin" class="nav-user-tag">管理员</span>
+                    <span class="caret" :class="{ open: userMenuOpen }">▾</span>
+                  </a>
+                  <ul class="dropdown-menu nav-user-menu" v-show="userMenuOpen">
+                    <li>
+                      <router-link
+                        to="/account/password"
+                        :class="{ 'active-link': isActive('/account/password') }"
+                        @click="closeUserMenu"
+                      >修改密码</router-link>
+                    </li>
+                    <template v-if="userStore.isAdmin">
+                      <li class="menu-divider" role="separator"></li>
+                      <li class="menu-group">管理员</li>
+                      <li>
+                        <router-link
+                          to="/admin/users"
+                          :class="{ 'active-link': isActive('/admin') }"
+                          @click="closeUserMenu"
+                        >用户管理</router-link>
+                      </li>
+                      <li>
+                        <router-link to="/ai" @click="closeUserMenu">AI 中转站配置</router-link>
+                      </li>
+                    </template>
+                  </ul>
+                </div>
                 <a href="#" class="nav-logout" @click.prevent="userStore.logout()">退出</a>
               </template>
               <router-link v-else to="/login" class="nav-login" active-class="active-link">登录</router-link>
@@ -368,10 +429,51 @@ watch(() => route.fullPath, closeAlgoMenu)
   background-color: var(--nav-menu-indicator);
 }
 
-.nav-user {
-  color: var(--nav-text-muted);
+/* 个人中心下拉（登录后顶部的用户名） */
+.nav-user-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.app-nav .nav-user-btn {
   font-size: 0.9rem;
-  padding: 8px 0;
+  color: var(--nav-text-muted);
+  max-width: 180px;
+}
+
+.nav-user-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-user-tag {
+  font-size: 0.7rem;
+  line-height: 1;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background-color: var(--nav-active-bg);
+  color: var(--nav-active-text);
+}
+
+/* 靠右边栏对齐，避免菜单超出视口 */
+.app-nav ul.dropdown-menu.nav-user-menu {
+  left: auto;
+  right: 0;
+  min-width: 168px;
+}
+
+.app-nav ul.dropdown-menu .menu-divider {
+  height: 1px;
+  margin: 4px 6px;
+  background-color: var(--nav-menu-border);
+}
+
+.app-nav ul.dropdown-menu .menu-group {
+  padding: 6px 18px 2px;
+  font-size: 0.72rem;
+  letter-spacing: 0.5px;
+  color: var(--nav-text-muted);
 }
 
 .nav-logout {

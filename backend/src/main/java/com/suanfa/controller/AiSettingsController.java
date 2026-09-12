@@ -19,7 +19,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * AI 中转站配置接口（仅管理员，白名单见 {@code suanfa.ai.admin-usernames}）。
+ * AI 中转站配置接口（仅管理员；身份判定收口在 {@link com.suanfa.service.AdminGuard}：
+ * {@code users.role='admin'} 或 {@code suanfa.ai.admin-usernames} 白名单，前者由「用户管理」页面授予）。
  *
  * <ul>
  *   <li>GET  /api/ai/settings        当前配置（页面配置 + 出厂配置 + 生效模型，token 脱敏）</li>
@@ -110,7 +111,7 @@ public class AiSettingsController {
 
     // ------------------------------------------------------------ 内部工具
 
-    /** 未登录 401；登录但非管理员 403（前端据此隐藏配置入口）。 */
+    /** 未登录 401；登录但非管理员 403（前端据此隐藏配置入口，路由守卫同样拦一层）。 */
     private ResponseEntity<?> requireAdmin(Long userId) {
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

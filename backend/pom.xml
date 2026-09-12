@@ -51,6 +51,12 @@
       <artifactId>spring-security-crypto</artifactId>
     </dependency>
 
+    <!-- 邮件（修改密码时的邮箱验证码）；未配 SMTP 时由 MailService 自行降级为「仅日志」模式 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-mail</artifactId>
+    </dependency>
+
     <!-- JWT -->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>

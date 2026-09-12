@@ -50,7 +50,7 @@ public class AiSettingsService {
     private final AppSettingsRepository settings;
     private final AiChatService aiChatService;
     private final AiProperties props;
-    private final AuthService authService;
+    private final AdminGuard adminGuard;
     private final ObjectMapper mapper;
 
     /** 页面已保存的配置（含真实 token），仅在 load/save/reset 时整体替换。 */
@@ -58,11 +58,11 @@ public class AiSettingsService {
     private volatile String updatedAt;
 
     public AiSettingsService(AppSettingsRepository settings, AiChatService aiChatService, AiProperties props,
-                            AuthService authService, ObjectMapper mapper) {
+                            AdminGuard adminGuard, ObjectMapper mapper) {
         this.settings = settings;
         this.aiChatService = aiChatService;
         this.props = props;
-        this.authService = authService;
+        this.adminGuard = adminGuard;
         this.mapper = mapper;
     }
 
@@ -78,29 +78,9 @@ public class AiSettingsService {
 
     // ============================================================ 查询
 
-    /** 是否管理员（可改 AI 配置）。 */
+    /** 是否管理员（可改 AI 配置）。白名单逻辑统一收口在 {@link AdminGuard}。 */
     public boolean canManage(Long userId) {
-        if (userId == null) {
-            return false;
-        }
-        List<String> admins = adminUsernames();
-        if (admins.isEmpty()) {
-            return false;
-        }
-        return authService.findById(userId)
-                .map(u -> admins.contains(String.valueOf(u.username()).toLowerCase(Locale.ROOT)))
-                .orElse(false);
-    }
-
-    private List<String> adminUsernames() {
-        List<String> out = new ArrayList<>();
-        for (String s : String.valueOf(props.getAdminUsernames()).split(",")) {
-            String v = s.trim().toLowerCase(Locale.ROOT);
-            if (!v.isEmpty()) {
-                out.add(v);
-            }
-        }
-        return out;
+        return adminGuard.isAdmin(userId);
     }
 
     /** GET /api/ai/settings：页面配置（脱敏）+ 出厂配置 + 当前生效模型。 */

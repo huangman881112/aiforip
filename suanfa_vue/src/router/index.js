@@ -6,6 +6,7 @@ const Home = () => import('../components/common/Home.vue')
 const About = () => import('../components/common/About.vue')
 const Login = () => import('../components/common/Login.vue')
 const ProgressPage = () => import('../components/common/ProgressPage.vue')
+const ChangePasswordPage = () => import('../components/common/ChangePasswordPage.vue')
 const CalendarPage = () => import('../components/common/CalendarPage.vue')
 const TrainingPage = () => import('../components/common/TrainingPage.vue')
 const AiChatPage = () => import('../components/common/AiChatPage.vue')
@@ -16,6 +17,7 @@ const DPPage = () => import('../components/algorithms/dp_algorithms/DPPage.vue')
 const GreedyPage = () => import('../components/algorithms/greedy_algorithms/GreedyPage.vue')
 const SimpleBubbleSort = () => import('../components/algorithms/sorting_algorithms/SimpleBubbleSort.vue')
 const AlgorithmDetailPage = () => import('../components/algorithms/AlgorithmDetailPage.vue')
+const UserManagePage = () => import('../components/common/UserManagePage.vue')
 
 // 定义路由
 const routes = [
@@ -40,6 +42,20 @@ const routes = [
     name: 'ProgressPage',
     component: ProgressPage,
     meta: { requiresAuth: true }
+  },
+  {
+    // 个人中心→修改密码（admin 从顶部用户名子菜单展开进入），需登录
+    path: '/account/password',
+    name: 'ChangePassword',
+    component: ChangePasswordPage,
+    meta: { requiresAuth: true }
+  },
+  {
+    // 用户管理（仅管理员）：requiresAdmin 在路由守卫里按 userStore.isAdmin 拦截，后端接口同样会 403
+    path: '/admin/users',
+    name: 'UserManage',
+    component: UserManagePage,
+    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/calendar',
@@ -106,13 +122,17 @@ const router = createRouter({
   routes
 })
 
-// 路由守卫：先恢复会话，再按 meta 判断是否需要登录
+// 路由守卫：先恢复会话，再按 meta 判断是否需要登录 / 是否需要管理员
 router.beforeEach(async (to) => {
   const userStore = useUserStore()
   await userStore.init()
 
   if (to.meta.requiresAuth && !userStore.isLoggedIn) {
     return { name: 'Login', query: { redirect: to.fullPath } }
+  }
+  // 非管理员直访管理页：回首页（手输地址 / 收藏夹 / 权限被收掉后的旧标签页都会走到这里）
+  if (to.meta.requiresAdmin && !userStore.isAdmin) {
+    return { name: 'Home' }
   }
   if (to.meta.public && userStore.isLoggedIn && (to.name === 'Login')) {
     return { name: 'Home' }

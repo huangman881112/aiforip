@@ -1,7 +1,7 @@
 <script setup>
 // AI 助教对话页：后端代理上游大模型/API 中转站（需配置 AI_API_KEY），
 // 走 SSE 流式打字机输出；未配置/离线时自动降级为「本地答疑模式」（检索站内算法资料作答）。
-// 模型不由用户选：顶栏只展示「当前中转站配置的默认模型」（后端下发的 defaultModel）。
+// 模型不由用户选：顶栏按身份展示——管理员看「当前中转站配置的默认模型」，普通用户只看「模型供应商」。
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { aiChatStream, aiStatus } from '../../api/client.js'
@@ -42,7 +42,27 @@ const HISTORY_KEY = computed(() => `suanfa.ai.history.${userStore.user?.id || 'g
 const currentModel = computed(
   () => models.value.find((m) => m.token === defaultToken.value) || models.value.find((m) => m.available) || null
 )
+/** 供应商（中转站）名：普通用户能看到的极限 */
+const currentProviderText = computed(() => {
+  const m = currentModel.value
+  if (!m) return ''
+  return m.providerLabel || m.provider || ''
+})
+/** 后端拿不到（或不敢露）供应商名时的兜底文案，与 AiController.GENERIC_PROVIDER_LABEL 对应 */
+const GENERIC_PROVIDER = 'AI 服务'
+/** 普通用户顶栏文案：有可用供应商就只报供应商，报不出就只说「已接入」 */
+const publicModeText = computed(() => {
+  const p = currentProviderText.value
+  return p && p !== GENERIC_PROVIDER ? `AI 服务 · ${p}` : 'AI 服务已接入'
+})
+/**
+ * 顶栏文本：只有管理员看得到真实模型名。
+ *
+ * <p>普通用户只看到「模型供应商（中转站）」——后端 /api/ai/status 已对普通用户脱敏
+ * （name/label/token 换成中转站名、预算与备注置空），这里再挡一层，兼作旧版后端兼容。
+ */
 const currentModelText = computed(() => {
+  if (!canManage.value) return currentProviderText.value
   const m = currentModel.value
   if (!m) return ''
   const label = m.label || m.name
@@ -51,12 +71,19 @@ const currentModelText = computed(() => {
 })
 const modeText = computed(() => {
   if (localSession.value) return '本地答疑模式'
+  if (!canManage.value) return publicModeText.value
   if (activeModel.value) return `本次模型 ${activeModel.value}`
   if (currentModelText.value) return `默认模型 ${currentModelText.value}`
   return ''
 })
-/** 悬停补充预算/熔断信息：不能选模型了，也要看得出上游配得对不对。 */
+/** 悬停补充信息：管理员看预算/熔断，普通用户只看得到供应商。 */
 const modeTip = computed(() => {
+  if (!canManage.value) {
+    const p = currentProviderText.value
+    return p && p !== GENERIC_PROVIDER
+      ? `回答由「${p}」提供；具体模型与预算仅管理员可见`
+      : '回答由服务器配置的中转站提供；具体模型与预算仅管理员可见'
+  }
   if (activeModel.value) return '本轮实际服务的模型；默认模型熔断时会降级到下一个可用模型'
   const m = currentModel.value
   if (!m) return ''
@@ -161,13 +188,20 @@ async function send(text) {
     })
     reply.content = res.reply || reply.content
     reply.source = res.source || 'ai'
-    reply.model = res.model || ''
     reply.refs = res.refs || reply.refs || []
-    if (res.source === 'ai') activeModel.value = res.model || activeModel.value
-    // 实际服务的模型不是默认模型：说明默认模型被熔断/限流，给用户一个明确提示
-    const def = currentModel.value
-    if (res.source === 'ai' && def && res.model && res.model !== def.name) {
-      reply.degradedTo = res.model
+    if (res.source !== 'ai') {
+      reply.model = ''
+    } else if (canManage.value) {
+      // 真实模型名只给管理员留：普通用户既不在顶栏看，也不在本地历史里留底
+      reply.model = res.model || ''
+      activeModel.value = res.model || activeModel.value
+      // 实际服务的模型不是默认模型：说明默认模型被熔断/限流，给管理员一个明确提示
+      const def = currentModel.value
+      if (def && res.model && res.model !== def.name) {
+        reply.degradedTo = res.model
+      }
+    } else {
+      reply.model = ''
     }
     if (!flushed && res.source === 'local') scrollToBottom(true)
   } catch (err) {
@@ -336,7 +370,7 @@ onUnmounted(stop)
                   <button class="chat-retry-btn" :disabled="sending" @click="retry(m)">重试</button>
                 </div>
                 <span v-if="m.source === 'local'" class="chat-local-tag">本地答疑</span>
-                <span v-if="m.degradedTo" class="chat-degraded-tag">
+                <span v-if="m.degradedTo && canManage" class="chat-degraded-tag">
                   默认模型暂不可用，本次由 {{ m.degradedTo }} 回答
                 </span>
               </template>

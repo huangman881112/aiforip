@@ -23,20 +23,20 @@
   width: 100%;
   margin: 15px 0;
   padding: 10px;
-  background-color: #f5f5f5;
+  background-color: var(--surface-2);
   border-radius: 4px;
 }
 
 .progress-label {
   margin-bottom: 5px;
   font-weight: bold;
-  color: #333;
+  color: var(--text-1);
 }
 
 .progress-bar {
   width: 100%;
   height: 10px;
-  background-color: #e0e0e0;
+  background-color: var(--surface-2);
   border-radius: 5px;
   overflow: hidden;
 }
@@ -50,7 +50,6 @@
 
 <script setup>
 import { ref, nextTick, watch, onMounted } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 
 // 定义emits
 const emit = defineEmits(['close'])
@@ -59,9 +58,6 @@ const emit = defineEmits(['close'])
 const closeDetail = () => {
   emit('close')
 }
-
-// 控制标签页切换
-const activeTab = ref('basic')
 
 // 拓扑排序算法可视化相关状态
 // 图结构控制
@@ -140,7 +136,7 @@ const generateRandomGraph = (size, includeCycle = false) => {
     // 如果需要包含环
     if (includeCycle && size > 2) {
       // 随机选择两个节点形成环
-      const node1Index = Math.floor(Math.random() * (size - 1));
+      let node1Index = Math.floor(Math.random() * (size - 1));
       let node2Index = Math.floor(Math.random() * (size - node1Index - 1)) + node1Index + 1;
       
       // 确保至少有一个边从后向前
@@ -621,138 +617,11 @@ onMounted(() => {
   <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>拓扑排序算法(Topological Sort)</h2>
-      <div class="tabs">
-        <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ active: activeTab === 'search' }" @click="activeTab = 'search'">查找</button>
-        <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="{ active: activeTab === 'notes' }" @click="activeTab = 'notes'">学习</button>
-      </div>
     </div>
 
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>拓扑排序(Topological Sort)是一种对有向无环图(DAG)中的节点进行排序的算法，使得对于每一条有向边(u, v)，节点u在排序结果中都出现在节点v之前。</p>
 
-          <AlgorithmComplexity algorithm-id="topological-sort" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function topologicalSort(G):
-  visited = empty set
-  recursionStack = empty set
-  result = empty stack
-  
-  for each node u in G:
-    if u not in visited:
-      if dfs(u, visited, recursionStack, result) is False:
-        return "Graph contains cycle"
-  
-  return result reversed
-  
-function dfs(u, visited, recursionStack, result):
-  add u to visited
-  add u to recursionStack
-  
-  for each neighbor v of u:
-    if v not in visited:
-      if dfs(v, visited, recursionStack, result) is False:
-        return False
-    else if v in recursionStack:
-      return False
-  
-  remove u from recursionStack
-  push u to result
-  return True</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>def topological_sort(graph):
-    visited = set()
-    recursion_stack = set()
-    result = []
-    
-    def dfs(node):
-        visited.add(node)
-        recursion_stack.add(node)
-        
-        for neighbor in graph.get(node, []):
-            if neighbor not in visited:
-                if not dfs(neighbor):
-                    return False
-            elif neighbor in recursion_stack:
-                return False
-        
-        recursion_stack.remove(node)
-        result.append(node)
-        return True
-    
-    for node in graph:
-        if node not in visited:
-            if not dfs(node):
-                return "Graph contains cycle"
-    
-    return result[::-1]  # 反转结果
-
-# 示例使用
-# graph = {
-#     'A': ['B', 'C'],
-#     'B': ['D'],
-#     'C': ['D'],
-#     'D': ['E'],
-#     'E': []
-# }
-# print(topological_sort(graph))  # 输出: ['A', 'C', 'B', 'D', 'E']</code></pre>
-
-            <h3>JavaScript 实现</h3>
-            <pre><code>function topologicalSort(graph) {
-    const visited = new Set();
-    const recursionStack = new Set();
-    const result = [];
-    
-    function dfs(node) {
-        visited.add(node);
-        recursionStack.add(node);
-        
-        for (const neighbor of graph[node] || []) {
-            if (!visited.has(neighbor)) {
-                if (!dfs(neighbor)) {
-                    return false;
-                }
-            } else if (recursionStack.has(neighbor)) {
-                return false;
-            }
-        }
-        
-        recursionStack.delete(node);
-        result.push(node);
-        return true;
-    }
-    
-    for (const node in graph) {
-        if (!visited.has(node)) {
-            if (!dfs(node)) {
-                return "Graph contains cycle";
-            }
-        }
-    }
-    
-    return result.reverse();
-}
-
-// 示例使用
-// const graph = {
-//     'A': ['B', 'C'],
-//     'B': ['D'],
-//     'C': ['D'],
-//     'D': ['E'],
-//     'E': []
-// };
-// console.log(topologicalSort(graph));  // 输出: ['A', 'C', 'B', 'D', 'E']</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'search'" class="search-section">
+      <div class="search-section">
         <h3>拓扑排序算法可视化</h3>
         <p>拓扑排序是一种对有向无环图(DAG)中的节点进行排序的算法，使得对于每一条有向边(u, v)，节点u在排序结果中都出现在节点v之前。</p>
       <div class="visualization-container">
@@ -794,7 +663,7 @@ function dfs(u, visited, recursionStack, result):
                       <!-- 边路径 -->
                       <path
                         :d="getEdgePath(nodesPositions[node], nodesPositions[neighbor.node]).edgePath"
-                        stroke="#666"
+                        stroke="#6b7c99"
                         stroke-width="2"
                         fill="none"
                         :class="{ 'topo-edge-active': isVisited(node) && isVisited(neighbor.node) }"
@@ -802,7 +671,7 @@ function dfs(u, visited, recursionStack, result):
                       <!-- 箭头 -->
                       <path
                         :d="getEdgePath(nodesPositions[node], nodesPositions[neighbor.node]).arrowPath"
-                        stroke="#666"
+                        stroke="#6b7c99"
                         stroke-width="2"
                         fill="none"
                         :class="{ 'topo-edge-active': isVisited(node) && isVisited(neighbor.node) }"
@@ -906,53 +775,6 @@ function dfs(u, visited, recursionStack, result):
         </div>
        </div>
       
-      </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section">
-        <div class="markdown-content" style="text-align: left;">
-          <h3>算法变种</h3>
-          <p>拓扑排序算法有一些重要的变种和扩展：</p>
-          <ol>
-            <li><strong>Kahn算法</strong>：基于入度的拓扑排序算法，通过反复移除入度为0的节点实现。</li>
-            <li><strong>并行拓扑排序</strong>：利用并行计算来加速拓扑排序过程。</li>
-            <li><strong>动态拓扑排序</strong>：当图的结构发生变化时，能够高效地更新拓扑序列。</li>
-            <li><strong>带权拓扑排序</strong>：考虑边权重的拓扑排序扩展。</li>
-          </ol>
-
-          <h3>应用场景</h3>
-          <p>拓扑排序广泛应用于以下场景：</p>
-          <ul>
-            <li>项目调度和任务排序</li>
-            <li>编译系统中的依赖解析</li>
-            <li>数据库查询优化</li>
-            <li>网络路由算法</li>
-            <li>事件驱动系统</li>
-            <li>工厂生产流程规划</li>
-            <li>软件包管理系统</li>
-            <li>电路设计</li>
-          </ul>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'notes'" class="learning-section">
-        <div class="markdown-content" style="text-align: left;">
-          <h3>学习笔记</h3>
-          <p>拓扑排序是一种仅适用于有向无环图(DAG)的排序算法。如果图中存在环，则无法进行拓扑排序。</p>
-          <p>拓扑排序的结果不是唯一的。对于同一个DAG，可能存在多个有效的拓扑序列。</p>
-          <p>拓扑排序通常有两种实现方式：</p>
-          <ol>
-            <li><strong>深度优先搜索(DFS)方法</strong>：通过DFS访问所有节点，在回溯时将节点加入结果列表，最后反转该列表。</li>
-            <li><strong>Kahn算法</strong>：通过反复移除入度为0的节点并将其加入结果列表来实现。</li>
-          </ol>
-          <p>在实现拓扑排序时，需要注意以下几点：</p>
-          <ul>
-            <li>检测图中是否存在环。如果存在环，拓扑排序将无法完成。</li>
-            <li>拓扑排序的时间复杂度为O(V + E)，其中V是节点数量，E是边的数量。</li>
-            <li>对于大型图，可以考虑使用并行化技术来加速拓扑排序过程。</li>
-            <li>在实际应用中，拓扑排序通常与其他算法结合使用，如关键路径分析。</li>
-          </ul>
-          <p>拓扑排序在计算机科学中有着广泛的应用，特别是在那些需要处理依赖关系的场景中。</p>
-        </div>
       </div>
     </div>
 </template>

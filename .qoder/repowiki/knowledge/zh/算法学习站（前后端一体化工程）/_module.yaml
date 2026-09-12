@@ -1,0 +1,11 @@
+schema_version: 1
+module_path: ""
+title: 算法学习站（前后端一体化工程）
+scope:
+    - architecture-analysis.md
+    - project_plan.md
+    - .gitignore
+    - .ruff_cache/
+source_files: []
+depends_on: []
+related_to: []

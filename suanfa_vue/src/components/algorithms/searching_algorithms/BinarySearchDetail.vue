@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 import { useSearchingVisualization } from '../../../composables/useSearchingVisualization.js'
 
 // 定义emits
@@ -32,9 +31,6 @@ const {
 const closeDetail = () => {
   emit('close')
 }
-
-// 控制标签页切换
-const activeTab = ref('basic')
 
 // 二分查找专属状态
 const left = ref(0)
@@ -194,77 +190,11 @@ const testSearch = async () => {
   <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>二分查找</h2>
-      <div class="tabs">
-        <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ active: activeTab === 'search' }" @click="activeTab = 'search'">查找</button>
-        <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="{ active: activeTab === 'notes' }" @click="activeTab = 'notes'">笔记</button>
-      </div>
     </div>
 
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>二分查找是一种高效的搜索算法，它通过反复将搜索区间划分为两半来查找目标值。它要求数组必须是有序的。</p>
 
-          <AlgorithmComplexity algorithm-id="binary-search" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function binarySearch(arr, target):
-  left = 0
-  right = arr.length - 1
-  
-  while left <= right:
-    mid = floor((left + right) / 2)
-    if arr[mid] == target:
-      return mid  // 找到目标，返回索引
-    else if arr[mid] < target:
-      left = mid + 1  // 在右半部分继续查找
-    else:
-      right = mid - 1  // 在左半部分继续查找
-  
-  return -1  // 未找到目标</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>def binary_search(arr, target):
-    left = 0
-    right = len(arr) - 1
-    
-    while left <= right:
-        mid = (left + right) // 2
-        if arr[mid] == target:
-            return mid
-        elif arr[mid] < target:
-            left = mid + 1
-        else:
-            right = mid - 1
-    
-    return -1</code></pre>
-
-            <h3>JavaScript 实现</h3>
-            <pre><code>function binarySearch(arr, target) {
-    let left = 0;
-    let right = arr.length - 1;
-    
-    while (left <= right) {
-        const mid = Math.floor((left + right) / 2);
-        if (arr[mid] === target) {
-            return mid;
-        } else if (arr[mid] < target) {
-            left = mid + 1;
-        } else {
-            right = mid - 1;
-        }
-    }
-    
-    return -1;
-}</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'search'" class="search-section">
+      <div class="search-section">
         <h3>可视化演示</h3>
         <div class="stats-container">
           <div class="stat-item">
@@ -340,30 +270,6 @@ const testSearch = async () => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>算法优化</h3>
-          <p>二分查找的标准实现已经很高效，但在特定情况下可以进一步优化：</p>
-          <ol style="text-align: left;">
-            <li><strong>插值查找</strong>：对于均匀分布的数据，可以使用插值公式估算目标值可能的位置。</li>
-            <li><strong>斐波那契查找</strong>：使用斐波那契数列来划分搜索区间，可以避免除法运算。</li>
-            <li><strong>平衡二叉搜索树</strong>：对于频繁插入和删除操作的场景，可以考虑使用平衡二叉搜索树。</li>
-          </ol>
-
-          <h3>适用场景</h3>
-          <p>二分查找适用于大规模有序数据。对于无序数据，需要先排序再使用二分查找，或者直接使用线性查找。</p>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'notes'" class="notes-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>学习笔记</h3>
-          <p>二分查找是一种分治算法，它的核心思想是将问题规模减半。</p>
-          <p>二分查找要求数组必须是有序的，这是它的前提条件。</p>
-          <p>与线性查找相比，二分查找的效率要高得多，特别是对于大规模数据。</p>
         </div>
       </div>
     </div>

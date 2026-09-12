@@ -1,11 +1,8 @@
-/* 引入公共样式组件 */
-@import './common-sort-styles.css';
-
-/* 堆排序容器样式 */
+/* 堆排序容器样式（.compare/.swap/.finish 步骤色已移至 common-sort-styles.css） */
 .heap-sort-detail {
-  background-color: white;
+  background-color: var(--surface);
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
   margin-top: 32px;
   padding: 24px;
   position: relative;
@@ -25,22 +22,11 @@
 }
 
 .step-item.heapify {
-  background-color: #f3e8ff;
-  color: #7e22ce;
+  background-color: var(--tint-purple);
+  color: var(--c-purple);
 }
 
 .step-item.extract {
-  background-color: #ffedd5;
-  color: #c2410c;
-}
-
-/* 堆排序特有的样式 */
-.step-item.heapify {
-  background-color: #f3e8ff;
-  color: #7e22ce;
-}
-
-.step-item.extract {
-  background-color: #ffedd5;
-  color: #c2410c;
+  background-color: var(--tint-amber);
+  color: var(--c-orange);
 }

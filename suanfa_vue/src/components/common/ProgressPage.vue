@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { fetchAlgorithms, fetchProgress } from '../../api/client.js'
+import { algorithmCategories } from '../../data/algorithms.js'
 import { useUserStore } from '../../stores/user.js'
 
 const userStore = useUserStore()
@@ -10,11 +11,9 @@ const algorithms = ref([])
 const loading = ref(true)
 const error = ref('')
 
-const CATEGORY_LABELS = {
-  sorting: '排序算法',
-  searching: '搜索算法',
-  graph: '图算法',
-}
+// 分类中文名与展示顺序统一取自单一数据源
+const CATEGORY_LABELS = Object.fromEntries(algorithmCategories.map((c) => [c.key, c.label]))
+const CATEGORY_ORDER = algorithmCategories.map((c) => c.key)
 
 /** 算法 id → 元数据 */
 const algorithmMap = computed(() => {
@@ -25,7 +24,7 @@ const algorithmMap = computed(() => {
 
 /** 按分类分组：已学 + 收藏 */
 const groups = computed(() => {
-  const byCat = { sorting: [], searching: [], graph: [] }
+  const byCat = Object.fromEntries(CATEGORY_ORDER.map((c) => [c, []]))
   for (const p of progress.value) {
     const a = algorithmMap.value[p.algorithmId]
     if (!a) continue
@@ -36,8 +35,8 @@ const groups = computed(() => {
       route: a.route,
     })
   }
-  return ['sorting', 'searching', 'graph']
-    .filter((cat) => byCat[cat].length > 0)
+  return CATEGORY_ORDER
+    .filter((cat) => (byCat[cat] || []).length > 0)
     .map((cat) => ({ cat, label: CATEGORY_LABELS[cat], items: byCat[cat] }))
 })
 
@@ -93,23 +92,23 @@ onMounted(async () => {
 }
 
 .progress-page h2 {
-  color: #333;
+  color: var(--text-1);
   margin: 0 0 4px;
 }
 
 .progress-user {
-  color: #999;
+  color: var(--text-3);
   margin: 0 0 24px;
   font-size: 0.9rem;
 }
 
 .progress-tip {
-  color: #999;
+  color: var(--text-3);
   padding: 20px 0;
 }
 
 .progress-tip.error {
-  color: #d32f2f;
+  color: var(--c-red);
 }
 
 .progress-group {
@@ -117,7 +116,7 @@ onMounted(async () => {
 }
 
 .progress-group h3 {
-  color: #555;
+  color: var(--text-2);
   margin: 0 0 12px;
   font-size: 1.05rem;
   border-left: 3px solid #1e88e5;
@@ -135,21 +134,21 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   padding: 14px 16px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 6px;
-  border: 1px solid #eee;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border-1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   text-decoration: none;
   transition: box-shadow 0.2s, transform 0.2s;
 }
 
 .progress-card:hover {
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
   transform: translateY(-1px);
 }
 
 .progress-name {
-  color: #333;
+  color: var(--text-1);
   font-size: 0.95rem;
 }
 
@@ -161,17 +160,17 @@ onMounted(async () => {
 }
 
 .progress-status.learning {
-  background: #e3f2fd;
-  color: #1565c0;
+  background: var(--tint-blue);
+  color: var(--c-blue);
 }
 
 .progress-status.learned {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: var(--tint-green);
+  color: var(--c-green);
 }
 
 .progress-status.favorited {
-  background: #fff3e0;
-  color: #e65100;
+  background: var(--tint-amber);
+  color: var(--c-orange);
 }
 </style>

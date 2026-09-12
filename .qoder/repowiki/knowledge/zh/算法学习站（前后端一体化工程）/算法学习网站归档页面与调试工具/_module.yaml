@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: archive
+title: 算法学习网站归档页面与调试工具
+scope:
+    - archive/
+source_files: []
+depends_on: []
+related_to: []

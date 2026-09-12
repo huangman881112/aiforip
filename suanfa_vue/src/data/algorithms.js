@@ -600,6 +600,178 @@ export const algorithms = [
       extras: [],
     },
   },
+
+  // ==================== 动态规划 ====================
+  {
+    id: "climbing-stairs",
+    name: "爬楼梯",
+    category: "dp",
+    subCategory: "线性DP",
+    difficulty: "简单",
+    stability: null,
+    description: "每次可以上 1 阶或 2 阶，问爬到第 n 阶一共有多少种不同的走法。它是理解「状态 + 转移方程」的最小 DP 模型。",
+    complexity: "O(n)",
+    route: "/algorithms/dp/climbing-stairs",
+    defaultNotes: "### 学习笔记\n\n爬楼梯是动态规划的「Hello World」。真正要记住的不是答案 13，而是这三步：\n\n1. 定义状态：dp[i] 表示到第 i 阶的方案数；\n2. 写出转移：最后一步只有两种可能，所以 dp[i] = dp[i-1] + dp[i-2]；\n3. 确定边界与顺序：dp[0]=1，i 从小到大填表。\n\n想清楚「dp[i] 到底代表什么」，比背代码重要得多。状态定义错了，后面的转移方程都是空中楼阁。",
+    complexityDetails: { time: [{ label: "最坏情况", value: "O(n)" }, { label: "最好情况", value: "O(1)（读边界）" }, { label: "平均情况", value: "O(n)" }], space: "O(1)", stability: null, difficulty: "简单", extras: [{ label: "等价的数学形式", value: "斐波那契数列 F(n+1)" }, { label: "能否进一步优化", value: "矩阵快速幂 O(log n)" }] },
+    detailSections: { basic: "## 爬楼梯\n\n每次可以上 1 阶或 2 阶，问爬到第 n 阶一共有多少种不同的走法。它是理解「状态 + 转移方程」的最小 DP 模型。\n\n### 状态定义\n\ndp[i]：站上第 i 阶的方案总数\n\n### 转移方程 / 贪心策略\n\ndp[i] = dp[i-1] + dp[i-2]（最后一步要么跨 1 阶，要么跨 2 阶，两类方案互不重叠）\n\n### 边界与填表顺序\n\n- 边界：dp[0] = 1（站在平地的空方案），dp[1] = 1\n- 顺序：i 从小到大\n\n### 伪代码\n\n```\nfunction climbStairs(n):\n  if n <= 1: return 1\n  dp[0] = 1\n  dp[1] = 1\n  for i from 2 to n:\n    dp[i] = dp[i-1] + dp[i-2]\n  return dp[n]\n```\n\n### Python 实现\n\n```python\ndef climb_stairs(n: int) -> int:\n    a, b = 1, 1  # dp[i-2], dp[i-1]\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nprint(climb_stairs(6))  # 13\n```\n\n### JavaScript 实现\n\n```javascript\nfunction climbStairs(n) {\n  let a = 1, b = 1; // dp[i-2], dp[i-1]\n  for (let i = 2; i <= n; i++) {\n    [a, b] = [b, a + b];\n  }\n  return b;\n}\n\nconsole.log(climbStairs(6)); // 13\n```", advanced: "### 空间优化\n\n只依赖前两项，所以整张表可以压缩成两个滚动变量：空间从 O(n) 降到 O(1)。\n这也是 DP 中「滚动数组」优化的起点：**如果第 i 层只依赖有限几层，就只保留那几层**。\n\n### 常见坑\n\n1. **把 dp[0] 写成 0**：dp[0] 是「空方案」，必须是 1，否则后面全错。\n2. **误当成组合数**：`1+2` 与 `2+1` 是两种不同的走法，DP 数的是「有序方案数」。\n3. 若题目改成「每次可以跨 1~k 阶」，转移变成 `dp[i] = dp[i-1] + ... + dp[i-k]`，可用前缀和维持 O(1) 转移。\n\n### 变体与应用\n\n- **爬楼梯 II（带代价）**：加上 `cost[i]`，转移变为 `dp[i] = min(dp[i-1]+cost[i-1], dp[i-2]+cost[i-2])`，于是计数问题变成最优化问题。\n- **带禁区的台阶**、**斐波那契数列**、**拼硬币方案数**都是同一个骨架。\n- 若 n 达到 10^18，用矩阵 `[[1,1],[1,0]]` 的快速幂把复杂度降到 O(log n)。" },
+  },
+  {
+    id: "max-subarray",
+    name: "最大子数组和",
+    category: "dp",
+    subCategory: "线性DP",
+    difficulty: "简单",
+    stability: null,
+    description: "在整数数组中找一个连续子数组，使其元素之和最大。Kadane 算法是一维 DP 的经典范例：状态必须带上「以 i 结尾」这个后缀条件。",
+    complexity: "O(n)",
+    route: "/algorithms/dp/max-subarray",
+    defaultNotes: "### 学习笔记\n\nKadane 算法妙在一句话：**「前面那一段如果是拖累，就扔掉重开」**。\n\n我把它的状态定义记成 `f[i] = 以 i 结尾的最优`，这是线性 DP 里最好用的一种套路：\n一旦要求「必须以某个位置结尾」，转移就一定只跟前一个位置有关，于是一趟扫描就能出答案。\n\n另外 `ans = max(ans, f[i])` 这一行不能省：最终答案是所有后缀里的最大值，而不是最后一个位置的值。",
+    complexityDetails: { time: [{ label: "最坏情况", value: "O(n)" }, { label: "最好情况", value: "O(n)" }, { label: "平均情况", value: "O(n)" }], space: "O(1)", stability: null, difficulty: "简单", extras: [{ label: "分治做法", value: "O(n log n)" }, { label: "能否记录方案", value: "可以，维护起点即可" }] },
+    detailSections: { basic: "## 最大子数组和\n\n在整数数组中找一个连续子数组，使其元素之和最大。Kadane 算法是一维 DP 的经典范例：状态必须带上「以 i 结尾」这个后缀条件。\n\n### 状态定义\n\nf[i]：以 a[i] **结尾**的连续子数组的最大和\n\n### 转移方程 / 贪心策略\n\nf[i] = max(f[i-1] + a[i], a[i])：要么把 a[i] 接到前面那段后面，要么从 a[i] 重新开一段\n\n### 边界与填表顺序\n\n- 边界：f[1] = a[1]；答案 = max(f[1..n])\n- 顺序：i 从小到大，一趟扫描\n\n### 伪代码\n\n```\nfunction maxSubArray(a):\n  f = a[0]\n  ans = a[0]\n  for i from 1 to length(a)-1:\n    f = max(f + a[i], a[i])\n    ans = max(ans, f)\n  return ans\n```\n\n### Python 实现\n\n```python\ndef max_sub_array(a):\n    f = ans = a[0]\n    for x in a[1:]:\n        f = max(f + x, x)   # 接上前面，或者从这里重开\n        ans = max(ans, f)\n    return ans\n\n# 需要输出具体区间时：\ndef max_sub_array_range(a):\n    f = ans = a[0]\n    start = best_l = best_r = 0\n    for i, x in enumerate(a[1:], 1):\n        if f + x < x:\n            f, start = x, i\n        else:\n            f += x\n        if f > ans:\n            ans, best_l, best_r = f, start, i\n    return ans, best_l, best_r\n```\n\n### JavaScript 实现\n\n```javascript\nfunction maxSubArray(a) {\n  let f = a[0], ans = a[0];\n  for (let i = 1; i < a.length; i++) {\n    f = Math.max(f + a[i], a[i]);\n    ans = Math.max(ans, f);\n  }\n  return ans;\n}\n```", advanced: "### 为什么状态必须写「以 i 结尾」\n\n如果定义成「前 i 个元素的最大子数组和」，就无法判断 a[i] 是否要和前面连起来——信息不够。\nDP 里这叫**状态设计要包含「转移所需的全部信息」**。加上后缀条件后，转移只剩一个比较。\n\n### 常见坑\n\n1. **全负数组**：初值必须取 `a[0]` 而不是 `0`，否则会返回 0（即「空子数组」），与「至少选一个元素」的题意冲突。\n2. `ans` 与 `f` 是两件事：`f` 是当前结尾的最优，`ans` 是全局最优，忘记更新 `ans` 是最常见的 bug。\n3. 用 `if (f < 0) f = 0` 的写法等价，但会在全负数组时给出 0，注意题意。\n\n### 变体与应用\n\n- **最大子矩阵和**：枚举上下边界压成一维列和，再套 Kadane，O(n³)。\n- **乘积最大子数组**：同时维护最大值和最小值（负负得正）。\n- **环形子数组最大和**：答案 = max(普通最大和, 总和 − 最小子数组和)。\n- 实际用途：股票收益、信号峰值检测、Grenander–Sharpe 统计检验等。" },
+  },
+  {
+    id: "lis",
+    name: "最长递增子序列",
+    category: "dp",
+    subCategory: "线性DP",
+    difficulty: "中等",
+    stability: null,
+    description: "给定序列 a，求最长的严格递增子序列（不要求连续）的长度。O(n²) 的 DP 版本能看清「以 i 结尾」的状态如何被逐个 j 更新。",
+    complexity: "O(n²)",
+    route: "/algorithms/dp/lis",
+    defaultNotes: "### 学习笔记\n\nLIS 教会我一件事：**状态的「后缀条件」是设计出来的，不是题目给的。**\n\n题目只问最长递增子序列，但如果定义成「前 i 个元素的答案」就推不动，\n必须加强成「以 a[i] 结尾」，才能把「a[i] 接在谁后面」这件事说清楚。\n\nO(n²) 版本要能吃透，因为它解释了 dp 数组为什么要保留全部位置；\nO(n log n) 版本则是另一种思路——不再记录所有状态，只保留「每个长度里最优秀的那个末尾」。",
+    complexityDetails: { time: [{ label: "最坏情况", value: "O(n²)" }, { label: "最好情况", value: "O(n²)" }, { label: "平均情况", value: "O(n²)" }, { label: "贪心+二分版本", value: "O(n log n)" }], space: "O(n)", stability: null, difficulty: "中等", extras: [{ label: "能否还原方案", value: "可以，额外记录 prev[i]" }, { label: "非严格递增", value: "把 < 改成 ≤，二分改成 upper_bound" }] },
+    detailSections: { basic: "## 最长递增子序列\n\n给定序列 a，求最长的严格递增子序列（不要求连续）的长度。O(n²) 的 DP 版本能看清「以 i 结尾」的状态如何被逐个 j 更新。\n\n### 状态定义\n\ndp[i]：以 a[i] **结尾**的递增子序列的最大长度\n\n### 转移方程 / 贪心策略\n\ndp[i] = 1 + max{ dp[j] | j < i 且 a[j] < a[i] }，若不存在这样的 j 则 dp[i] = 1\n\n### 边界与填表顺序\n\n- 边界：所有 dp[i] 初值为 1（每个元素自身就是长度 1 的子序列）\n- 顺序：i 从小到大；每个 i 内部枚举 j < i\n\n### 伪代码\n\n```\nfunction LIS(a):\n  n = length(a)\n  for i from 0 to n-1: dp[i] = 1\n  for i from 1 to n-1:\n    for j from 0 to i-1:\n      if a[j] < a[i]:\n        dp[i] = max(dp[i], dp[j] + 1)\n  return max(dp)\n```\n\n### Python 实现\n\n```python\ndef lis_length(a):\n    n = len(a)\n    dp = [1] * n\n    for i in range(1, n):\n        for j in range(i):\n            if a[j] < a[i]:\n                dp[i] = max(dp[i], dp[j] + 1)\n    return max(dp)\n\ndef lis_sequence(a):\n    \"\"\"O(n^2) 并还原一条方案\"\"\"\n    n = len(a)\n    dp, prev = [1] * n, [-1] * n\n    for i in range(1, n):\n        for j in range(i):\n            if a[j] < a[i] and dp[j] + 1 > dp[i]:\n                dp[i], prev[i] = dp[j] + 1, j\n    end = max(range(n), key=lambda i: dp[i])\n    seq = []\n    while end != -1:\n        seq.append(a[end])\n        end = prev[end]\n    return seq[::-1]\n```\n\n### JavaScript 实现\n\n```javascript\nfunction lisLength(a) {\n  const n = a.length;\n  const dp = new Array(n).fill(1);\n  let ans = 1;\n  for (let i = 1; i < n; i++) {\n    for (let j = 0; j < i; j++) {\n      if (a[j] < a[i]) dp[i] = Math.max(dp[i], dp[j] + 1);\n    }\n    ans = Math.max(ans, dp[i]);\n  }\n  return ans;\n}\n```", advanced: "### O(n log n)：贪心 + 二分（耐心排序）\n\n维护 `tails[k]` = 长度为 k 的递增子序列的**最小末尾元素**。对每个 a[i] 用二分找到第一个 ≥ a[i] 的位置并覆盖，\n找不到就追加到末尾。`tails` 的长度即为答案。\n\n```python\nfrom bisect import bisect_left\n\ndef lis_nlogn(a):\n    tails = []\n    for x in a:\n        i = bisect_left(tails, x)   # 非严格递增用 bisect_right\n        if i == len(tails):\n            tails.append(x)\n        else:\n            tails[i] = x\n    return len(tails)\n```\n\n注意：`tails` 本身**不是**一条合法的 LIS，它只是每个长度的最小末尾值，还原方案要额外记录。\n\n### 常见坑\n\n1. 答案是 `max(dp[i])` 而不是 `dp[n-1]`：LIS 未必在最后一名元素处结束。\n2. 「子序列」可以跳着选，「子数组」必须连续——两者状态定义完全不同。\n3. 有相等元素时，严格递增用 `<`，非严格递增用 `≤`。\n\n### 变体与应用\n\n- **最少上升子序列覆盖**（Dilworth 定理）= 最长不升子序列长度。\n- **俄罗斯套娃信封**、**摆动序列**、**最大递增子序列乘积**等都是它的变形。\n- 生物信息里的序列比对，本质也是「带约束的最长公共子序列 / 递增子序列」问题。" },
+  },
+  {
+    id: "knapsack-01",
+    name: "0/1 背包问题",
+    category: "dp",
+    subCategory: "背包问题",
+    difficulty: "中等",
+    stability: null,
+    description: "n 件物品各有重量与价值，背包容量为 W，每件物品只能选一次，求能装出的最大价值。所有背包问题的原型。",
+    complexity: "O(nW)",
+    route: "/algorithms/dp/knapsack-01",
+    defaultNotes: "### 学习笔记\n\n背包是所有二维 DP 的模板：外层「物品」，内层「容量」，每一格都在两个来源里取 max。\n\n我判断自己是否真懂了 0/1 背包，用的是这个标准：能不能解释清楚一维优化时**为什么容量必须倒着枚举**。\n倒序 = 只能从上一行取 = 每件物品只选一次；正序 = 可以从本行取 = 可重复选 = 完全背包。\n这一条理解了，整个背包家族就通了。",
+    complexityDetails: { time: [{ label: "最坏情况", value: "O(nW)" }, { label: "平均情况", value: "O(nW)" }, { label: "伪多项式说明", value: "复杂度取决于 W 的数值而非位数" }], space: "O(W)", stability: null, difficulty: "中等", extras: [{ label: "二维版本空间", value: "O(nW)" }, { label: "滚动数组优化后", value: "O(W)" }, { label: "分支限界/搜索", value: "n 很小时可行" }] },
+    detailSections: { basic: "## 0/1 背包问题\n\nn 件物品各有重量与价值，背包容量为 W，每件物品只能选一次，求能装出的最大价值。所有背包问题的原型。\n\n### 状态定义\n\ndp[i][j]：只考虑前 i 件物品、容量为 j 时的最大价值\n\n### 转移方程 / 贪心策略\n\ndp[i][j] = max(dp[i-1][j], dp[i-1][j-w[i]] + v[i])——不选它，或选它（选它必须由 i-1 层转移来，保证只用一次）\n\n### 边界与填表顺序\n\n- 边界：dp[0][j] = 0（没有物品），dp[i][0] = 0（容量为 0）\n- 顺序：i 从小到大、j 从小到大；一维优化时 **j 必须逆序**\n\n### 伪代码\n\n```\nfunction knapsack01(w[], v[], W):\n  for j from 0 to W: dp[0][j] = 0\n  for i from 1 to n:\n    for j from 0 to W:\n      dp[i][j] = dp[i-1][j]                 // 不选第 i 件\n      if w[i] <= j:\n        dp[i][j] = max(dp[i][j], dp[i-1][j-w[i]] + v[i])  // 选第 i 件\n  return dp[n][W]\n```\n\n### Python 实现\n\n```python\ndef knapsack_01(weights, values, W):\n    dp = [0] * (W + 1)\n    for w, v in zip(weights, values):\n        # 逆序枚举容量，保证每件物品最多被选一次\n        for j in range(W, w - 1, -1):\n            dp[j] = max(dp[j], dp[j - w] + v)\n    return dp[W]\n\n# 还原方案\ndef knapsack_01_items(weights, values, W):\n    n = len(weights)\n    dp = [[0] * (W + 1) for _ in range(n + 1)]\n    for i in range(1, n + 1):\n        w, v = weights[i - 1], values[i - 1]\n        for j in range(W + 1):\n            dp[i][j] = dp[i - 1][j]\n            if w <= j:\n                dp[i][j] = max(dp[i][j], dp[i - 1][j - w] + v)\n    picked, j = [], W\n    for i in range(n, 0, -1):\n        if dp[i][j] != dp[i - 1][j]:\n            picked.append(i)\n            j -= weights[i - 1]\n    return dp[n][W], picked[::-1]\n```\n\n### JavaScript 实现\n\n```javascript\nfunction knapsack01(weights, values, W) {\n  const dp = new Array(W + 1).fill(0);\n  for (let i = 0; i < weights.length; i++) {\n    const w = weights[i], v = values[i];\n    for (let j = W; j >= w; j--) {   // 逆序！否则会重复选同一件\n      dp[j] = Math.max(dp[j], dp[j - w] + v);\n    }\n  }\n  return dp[W];\n}\n```", advanced: "### 一维滚动数组：为什么必须逆序\n\n`dp[j] = max(dp[j], dp[j-w] + v)` 中的 `dp[j-w]` 必须是「还没考虑第 i 件物品」时的值。\n**逆序**枚举 j 时，`dp[j-w]` 还没被本轮更新，正好来自上一行；正序则会读到本轮刚写的值，等价于允许重复选——那就变成完全背包了。\n\n### 常见坑\n\n1. **初始化**：求「最多能装多少价值」时 dp 全 0；若问「恰好装满」，则要 `dp[0]=0, 其余 = -∞`，否则会把「没装东西」当成合法方案。\n2. 把逆序写成正序（→ 变成完全背包），这是最高频 bug。\n3. 需要还原具体方案时，必须保留二维表（或用额外数组记录每次转移来源）。\n\n### 背包家族一览\n\n| 题型 | 转移来源 | 容量枚举方向 |\n| --- | --- | --- |\n| 0/1 背包 | `dp[i-1][j-w]` | 逆序 |\n| 完全背包 | `dp[i][j-w]`（本行） | 正序 |\n| 多重背包 | 二进制拆分后套 0/1 | 逆序 |\n| 分组背包 | 组内枚举物品、组间转移 | 逆序 |\n\n### 应用\n\n预算分配、项目选型、负载调度、密钥组合枚举、以及密码学里的低密度子集和问题（Lattice 攻击的模型来源）。" },
+  },
+  {
+    id: "complete-knapsack",
+    name: "完全背包问题",
+    category: "dp",
+    subCategory: "背包问题",
+    difficulty: "中等",
+    stability: null,
+    description: "与 0/1 背包唯一的区别是每种物品可以选无限次。转移方程只改了一个下标，但含义完全不同。",
+    complexity: "O(nW)",
+    route: "/algorithms/dp/complete-knapsack",
+    defaultNotes: "### 学习笔记\n\n以前我总记不住 0/1 背包和完全背包的代码差别，后来改成记「**转移来自哪一行**」：\n\n- 来自上一行 → 这一件只被用过一次 → 0/1；\n- 来自本行 → 这一件可以叠加 → 完全。\n\n而一维数组里正序 / 逆序，只是「本行 vs 上一行」在滚动数组上的投影。这样记，四种背包（0/1、完全、多重、分组）都不用背模板了。",
+    complexityDetails: { time: [{ label: "最坏情况", value: "O(nW)" }, { label: "平均情况", value: "O(nW)" }], space: "O(W)", stability: null, difficulty: "中等", extras: [{ label: "滚动数组", value: "O(W)，容量正序枚举" }, { label: "方案数版本", value: "把 max 换成 +" }] },
+    detailSections: { basic: "## 完全背包问题\n\n与 0/1 背包唯一的区别是每种物品可以选无限次。转移方程只改了一个下标，但含义完全不同。\n\n### 状态定义\n\ndp[i][j]：前 i 种物品、容量 j 时的最大价值（每种可选任意次）\n\n### 转移方程 / 贪心策略\n\ndp[i][j] = max(dp[i-1][j], dp[i][j-w[i]] + v[i])——「再拿一个第 i 种」仍停留在第 i 行\n\n### 边界与填表顺序\n\n- 边界：dp[0][j] = 0，dp[i][0] = 0\n- 顺序：i 从小到大；一维优化时 **j 正序**\n\n### 伪代码\n\n```\nfunction completeKnapsack(w[], v[], W):\n  for j from 0 to W: dp[0][j] = 0\n  for i from 1 to n:\n    for j from 0 to W:\n      dp[i][j] = dp[i-1][j]\n      if w[i] <= j:\n        dp[i][j] = max(dp[i][j], dp[i][j-w[i]] + v[i])   // 注意是 dp[i][...]\n  return dp[n][W]\n```\n\n### Python 实现\n\n```python\ndef complete_knapsack(weights, values, W):\n    dp = [0] * (W + 1)\n    for w, v in zip(weights, values):\n        for j in range(w, W + 1):     # 正序：允许同一种物品被反复选\n            dp[j] = max(dp[j], dp[j - w] + v)\n    return dp[W]\n\n# 零钱兑换（完全背包求最少硬币数）\ndef coin_change(coins, amount):\n    INF = float('inf')\n    dp = [0] + [INF] * amount\n    for c in coins:\n        for j in range(c, amount + 1):\n            dp[j] = min(dp[j], dp[j - c] + 1)\n    return -1 if dp[amount] == INF else dp[amount]\n```\n\n### JavaScript 实现\n\n```javascript\nfunction completeKnapsack(weights, values, W) {\n  const dp = new Array(W + 1).fill(0);\n  for (let i = 0; i < weights.length; i++) {\n    const w = weights[i], v = values[i];\n    for (let j = w; j <= W; j++) {   // 正序 = 可重复选取\n      dp[j] = Math.max(dp[j], dp[j - w] + v);\n    }\n  }\n  return dp[W];\n}\n```", advanced: "### 一行下标的差别，两种题型\n\n- 0/1 背包：`dp[i][j] = max(dp[i-1][j], dp[i-1][j-w] + v)`，一维时**逆序**。\n- 完全背包：`dp[i][j] = max(dp[i-1][j], dp[i][j-w] + v)`，一维时**正序**。\n\n正序枚举时 `dp[j-w]` 已经是「考虑过第 i 种物品」的结果，因此可以在它基础上再加一个第 i 种，等于允许无限次选取。\n\n### 常见坑\n\n1. 求「恰好装满」的方案数时，初值 `dp[0] = 1`（或最优化时 `dp[0]=0`、其余 `-∞`）。\n2. 「组合数」与「排列数」的外层循环顺序不同：\n   - 求**组合**数：外层物品、内层容量（本文件中零钱兑换 II 的写法）；\n   - 求**排列**数：外层容量、内层物品（否则会漏掉不同顺序的方案）。\n3. 单件物品价值/重量比例极端时，先用 `gcd` 或支配关系剪掉必然不选的物品，可大幅降低实际开销。\n\n### 应用\n\n货币兑换、无限库存的装载优化、把长材料切割成需求规格的**切割钢材问题**（就是完全背包）、以及依赖安装时的无限复用选包。" },
+  },
+  {
+    id: "lcs",
+    name: "最长公共子序列",
+    category: "dp",
+    subCategory: "字符串DP",
+    difficulty: "中等",
+    stability: null,
+    description: "给两个字符串 A、B，求它们最长的公共子序列（可以不连续、但顺序一致）。二维表 DP 与左上角回溯的标准教材。",
+    complexity: "O(mn)",
+    route: "/algorithms/dp/lcs",
+    defaultNotes: "### 学习笔记\n\nLCS 是双字符串 DP 的模板：**行 = 第一个串的前缀长度，列 = 第二个串的前缀长度，格子值 = 这两段的答案**。\n\n字符相等时只能从左上角来（这个字符必然进答案），不相等时才是「丢弃 A 的末尾」或「丢弃 B 的末尾」二选一。\n这两条分支讲清楚，二维 DP 的「依赖方向」就不是问题了。\n\n回溯方向（左上 / 上 / 左）要记牢，因为「求长度」和「输出方案」的代码量差在这里。",
+    complexityDetails: { time: [{ label: "最坏情况", value: "O(mn)" }, { label: "最好情况", value: "O(mn)" }, { label: "平均情况", value: "O(mn)" }], space: "O(mn)", stability: null, difficulty: "中等", extras: [{ label: "只求长度时的空间", value: "O(min(m,n)) 滚动数组" }, { label: "还原方案", value: "从 (m,n) 回溯" }] },
+    detailSections: { basic: "## 最长公共子序列\n\n给两个字符串 A、B，求它们最长的公共子序列（可以不连续、但顺序一致）。二维表 DP 与左上角回溯的标准教材。\n\n### 状态定义\n\ndp[i][j]：A 的前 i 个字符与 B 的前 j 个字符的 LCS 长度\n\n### 转移方程 / 贪心策略\n\n若 A[i]==B[j]：dp[i][j] = dp[i-1][j-1] + 1；否则 dp[i][j] = max(dp[i-1][j], dp[i][j-1])\n\n### 边界与填表顺序\n\n- 边界：dp[0][j] = dp[i][0] = 0（空串与任何串的公共子序列长度为 0）\n- 顺序：按行 i 递增、行内 j 递增（每格只依赖上、左、左上三格）\n\n### 伪代码\n\n```\nfunction LCS(A, B):\n  for i from 0 to m: dp[i][0] = 0\n  for j from 0 to n: dp[0][j] = 0\n  for i from 1 to m:\n    for j from 1 to n:\n      if A[i] == B[j]:\n        dp[i][j] = dp[i-1][j-1] + 1\n      else:\n        dp[i][j] = max(dp[i-1][j], dp[i][j-1])\n  // 回溯：相等则收字符并走左上，否则走向值更大的方向\n  return dp[m][n]\n```\n\n### Python 实现\n\n```python\ndef lcs_length(a, b):\n    m, n = len(a), len(b)\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if a[i - 1] == b[j - 1]:\n                dp[i][j] = dp[i - 1][j - 1] + 1\n            else:\n                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])\n    return dp[m][n]\n\ndef lcs_string(a, b):\n    m, n = len(a), len(b)\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if a[i - 1] == b[j - 1]:\n                dp[i][j] = dp[i - 1][j - 1] + 1\n            else:\n                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])\n    seq, i, j = [], m, n\n    while i > 0 and j > 0:\n        if a[i - 1] == b[j - 1]:\n            seq.append(a[i - 1])\n            i -= 1\n            j -= 1\n        elif dp[i - 1][j] >= dp[i][j - 1]:\n            i -= 1\n        else:\n            j -= 1\n    return ''.join(reversed(seq))\n```\n\n### JavaScript 实现\n\n```javascript\nfunction lcsLength(a, b) {\n  const m = a.length, n = b.length;\n  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));\n  for (let i = 1; i <= m; i++) {\n    for (let j = 1; j <= n; j++) {\n      dp[i][j] = a[i - 1] === b[j - 1]\n        ? dp[i - 1][j - 1] + 1\n        : Math.max(dp[i - 1][j], dp[i][j - 1]);\n    }\n  }\n  return dp[m][n];\n}\n```", advanced: "### 空间优化\n\n求长度时只需上一行 → 滚动数组 O(n)；但**要还原子序列就必须保留整张表**（或用 Hirschberg 分治算法在 O(n) 空间下还原）。\n\n### 常见坑\n\n1. 下标偏移：字符串 `A[i-1]` 才对应 `dp[i]`，写成 `A[i]` 会整体错一格。\n2. 相等时**只能**走左上角 +1，不能取 max：因为此时走「上/左」一定不比左上更优，取 max 会让回溯路径不对。\n3. 回溯时优先向上还是向左，决定还原出的是哪一条 LCS（长度都正确，内容可能不同）。\n\n### LCS 与编辑距离的关系\n\nLCS 是「只允许插入/删除」且要求两段都变一样的问题：`只删不改` 的最少操作数 = `m + n - 2 * LCS`。\n所以 diff 工具（Git、`diff` 命令）本质上跑的就是 LCS/最小编辑脚本算法。\n\n### 应用\n\n- 版本比对与 `diff`、合并冲突展示；\n- 生物信息：DNA / 蛋白质序列比对（Needleman–Wunsch 是带打分矩阵的 LCS 推广）；\n- 抄袭检测、文本相似度、输入法候选匹配。" },
+  },
+  {
+    id: "edit-distance",
+    name: "编辑距离",
+    category: "dp",
+    subCategory: "字符串DP",
+    difficulty: "困难",
+    stability: null,
+    description: "把字符串 A 变成字符串 B，允许插入、删除、替换三种操作，求最少操作数（Levenshtein 距离）。",
+    complexity: "O(mn)",
+    route: "/algorithms/dp/edit-distance",
+    defaultNotes: "### 学习笔记\n\n编辑距离是最能体现「DP 四要素」的题：\n1. 状态：A 前 i 个变成 B 前 j 个的最少操作；\n2. 转移：三种操作对应三个来源方向；\n3. 边界：空串到空串 0，空串到长度 j 需 j 次插入；\n4. 顺序：左上、上、左都已经算过。\n\n以前我总把「删除」和「插入」的来源搞反，后来用一句话固定下来：**删是在 A 上消耗一个字符（往左上一格是 i-1，所以来源是上方）；插是为了满足 B 的一个字符（来源是左方）**。",
+    complexityDetails: { time: [{ label: "最坏情况", value: "O(mn)" }, { label: "平均情况", value: "O(mn)" }], space: "O(mn)", stability: null, difficulty: "困难", extras: [{ label: "滚动数组空间", value: "O(min(m,n))" }, { label: "带权重操作", value: "换代价矩阵即可，算法不变" }] },
+    detailSections: { basic: "## 编辑距离\n\n把字符串 A 变成字符串 B，允许插入、删除、替换三种操作，求最少操作数（Levenshtein 距离）。\n\n### 状态定义\n\ndp[i][j]：A 的前 i 个字符变成 B 的前 j 个字符所需的最少操作数\n\n### 转移方程 / 贪心策略\n\ndp[i][j] = min(dp[i-1][j] + 1（删）, dp[i][j-1] + 1（插）, dp[i-1][j-1] + cost（改 / 不动）)，其中 A[i]==B[j] 时 cost = 0\n\n### 边界与填表顺序\n\n- 边界：dp[i][0] = i（全删），dp[0][j] = j（全插）\n- 顺序：按行填充；每格依赖上、左、左上三格\n\n### 伪代码\n\n```\nfunction editDistance(A, B):\n  for i from 0 to m: dp[i][0] = i\n  for j from 0 to n: dp[0][j] = j\n  for i from 1 to m:\n    for j from 1 to n:\n      cost = (A[i] == B[j]) ? 0 : 1\n      dp[i][j] = min(dp[i-1][j] + 1,        // 删除\n                     dp[i][j-1] + 1,        // 插入\n                     dp[i-1][j-1] + cost)   // 替换 / 相等则不动\n  return dp[m][n]\n```\n\n### Python 实现\n\n```python\ndef edit_distance(a, b):\n    m, n = len(a), len(b)\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    for i in range(m + 1):\n        dp[i][0] = i\n    for j in range(n + 1):\n        dp[0][j] = j\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            cost = 0 if a[i - 1] == b[j - 1] else 1\n            dp[i][j] = min(\n                dp[i - 1][j] + 1,       # 删除 a[i-1]\n                dp[i][j - 1] + 1,       # 插入 b[j-1]\n                dp[i - 1][j - 1] + cost  # 替换（或不变）\n            )\n    return dp[m][n]\n```\n\n### JavaScript 实现\n\n```javascript\nfunction editDistance(a, b) {\n  const m = a.length, n = b.length;\n  const dp = Array.from({ length: m + 1 }, (_, i) =>\n    Array.from({ length: n + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))\n  );\n  for (let i = 1; i <= m; i++) {\n    for (let j = 1; j <= n; j++) {\n      const cost = a[i - 1] === b[j - 1] ? 0 : 1;\n      dp[i][j] = Math.min(\n        dp[i - 1][j] + 1,\n        dp[i][j - 1] + 1,\n        dp[i - 1][j - 1] + cost\n      );\n    }\n  }\n  return dp[m][n];\n}\n```", advanced: "### 三种操作对应三个方向\n\n记住这张方向表，方程就不会写错：\n\n| 操作 | 含义 | 来源格子 |\n| --- | --- | --- |\n| 删除 | A 去掉最后一个字符 | 上 `dp[i-1][j] + 1` |\n| 插入 | B 的最后一个字符是插进来的 | 左 `dp[i][j-1] + 1` |\n| 替换/相等 | 两端字符对齐 | 左上 `dp[i-1][j-1] + cost` |\n\n### 空间优化与还原方案\n\n求距离只要 O(n) 滚动数组；要输出操作序列就保留整表，从 `(m,n)` 逆推向 `(0,0)`，每步选择「来源格子 + 代价 = 当前值」的那一个。\n\n### 常见坑\n\n1. 初值：第一行/第一列是 `j` 和 `i`，不是 0。\n2. 若只允许插入和删除（不许替换），问题就变成了 `m + n - 2 * LCS`。\n3. 大文本上 O(mn) 太慢：可用 Ukkonen 带宽优化（只算 |i-j| ≤ k 的对角带）、或 MinHash/编辑距离自动机做近似匹配。\n\n### 应用\n\n拼写纠错与输入法联想、DNA 序列比对、OCR 结果校正、模糊搜索（如 `git` 的拼写建议、Elasticsearch fuzzy query）、以及程序查重。" },
+  },
+  {
+    id: "matrix-chain",
+    name: "矩阵链乘",
+    category: "dp",
+    subCategory: "区间DP",
+    difficulty: "困难",
+    stability: null,
+    description: "给定 n 个待连乘矩阵的维度序列，求标量乘法次数最少的加括号顺序。区间 DP 的入门题，也是「枚举断点」思想的原型。",
+    complexity: "O(n³)",
+    route: "/algorithms/dp/matrix-chain",
+    defaultNotes: "### 学习笔记\n\n矩阵链乘是我用来学「区间 DP」的例子。关键突破点是：不要想着「第一步在哪里切」，\n而要想「**最后一步在哪里合并**」——因为最后一次合并把整个区间分成两个独立子问题，\n而第一个切点两侧规模未知、无法直接递推。\n\n填表顺序也要专门记：区间 DP 按长度枚举，斜着填表。\n另外一张 `s` 表存断点，才使得「输出加括号方案」只需要一次递归。",
+    complexityDetails: { time: [{ label: "最坏情况", value: "O(n³)" }, { label: "最好情况", value: "O(n³)" }, { label: "Knuth 优化后", value: "O(n²)" }], space: "O(n²)", stability: null, difficulty: "困难", extras: [{ label: "加括号方案数", value: "Catalan 数，暴力枚举为指数级" }, { label: "辅助表 s", value: "记录最优断点，用于还原方案" }] },
+    detailSections: { basic: "## 矩阵链乘\n\n给定 n 个待连乘矩阵的维度序列，求标量乘法次数最少的加括号顺序。区间 DP 的入门题，也是「枚举断点」思想的原型。\n\n### 状态定义\n\ndp[i][j]：计算矩阵 Ai…Aj 连乘所需的最少标量乘法次数\n\n### 转移方程 / 贪心策略\n\ndp[i][j] = min{ dp[i][k] + dp[k+1][j] + p[i-1]·p[k]·p[j] }，k 从 i 到 j-1（枚举最后一次合并的位置）\n\n### 边界与填表顺序\n\n- 边界：dp[i][i] = 0（单个矩阵不需要乘法）\n- 顺序：按区间长度 len = 2,3,…,n 递增枚举，长度短的算完才能算长的\n\n### 伪代码\n\n```\nfunction MatrixChainOrder(p[1..n+1]):\n  for i from 1 to n: dp[i][i] = 0\n  for len from 2 to n:\n    for i from 1 to n-len+1:\n      j = i + len - 1\n      dp[i][j] = +∞\n      for k from i to j-1:\n        q = dp[i][k] + dp[k+1][j] + p[i-1]*p[k]*p[j]\n        if q < dp[i][j]:\n          dp[i][j] = q\n          s[i][j] = k\n  return dp[1][n]  // s 表用于还原括号方案\n```\n\n### Python 实现\n\n```python\ndef matrix_chain_order(dims):\n    \"\"\"dims = [p0, p1, ..., pn]，第 i 个矩阵为 dims[i-1] x dims[i]\"\"\"\n    n = len(dims) - 1\n    dp = [[0] * (n + 1) for _ in range(n + 1)]\n    s = [[0] * (n + 1) for _ in range(n + 1)]\n    for length in range(2, n + 1):\n        for i in range(1, n - length + 2):\n            j = i + length - 1\n            dp[i][j] = float('inf')\n            for k in range(i, j):\n                q = dp[i][k] + dp[k + 1][j] + dims[i - 1] * dims[k] * dims[j]\n                if q < dp[i][j]:\n                    dp[i][j], s[i][j] = q, k\n\n    def parenthesize(i, j):\n        if i == j:\n            return f'A{i}'\n        return f'({parenthesize(i, s[i][j])} x {parenthesize(s[i][j] + 1, j)})'\n\n    return dp[1][n], parenthesize(1, n)\n```\n\n### JavaScript 实现\n\n```javascript\nfunction matrixChainOrder(p) {\n  const n = p.length - 1;\n  const dp = Array.from({ length: n + 1 }, () => new Array(n + 1).fill(0));\n  const s = Array.from({ length: n + 1 }, () => new Array(n + 1).fill(0));\n  for (let len = 2; len <= n; len++) {\n    for (let i = 1; i + len - 1 <= n; i++) {\n      const j = i + len - 1;\n      dp[i][j] = Infinity;\n      for (let k = i; k < j; k++) {\n        const q = dp[i][k] + dp[k + 1][j] + p[i - 1] * p[k] * p[j];\n        if (q < dp[i][j]) {\n          dp[i][j] = q;\n          s[i][j] = k;\n        }\n      }\n    }\n  }\n  return dp[1][n];\n}\n```", advanced: "### 区间 DP 的通用套路\n\n1. 状态定义成 `dp[i][j]`（一段区间的答案）；\n2. **枚举「最后一步」**（通常是某个断点 k），把区间切成两个已经算好的子区间；\n3. 填表顺序按区间长度从小到大，保证子区间先算完；\n4. 需要还原方案时，额外维护一张决策表 `s[i][j]`。\n\n同族题目：戳气球、最优二叉搜索树、能量项链、括号匹配得分、回文分割。\n\n### Knuth 优化\n\n若最优断点满足单调性 `s[i][j-1] ≤ s[i][j] ≤ s[i+1][j]`，可把内层枚举 k 的范围缩小，总复杂度从 O(n³) 降到 O(n²)。矩阵链乘、最优 BST 都满足该条件。\n\n### 常见坑\n\n1. 维度序列长度是 n+1，n 是矩阵个数，下标极易错位。\n2. 填表顺序写成「i 从小到大、j 从小到大」会依赖未算出的格子，必须**按长度**。\n3. `dp[i][j] = min(dp[i][j], ...)` 前要把当前格初始化成 `+∞`（`dp[i][i]` 除外）。\n\n### 应用\n\n深度学习框架里的算子融合与自动求导图优化、表达式求值的乘法顺序、数据库多表连接顺序选择（连接代价模型同构于矩阵链乘）。" },
+  },
+
+  // ==================== 贪心算法 ====================
+  {
+    id: "activity-selection",
+    name: "活动选择问题",
+    category: "greedy",
+    subCategory: "区间贪心",
+    difficulty: "简单",
+    stability: null,
+    description: "一堆各有起止时间的活动共用一间会场，求最多能安排多少个互不冲突的活动。按结束时间升序贪心是最优策略。",
+    complexity: "O(n log n)",
+    route: "/algorithms/greedy/activity-selection",
+    defaultNotes: "### 学习笔记\n\n活动选择是「贪心为什么能成立」的最好例子。以前我以为贪心全靠感觉，\n而这题用**交换论证**可以严格证明：把最优解的第一个活动换成结束最早的那个，答案不会变差。\n\n我也借此分清了两类题：\n- 求「最多能选几个」→ 结束时间升序贪心；\n- 求「至少要几个资源」→ 排序 + 扫描线/最小堆。\n这两个题目描述很像，解法与答案含义完全不同。",
+    complexityDetails: { time: [{ label: "最坏情况", value: "O(n log n)" }, { label: "已排序时", value: "O(n)" }, { label: "平均情况", value: "O(n log n)" }], space: "O(n)（排序）", stability: null, difficulty: "简单", extras: [{ label: "为什么不是「最早开始」", value: "会挡住后面的长活动" }, { label: "为什么不是「最短时长」", value: "位置信息不重要，反例易构造" }] },
+    detailSections: { basic: "## 活动选择问题\n\n一堆各有起止时间的活动共用一间会场，求最多能安排多少个互不冲突的活动。按结束时间升序贪心是最优策略。\n\n### 状态定义\n\n无需表格 DP：只有一个量 `lastEnd`——已选活动中最晚的结束时间\n\n### 转移方程 / 贪心策略\n\n按结束时间升序扫描：若 `start[i] ≥ lastEnd` 就选它，并令 `lastEnd = end[i]`\n\n### 边界与填表顺序\n\n- 边界：lastEnd = -∞（或 0），已选集合为空\n- 顺序：先按结束时间升序排序（结束时间相同可任取），再线性扫描\n\n### 伪代码\n\n```\nfunction activitySelection(s[], f[]):   // f 为结束时间\n  sort activities by f ascending\n  A = [activity 1]        // 选第一个（结束最早的）\n  lastEnd = f[1]\n  for i from 2 to n:\n    if s[i] >= lastEnd:\n      A.add(activity i)\n      lastEnd = f[i]\n  return A\n```\n\n### Python 实现\n\n```python\ndef activity_selection(intervals):\n    # intervals: [(start, end), ...]，半开区间 [start, end)\n    picked, last_end = [], float('-inf')\n    for s, e in sorted(intervals, key=lambda x: x[1]):\n        if s >= last_end:\n            picked.append((s, e))\n            last_end = e\n    return picked\n\nprint(activity_selection([(1, 4), (3, 5), (0, 6), (5, 7), (3, 9), (5, 9), (6, 10), (8, 11), (8, 12), (2, 14), (12, 16)]))\n# [(1, 4), (5, 7), (8, 11), (12, 16)]\n```\n\n### JavaScript 实现\n\n```javascript\nfunction activitySelection(intervals) {\n  const sorted = [...intervals].sort((a, b) => a.end - b.end);\n  const picked = [];\n  let lastEnd = -Infinity;\n  for (const it of sorted) {\n    if (it.start >= lastEnd) {\n      picked.push(it);\n      lastEnd = it.end;\n    }\n  }\n  return picked;\n}\n```", advanced: "### 为什么「结束最早」是对的\n\n**交换论证（exchange argument）**：设最优解为 O，贪心解第一个选的是 g1（结束最早的活动）。\nO 的第一个活动 o1 一定满足 `f(g1) ≤ f(o1)`，把 O 中的 o1 换成 g1，剩下的活动仍然与之相容，\n于是得到另一个同样最优、且以 g1 开头的解。对剩余子问题递归，即证贪心解全局最优。\n\n贪心正确性的三种常用证明：**交换论证**、**拟阵（matroid）结构**、**问题本身具有贪心选择性质 + 最优子结构**。\n\n### 为什么其他策略不行\n\n- 挑**开始最早**：会被一个从 0 到 100 的活动吃掉整天。\n- 挑**时长最短**：反例 `A=[0,5), B=[4,9), C=[8,13), D=[0,13)` 之类的交错区间，会少选一个。\n- 挑**冲突最少**：需要全局信息，代价高且仍非最优。\n\n### 变体与应用\n\n- **会议室数量（最少资源）**：同一批区间求「需要几间会议室」→ 扫描线 / 最小堆，O(n log n)。\n- **带权活动选择**：每个活动有收益，贪心失效，要用 DP + 二分（O(n log n)）。\n- **任务调度、CPU 时间片、作业车间、节目单编排、区间染色**都用这套思路。" },
+  },
+  {
+    id: "fractional-knapsack",
+    name: "分数背包问题",
+    category: "greedy",
+    subCategory: "背包贪心",
+    difficulty: "中等",
+    stability: null,
+    description: "物品可以切分（按任意比例取），背包容量固定，求装出的最大价值。按单位价值 v/w 降序贪心即最优。",
+    complexity: "O(n log n)",
+    route: "/algorithms/greedy/fractional-knapsack",
+    defaultNotes: "### 学习笔记\n\n分数背包最重要的价值在于它是**「能不能用贪心」的分水岭样本**：\n只是把「不可分割」这个条件放开，DP 就变成了排序 + 一遍扫描。\n\n我记住的结论是：贪心成立需要「每一步的选择不剥夺后面的好选择」，\n而 0/1 背包里「先把重的拿走」恰恰会浪费容量，所以只能 DP 枚举取舍。\n下次面对一个疑似贪心的题，先试着构造一个「装不满/剩余浪费」的反例。",
+    complexityDetails: { time: [{ label: "最坏情况", value: "O(n log n)" }, { label: "已排序时", value: "O(n)" }, { label: "选择排序求第 k 大", value: "O(n)" }], space: "O(n)", stability: null, difficulty: "中等", extras: [{ label: "对比 0/1 背包", value: "不可分割时贪心失效，需 O(nW) DP" }, { label: "总重量", value: "可全部取完或部分取完" }] },
+    detailSections: { basic: "## 分数背包问题\n\n物品可以切分（按任意比例取），背包容量固定，求装出的最大价值。按单位价值 v/w 降序贪心即最优。\n\n### 状态定义\n\n一个标量：剩余容量 `rest`（以及累计价值 `value`）\n\n### 转移方程 / 贪心策略\n\n按性价比 v/w 降序排序 → 能整件装就整件装，装不下就切一部分填满，然后结束\n\n### 边界与填表顺序\n\n- 边界：rest = W，value = 0\n- 顺序：排序后一次线性扫描\n\n### 伪代码\n\n```\nfunction fractionalKnapsack(w[], v[], W):\n  sort items by (v[i] / w[i]) descending\n  rest = W, value = 0\n  for each item i:\n    if rest == 0: break\n    if w[i] <= rest:\n      value += v[i]; rest -= w[i]\n    else:\n      frac = rest / w[i]\n      value += v[i] * frac; rest = 0\n  return value\n```\n\n### Python 实现\n\n```python\ndef fractional_knapsack(weights, values, W):\n    items = sorted(zip(values, weights), key=lambda x: x[0] / x[1], reverse=True)\n    rest, total = W, 0.0\n    parts = []\n    for v, w in items:\n        if rest <= 0:\n            break\n        take = min(w, rest)\n        total += v * take / w\n        rest -= take\n        parts.append((v, w, take))\n    return total, parts\n```\n\n### JavaScript 实现\n\n```javascript\nfunction fractionalKnapsack(weights, values, W) {\n  const items = weights\n    .map((w, i) => ({ w, v: values[i], ratio: values[i] / w }))\n    .sort((a, b) => b.ratio - a.ratio);\n  let rest = W, total = 0;\n  for (const it of items) {\n    if (rest <= 0) break;\n    const take = Math.min(it.w, rest);\n    total += it.v * (take / it.w);\n    rest -= take;\n  }\n  return total;\n}\n```", advanced: "### 为什么分数背包能用贪心\n\n物品**可分割** ⇒ 装进去的每一份都互相独立 ⇒ 每一步取当前性价比最高的那份，\n不可能让后续变差。形式化证明同样用交换论证：任何最优解中若存在「低性价比的一份」排在「高性价比的一份」之前，\n交换二者体积不变、价值不减。\n\n### 关键对比：0/1 背包为什么贪心会失败\n\n背包容量 10，物品 `(w=6,v=60, ratio=10)`、`(w=5,v=50, ratio=10)`、`(w=5,v=50, ratio=10)`：\n贪心先拿 6/60 后只能再拿一个 5/50 → 110；而最优是两个 5/50 装满 → 100 加上剩 4 空着？\n更直观的反例：`W=10`，物品 A(10, 60)、B(6, 40)、C(6, 40)。贪心选 A 得 60，最优选 B+C 得 80。\n**不可分割时，「这一步最优」会破坏「剩下的容量能被充分利用」**，于是必须 DP。\n\n### 实现细节\n\n1. 浮点比较：用 `v1 * w2 > v2 * w1` 做交叉相乘，避免除法带来的精度问题。\n2. 若要输出方案，记得记录最后一件被切分的比例。\n3. 若只关心最大值且物品已按性价比排好，可在剩余容量为 0 时提前 break。\n\n### 应用\n\n按份数可分割的资源投放（燃料、液体原料、可分割预算）、广告位按时长按比例售卖、\n以及**霍夫曼编码 / 分数规划**等问题的松弛版本；它是「连续松弛使贪心成立」的典型例子。" },
+  },
+  {
+    id: "huffman-coding",
+    name: "哈夫曼编码",
+    category: "greedy",
+    subCategory: "编码贪心",
+    difficulty: "困难",
+    stability: null,
+    description: "由字符出现频次构造一组前缀码，使编码后的总比特数最少。每次合并权值最小的两棵树，是贪心选择性质的经典证明对象。",
+    complexity: "O(n log n)",
+    route: "/algorithms/greedy/huffman-coding",
+    defaultNotes: "### 学习笔记\n\n哈夫曼是我第一个见到「有完整证明」的贪心算法。老师当时说：合并最小的两棵，\n听起来很自然，但要写清楚为什么需要两步——**贪心选择性质**（最小的两个必是最深兄弟）\n和**最优子结构**（合并后问题规模变小、结构一致）。\n\n另一个实用点：WPL = ∑ 频次 × 码长，压缩后的总位数正好等于 WPL。\n把「树的带权路径长」和「文件总比特数」画上等号之后，这题的目标函数就不再抽象了。",
+    complexityDetails: { time: [{ label: "最坏情况", value: "O(n log n)" }, { label: "频次已排序", value: "O(n)" }, { label: "平均情况", value: "O(n log n)" }], space: "O(n)", stability: null, difficulty: "困难", extras: [{ label: "带权路径长度 WPL", value: "∑ freq[i] · depth[i]" }, { label: "树节点数", value: "2n − 1（n 个叶子）" }] },
+    detailSections: { basic: "## 哈夫曼编码\n\n由字符出现频次构造一组前缀码，使编码后的总比特数最少。每次合并权值最小的两棵树，是贪心选择性质的经典证明对象。\n\n### 状态定义\n\n最小堆中若干棵子树，每棵子树的权值 = 其叶子频次之和\n\n### 转移方程 / 贪心策略\n\n取出堆顶两棵（权值最小）合并成一棵新树（权值相加）放回堆中，直到只剩一棵\n\n### 边界与填表顺序\n\n- 边界：n 个只含单一字符的叶子节点\n- 顺序：重复 n-1 次合并；每次都必须取当前最小的两个\n\n### 伪代码\n\n```\nfunction Huffman(freq):\n  Q = min-heap of leaf nodes keyed by freq\n  while size(Q) > 1:\n    x = extractMin(Q)\n    y = extractMin(Q)\n    z = new node(weight = x.weight + y.weight, left = x, right = y)\n    insert(Q, z)\n  root = extractMin(Q)\n  assignCodes(root, \"\")     // 左 0 右 1，叶子处记录路径\n  return root\n```\n\n### Python 实现\n\n```python\nimport heapq\nfrom collections import Counter\n\nclass Node:\n    def __init__(self, ch, freq, left=None, right=None):\n        self.ch, self.freq, self.left, self.right = ch, freq, left, right\n\n    def __lt__(self, other):          # 给 heapq 用的比较\n        return self.freq < other.freq\n\ndef huffman_codes(text):\n    heap = [Node(ch, f) for ch, f in Counter(text).items()]\n    heapq.heapify(heap)\n    while len(heap) > 1:\n        a, b = heapq.heappop(heap), heapq.heappop(heap)\n        heapq.heappush(heap, Node(None, a.freq + b.freq, a, b))\n    codes = {}\n\n    def walk(nd, prefix):\n        if nd.ch is not None:\n            codes[nd.ch] = prefix or '0'\n            return\n        walk(nd.left, prefix + '0')\n        walk(nd.right, prefix + '1')\n\n    walk(heap[0], '')\n    return codes\n\nprint(huffman_codes('abracadabra'))\n```\n\n### JavaScript 实现\n\n```javascript\nfunction huffmanCodes(freqMap) {\n  class Node {\n    constructor(ch, freq, left = null, right = null) {\n      Object.assign(this, { ch, freq, left, right });\n    }\n  }\n  // 简易最小堆：这里用数组 + 排序，工程上应换成二叉堆\n  let pool = Object.entries(freqMap).map(([ch, freq]) => new Node(ch, freq));\n  while (pool.length > 1) {\n    pool.sort((a, b) => a.freq - b.freq);\n    const [x, y] = [pool.shift(), pool.shift()];\n    pool.push(new Node(null, x.freq + y.freq, x, y));\n  }\n  const codes = {};\n  (function walk(nd, prefix) {\n    if (!nd) return;\n    if (nd.ch !== null) return void (codes[nd.ch] = prefix || '0');\n    walk(nd.left, prefix + '0');\n    walk(nd.right, prefix + '1');\n  })(pool[0], '');\n  return codes;\n}\n\nconsole.log(huffmanCodes({ a: 45, b: 13, c: 12, d: 16, e: 9, f: 5 }));\n```", advanced: "### 正确性证明分两步\n\n1. **贪心选择性质**：权值最小的两个字符在最优编码树里必然是**兄弟**，且位于最深层。\n   若不然，把它们换到更深的位置会减少 WPL，与最优矛盾。\n2. **最优子结构**：把这两棵子树合并成一个权值为两者之和的超级叶子后，\n   新问题的最优解与原子问题的最优解一一对应（WPL 只差一个常数 `x.freq + y.freq`）。\n\n### 实现要点\n\n1. 用**最小堆**（priority queue）维护，每次取两个最小值：O(n log n)；\n   若频次已排序，可用**两个队列**做到 O(n)（一个放原始叶子，一个放合并出的内部节点）。\n2. 编码时左右分支分别记 0/1（约定一致即可），解码方必须知道树结构或频次表——\n   所以实际文件头要额外存一棵「树描述」。\n3. 只有一个字符时码长要特判为 1（`prefix || '0'`）。\n\n### 前缀码与解码唯一性\n\n没有任何一个码字是另一个码字的前缀 ⇒ 码流可以边读边解、无需分隔符，也不可能被误解。\n这与「定长码」相比省下的空间，就是频次分布的不均匀程度（信息论上界是香农熵）。\n\n### 应用\n\nDEFLATE（gzip / zip / PNG）、MP3/JPEG 中的熵编码、通信协议中的变长字段编码；\n思想还被推广成 **哈夫曼树 → 最优前缀码、Giles/Cook 自适应压缩**等。" },
+  },
+  {
+    id: "coin-change-greedy",
+    name: "贪心找零",
+    category: "greedy",
+    subCategory: "构造贪心",
+    difficulty: "简单",
+    stability: null,
+    description: "用给定面额的硬币凑出目标金额，每次取不超过剩余金额的最大面额。它是理解「贪心什么时候会失败」的最佳反例。",
+    complexity: "O(n log n + k)",
+    route: "/algorithms/greedy/coin-change-greedy",
+    defaultNotes: "### 学习笔记\n\n这题我把它记成「贪心的边界样本」：题面跟活动选择一样简单，\n但答案可能是错的——关键在于**局部最优是否损害了整体的可组合性**。\n\n凑 6 分，有 [1,3,4] 三种面额时，先拿 4 再拿 1、1 用了 3 枚，而 3+3 只用 2 枚。\n一次「最大的」拿走，让剩下的金额无法被高效拼出来，这就是贪心选择性质不成立。\n\n所以我的检查清单变成：① 这个「最优一步」会不会让剩余子问题变难？② 能不能找到一个反例金额？",
+    complexityDetails: { time: [{ label: "最坏情况", value: "O(n log n + k)" }, { label: "最好情况", value: "O(n log n)" }, { label: "平均情况", value: "O(n log n + k)" }], space: "O(n)", stability: null, difficulty: "简单", extras: [{ label: "n = 面额种类数", value: "k = 最终使用的硬币枚数" }, { label: "最少硬币数（一般面额）", value: "需 DP，O(n·amount)" }] },
+    detailSections: { basic: "## 贪心找零\n\n用给定面额的硬币凑出目标金额，每次取不超过剩余金额的最大面额。它是理解「贪心什么时候会失败」的最佳反例。\n\n### 状态定义\n\n一个标量：剩余金额 `rest`\n\n### 转移方程 / 贪心策略\n\n面额降序遍历：`count[i] = rest / coins[i]`（整除），`rest -= count[i] * coins[i]`\n\n### 边界与填表顺序\n\n- 边界：rest = amount，已用枚数 = 0\n- 顺序：先按面额从大到小排序，再线性处理\n\n### 伪代码\n\n```\nfunction greedyChange(coins[], amount):\n  sort coins descending\n  rest = amount, used = 0\n  for c in coins:\n    k = rest / c        // 整除\n    used += k\n    rest -= k * c\n  if rest == 0: return used\n  else: return FAIL     // 贪心无法完成（面额不含 1 时可能发生）\n```\n\n### Python 实现\n\n```python\ndef greedy_change(coins, amount):\n    rest, plan = amount, []\n    for c in sorted(coins, reverse=True):\n        k = rest // c\n        if k:\n            plan.append((c, k))\n            rest -= k * c\n    return plan, rest          # rest != 0 表示贪心失败\n\ndef min_coins_dp(coins, amount):\n    \"\"\"通用解法：完全背包求最少枚数\"\"\"\n    INF = float('inf')\n    dp = [0] + [INF] * amount\n    for c in coins:\n        for j in range(c, amount + 1):\n            dp[j] = min(dp[j], dp[j - c] + 1)\n    return -1 if dp[amount] == INF else dp[amount]\n\nprint(greedy_change([25, 10, 5, 1], 63))      # 规范系统：正确\nprint(greedy_change([4, 3, 1], 6))            # 贪心 4+1+1（3 枚）\nprint(min_coins_dp([1, 3, 4], 6))             # 最优 3+3（2 枚）\n```\n\n### JavaScript 实现\n\n```javascript\nfunction greedyChange(coins, amount) {\n  let rest = amount;\n  const plan = [];\n  for (const c of [...coins].sort((a, b) => b - a)) {\n    const k = Math.floor(rest / c);\n    if (k) {\n      plan.push({ coin: c, count: k });\n      rest -= k * c;\n    }\n  }\n  return { plan, rest };   // rest !== 0 说明贪心走不通\n}\n\nfunction minCoinsDP(coins, amount) {\n  const dp = [0, ...new Array(amount).fill(Infinity)];\n  for (const c of coins) {\n    for (let j = c; j <= amount; j++) {\n      dp[j] = Math.min(dp[j], dp[j - c] + 1);\n    }\n  }\n  return dp[amount] === Infinity ? -1 : dp[amount];\n}\n```", advanced: "### 贪心什么时候是对的\n\n货币系统被称为「**规范（canonical）**」，当且仅当对任意金额贪心都给最少枚数。判定要点：\n\n- 常见体系（如 1, 2, 5, 10, 20, 50 / 1, 5, 10, 25）是规范的；\n- 逐位倍增（每一档都是前一档的整数倍，如 1, 2, 4, 8）一定规范；\n- 反之，`[1, 3, 4]` 凑 6 → 贪心 3 枚、最优 2 枚（3+3）；`[1, 5, 10, 25]` 的变形 `[1, 10, 25, 30]` 凑 60 → 贪心 30+25+5? 无 5 时更糟。\n- 存在多项式时间算法判定规范性，只需检查 `O(c_max²)` 量级的反例区间（Pearson 算法）。\n\n### 正确的通用解法\n\n「凑出金额的最少硬币数」= **完全背包**：`dp[j] = min(dp[j], dp[j - c] + 1)`，复杂度 `O(n·amount)`。\n「凑出金额的方案数」= 完全背包计数版：`dp[j] += dp[j - c]`（外层硬币 ⇒ 组合数；外层金额 ⇒ 排列数）。\n\n### 常见坑\n\n1. 忘排序或排序方向反了。\n2. 面额里没有 1 时，贪心可能剩下一段凑不出来，此时**必须**说明失败而不是给出错误答案。\n3. 把「每次最大面额」当成「最少枚数」的定义——两者只在规范系统里等价。\n\n### 应用\n\n自动售货机找零、票据/面额拆分、库存按规格出货（整箱优先）、\n以及作为「为什么不能用贪心」的教学反例——面试里的零钱兑换正是它的 DP 版本。" },
+  },
 ]
 
 // ==================== 便捷派生数据 ====================
@@ -608,6 +780,27 @@ export const algorithms = [
 export const sortingAlgorithms = algorithms.filter((a) => a.category === 'sorting')
 export const searchingAlgorithms = algorithms.filter((a) => a.category === 'searching')
 export const graphAlgorithms = algorithms.filter((a) => a.category === 'graph')
+export const dpAlgorithms = algorithms.filter((a) => a.category === 'dp')
+export const greedyAlgorithms = algorithms.filter((a) => a.category === 'greedy')
+
+/** 分类元信息：导航、进度页、关于页共用一份 */
+export const algorithmCategories = [
+  { key: 'sorting', label: '排序算法', to: '/algorithms/sorting' },
+  { key: 'searching', label: '搜索算法', to: '/algorithms/searching' },
+  { key: 'graph', label: '图算法', to: '/algorithms/graph' },
+  { key: 'dp', label: '动态规划', to: '/algorithms/dp' },
+  { key: 'greedy', label: '贪心算法', to: '/algorithms/greedy' },
+]
+
+/** 分类 -> 子分类（保持与卡片列表一致的展示顺序） */
+export const categorySubCategories = {
+  dp: ['线性DP', '背包问题', '字符串DP', '区间DP'],
+  greedy: ['区间贪心', '背包贪心', '编码贪心', '构造贪心'],
+}
+
+export function algorithmsOfCategory(key) {
+  return algorithms.filter((a) => a.category === key)
+}
 
 /** 按语义 id 查找单个算法 */
 export function getAlgorithmById(id) {

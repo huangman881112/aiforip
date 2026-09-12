@@ -1,0 +1,235 @@
+/* ============================================================
+   算法详情页「可视化」区公共外观：动态规划 / 贪心算法共用
+   约定：.detail-container（来自 common-algorithm-page.css）→ .viz-shell → 各区块
+   ============================================================ */
+
+.viz-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  color: var(--text-1);
+}
+
+.viz-section {
+  background-color: var(--surface);
+  border: 1px solid var(--border-1);
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+
+.viz-section h3 {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+  color: var(--c-blue);
+}
+
+.viz-hint {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+  color: var(--text-2);
+  line-height: 1.6;
+}
+
+.viz-recurrence {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background-color: var(--code-bg);
+  color: var(--c-amber);
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  font-size: 0.88rem;
+}
+
+/* ---------------- 输入区 ---------------- */
+.viz-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 20px;
+  align-items: flex-end;
+}
+
+.viz-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 150px;
+}
+
+.viz-field label {
+  font-size: 0.82rem;
+  color: var(--text-2);
+}
+
+.viz-field input {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: 6px;
+  color: var(--text-1);
+  padding: 7px 10px;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+.viz-field input:focus {
+  outline: none;
+  border-color: var(--c-blue);
+}
+
+.viz-field-wide {
+  flex: 1 1 260px;
+}
+
+.viz-error {
+  margin: 10px 0 0;
+  color: var(--c-red);
+  font-size: 0.85rem;
+}
+
+/* ---------------- 控制条 ---------------- */
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+.viz-controls button {
+  padding: 7px 14px;
+  border: 1px solid var(--border-2);
+  border-radius: 6px;
+  background-color: var(--surface-2);
+  color: var(--text-1);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.viz-controls button:hover:not(:disabled) {
+  background-color: var(--surface-3);
+  border-color: var(--c-blue);
+}
+
+.viz-controls button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.viz-controls button.primary {
+  background-color: var(--brand-600);
+  border-color: var(--brand-500);
+  color: var(--text-on-brand);
+}
+
+.viz-speed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-2);
+}
+
+.viz-progress {
+  font-size: 0.85rem;
+  color: var(--text-2);
+  margin-left: auto;
+}
+
+/* ---------------- 统计条 ---------------- */
+.viz-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.viz-stat {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background-color: var(--surface-muted);
+  border: 1px solid var(--border-1);
+  font-size: 0.85rem;
+  color: var(--text-2);
+}
+
+.viz-stat b {
+  color: var(--c-green);
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+/* ---------------- 步骤说明 ---------------- */
+.viz-current {
+  min-height: 44px;
+  padding: 10px 14px;
+  border-left: 3px solid var(--c-blue);
+  border-radius: 4px;
+  background-color: var(--code-bg);
+  color: var(--text-1);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.viz-answer {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-left: 3px solid var(--c-green);
+  border-radius: 4px;
+  background-color: var(--tint-green);
+  color: var(--text-1);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.viz-steps {
+  max-height: 240px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.viz-step {
+  display: flex;
+  gap: 8px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-2);
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+
+.viz-step.active {
+  background-color: var(--brand-50);
+  color: var(--text-1);
+}
+
+.viz-step .idx {
+  color: var(--text-3);
+  min-width: 26px;
+  text-align: right;
+}
+
+.viz-step.init .tag-dot { background-color: var(--c-blue); }
+.viz-step.compute .tag-dot { background-color: var(--c-amber); }
+.viz-step.skip .tag-dot, .viz-step.reject .tag-dot { background-color: var(--c-red); }
+.viz-step.take .tag-dot, .viz-step.match .tag-dot, .viz-step.done .tag-dot { background-color: var(--c-green); }
+.viz-step.part .tag-dot, .viz-step.consider .tag-dot, .viz-step.merge .tag-dot { background-color: var(--c-purple); }
+
+.tag-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  margin-top: 6px;
+}
+
+/* 通用滚动条 */
+.viz-steps::-webkit-scrollbar {
+  width: 8px;
+}
+
+.viz-steps::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 4px;
+}

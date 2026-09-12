@@ -6,7 +6,6 @@
 
 <script setup>
 import { ref } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 import { useSortingVisualization } from '../../../composables/useSortingVisualization.js'
 
 // 定义emits
@@ -32,9 +31,6 @@ const {
 const closeDetail = () => {
   emit('close')
 }
-
-// 控制标签页切换
-const activeTab = ref('basic')
 
 // 快速排序专属状态
 const pivotIndex = ref(-1)
@@ -203,6 +199,9 @@ const testSort = async () => {
 
   comparedIndices.value = []
   swappedIndices.value = []
+  leftPartitionIndices.value = []
+  rightPartitionIndices.value = []
+  pivotIndex.value = -1
   isButtonClicked.value = false
   sortingStatus.value = '测试排序完成'
   const finishDetails = `测试排序完成，最终结果: [${sortedData.value.join(', ')}]，共进行了 ${comparisonCount.value} 次比较和 ${swapCount.value} 次交换`
@@ -215,85 +214,14 @@ const testSort = async () => {
 
 <template>
   <div class="quick-sort-detail detail-container">
-  <button class="close-btn" @click="closeDetail">×</button>
+    <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>快速排序</h2>
-      <div class="tabs">
-        <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ active: activeTab === 'sort' }" @click="activeTab = 'sort'">排序</button>
-        <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="{ active: activeTab === 'notes' }" @click="activeTab = 'notes'">笔记</button>
-      </div>
     </div>
 
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>快速排序是一种高效的排序算法，采用了分治的思想。它选择一个基准元素，将数组分为两个子数组，小于基准的元素放在左边，大于基准的元素放在右边。</p>
 
-          <AlgorithmComplexity algorithm-id="quick-sort" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function quickSort(arr, low, high):
-  if low < high:
-    pi = partition(arr, low, high)
-    quickSort(arr, low, pi - 1)
-    quickSort(arr, pi + 1, high)
-
-function partition(arr, low, high):
-  pivot = arr[high]
-  i = low - 1
-  for j = low to high - 1:
-    if arr[j] < pivot:
-      i++
-      swap arr[i] and arr[j]
-  swap arr[i + 1] and arr[high]
-  return i + 1</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>def quick_sort(arr, low, high):
-    if low < high:
-        pi = partition(arr, low, high)
-        quick_sort(arr, low, pi-1)
-        quick_sort(arr, pi+1, high)
-
-def partition(arr, low, high):
-    pivot = arr[high]
-    i = low - 1
-    for j in range(low, high):
-        if arr[j] <= pivot:
-            i += 1
-            arr[i], arr[j] = arr[j], arr[i]
-    arr[i+1], arr[high] = arr[high], arr[i+1]
-    return i+1</code></pre>
-
-            <h3>JavaScript 实现</h3>
-            <pre><code>function quickSort(arr, low, high) {
-    if (low < high) {
-        let pi = partition(arr, low, high);
-        quickSort(arr, low, pi - 1);
-        quickSort(arr, pi + 1, high);
-    }
-}
-
-function partition(arr, low, high) {
-    let pivot = arr[high];
-    let i = low - 1;
-    for (let j = low; j < high; j++) {
-        if (arr[j] < pivot) {
-            i++;
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-    }
-    [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
-    return i + 1;
-}</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'sort'" class="sort-section">
+      <div class="sort-section">
         <h3>可视化演示</h3>
         <div class="stats-container">
           <div class="stat-item">
@@ -325,7 +253,7 @@ function partition(arr, low, high) {
                 'pivot': index === pivotIndex,
                 'left-partition': leftPartitionIndices.includes(index),
                 'right-partition': rightPartitionIndices.includes(index),
-                'sorted': isSorting && data.value && sortedData[index] === data.value.slice().sort((a, b) => a - b)[index]
+                'sorted': isSorting && data && sortedData[index] === data.slice().sort((a, b) => a - b)[index]
               }"
               :style="{ height: `${value * 3}px` }"
               :data-value="value"
@@ -339,7 +267,7 @@ function partition(arr, low, high) {
             <button @click="generateNewList" :disabled="isSorting">生成新列表</button>
             <button @click="quickSort" :disabled="isSorting" :class="{ 'clicked': isButtonClicked }" ref="sortButton">开始排序</button>
             <button @click="testSort" :disabled="isSorting">测试排序</button>
-            <button @click="resetSort" :disabled="!isSorting && sortedData && data.value && sortedData.join(',') === data.value.join(',')">重置排序</button>
+            <button @click="resetSort" :disabled="!isSorting && sortedData && data && sortedData.join(',') === data.join(',')">重置排序</button>
             <div class="speed-control">
               <label>动画速度:</label>
               <input type="range" min="100" max="1000" v-model="animationSpeed" :disabled="isSorting">
@@ -361,31 +289,6 @@ function partition(arr, low, high) {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>算法优化</h3>
-          <p>快速排序的标准实现可以通过以下方式进行优化：</p>
-          <ol style="text-align: left;">
-            <li><strong>选择合适的基准元素</strong>：可以使用三数取中法（median-of-three）来选择基准元素，避免在有序或接近有序的数据上出现最坏情况。</li>
-            <li><strong>小规模数组使用插入排序</strong>：对于小规模数组（通常小于10个元素），插入排序比快速排序更高效。</li>
-            <li><strong>避免递归栈溢出</strong>：可以先处理较小的分区，将较大的分区放到后面处理，减少递归栈的深度。</li>
-            <li><strong>三路快速排序</strong>：将数组分成小于、等于和大于基准元素的三部分，适用于有大量重复元素的情况。</li>
-          </ol>
-
-          <h3>适用场景</h3>
-          <p>快速排序是一种通用的排序算法，适用于大多数场景，尤其是大规模数据集。它在实践中通常比其他O(n log n)排序算法更快，因为它的内部循环可以高效地利用缓存。</p>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'notes'" class="notes-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>学习笔记</h3>
-          <p>快速排序是一种分治算法，它的核心思想是将一个大问题分解成小问题来解决。</p>
-          <p>快速排序的平均时间复杂度是O(n log n)，但在最坏情况下可能退化为O(n²)，例如当数组已经有序或接近有序时。</p>
-          <p>尽管快速排序是不稳定的排序算法，但它在实践中非常高效，是许多编程语言标准库中排序函数的实现选择。</p>
         </div>
       </div>
     </div>

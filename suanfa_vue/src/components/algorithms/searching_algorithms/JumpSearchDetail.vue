@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 import { useSearchingVisualization } from '../../../composables/useSearchingVisualization.js'
 
 // 定义emits
@@ -38,9 +37,6 @@ const {
 // 跳跃搜索专属状态
 const isAnimating = ref(false)
 const isArraySorted = ref(true)
-
-// 控制标签页切换
-const activeTab = ref('basic')
 
 // 跳跃搜索算法
 const jumpSearch = async () => {
@@ -172,109 +168,11 @@ watch(data, () => {
     <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>跳跃搜索 (Jump Search)</h2>
-      <div class="tabs">
-        <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ active: activeTab === 'search' }" @click="activeTab = 'search'">查找</button>
-        <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="{ active: activeTab === 'notes' }" @click="activeTab = 'notes'">笔记</button>
-      </div>
     </div>
 
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>跳跃搜索是一种改进的线性搜索算法，它通过跳过一定数量的元素来加速查找过程。算法首先以固定步长跳跃，直到找到一个大于或等于目标值的元素，然后在该区域内进行线性搜索。</p>
 
-          <AlgorithmComplexity algorithm-id="jump-search" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function jumpSearch(arr, target):
-  n = arr.length
-  step = floor(sqrt(n)) // 跳跃步长
-  prev = 0
-
-  // 跳跃查找块
-  while arr[min(step, n) - 1] < target:
-    prev = step
-    step += floor(sqrt(n))
-    if prev >= n:
-      return -1
-
-  // 在找到的块中进行线性查找
-  while arr[prev] < target:
-    prev += 1
-    if prev == min(step, n):
-      return -1
-
-  // 检查是否找到
-  if arr[prev] == target:
-    return prev
-
-  return -1</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>import math
-
-def jump_search(arr, target):
-    n = len(arr)
-    step = math.floor(math.sqrt(n))  # 跳跃步长
-    prev = 0
-
-    # 跳跃查找块
-    while arr[min(step, n) - 1] < target:
-        prev = step
-        step += math.floor(math.sqrt(n))
-        if prev >= n:
-            return -1
-
-    # 在找到的块中进行线性查找
-    while arr[prev] < target:
-        prev += 1
-        if prev == min(step, n):
-            return -1
-
-    # 检查是否找到
-    if arr[prev] == target:
-        return prev
-
-    return -1</code></pre>
-
-            <h3>JavaScript 实现</h3>
-            <pre><code>function jumpSearch(arr, target) {
-  const n = arr.length;
-  const step = Math.floor(Math.sqrt(n)); // 跳跃步长
-  let prev = 0;
-
-  // 跳跃查找块
-  while (arr[Math.min(step, n) - 1] < target) {
-    prev = step;
-    step += Math.floor(Math.sqrt(n));
-    if (prev >= n) {
-      return -1;
-    }
-  }
-
-  // 在找到的块中进行线性查找
-  while (arr[prev] < target) {
-    prev++;
-    if (prev === Math.min(step, n)) {
-      return -1;
-    }
-  }
-
-  // 检查是否找到
-  if (arr[prev] === target) {
-    return prev;
-  }
-
-  return -1;
-}</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'search'" class="search-section">
+      <div class="search-section">
         <h3>可视化演示</h3>
         <div class="stats-container">
           <div class="stat-item">
@@ -298,16 +196,15 @@ def jump_search(arr, target):
         <div class="visualization-container">
           <div class="array-container">
             <div v-for="(item, index) in searchData" :key="index" class="array-element" :class="{
-              'jumping': currentIndex === index && searchSteps[currentStep.value - 1]?.type === 'jumping',
-              'checking': currentIndex === index && searchSteps[currentStep.value - 1]?.type === 'checking',
-              'found': currentIndex === index && searchSteps[currentStep.value - 1]?.type === 'found',
-              'not-found': currentIndex === index && searchSteps[currentStep.value - 1]?.type === 'notFound',
+              'jumping': currentIndex === index && searchSteps[currentStep - 1]?.type === 'jumping',
+              'checking': currentIndex === index && searchSteps[currentStep - 1]?.type === 'checking',
+              'found': currentIndex === index && searchSteps[currentStep - 1]?.type === 'found',
+              'not-found': currentIndex === index && searchSteps[currentStep - 1]?.type === 'notFound',
               'block': currentStepInfo && index >= currentStepInfo.prev && index < currentStepInfo.curr + 1 && currentStepInfo.type !== 'jumping'
             }">
               {{ item }}
             </div>
           </div>
-
 
             <div class="slider-controls">
               <div class="slider-group">
@@ -347,7 +244,7 @@ def jump_search(arr, target):
 
           <div class="step-details">
             <h4>当前步骤详情</h4>
-            <p>{{ currentStep > 0 && searchSteps[currentStep.value - 1] ? searchSteps[currentStep.value - 1].details : '准备开始' }}</p>
+            <p>{{ currentStep > 0 && searchSteps[currentStep - 1] ? searchSteps[currentStep - 1].details : '准备开始' }}</p>
           </div>
 
           <div class="steps-history">
@@ -361,56 +258,6 @@ def jump_search(arr, target):
           </div>
         </div>
       </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>算法优化</h3>
-          <p>跳跃搜索可以通过以下方式进行优化：</p>
-          <ol style="text-align: left;">
-            <li><strong>自适应步长</strong>：根据数据分布特点调整跳跃步长，可以进一步提高效率。</li>
-            <li><strong>插值跳跃搜索</strong>：结合插值查找的思想，根据目标值与边界值的关系动态调整步长。</li>
-            <li><strong>并行化</strong>：对于大规模数据集，可以考虑并行化跳跃搜索的不同阶段。</li>
-          </ol>
-
-          <h3>适用场景</h3>
-          <p>跳跃搜索特别适用于以下场景：</p>
-          <ul style="text-align: left;">
-            <li>已排序的数组</li>
-            <li>数据量较大，但内存有限，无法一次性加载全部数据的情况</li>
-            <li>当线性搜索效率过低，而二分查找实现又较为复杂的情况</li>
-            <li>磁盘等慢速存储设备上的搜索操作</li>
-          </ul>
-
-          <h3>与其他搜索算法的比较</h3>
-          <p>跳跃搜索与其他搜索算法的主要区别：</p>
-          <ul style="text-align: left;">
-            <li>与线性搜索相比：跳跃搜索通过跳过部分元素减少比较次数，时间复杂度更低</li>
-            <li>与二分搜索相比：跳跃搜索实现更简单，但平均效率略低</li>
-            <li>与插值搜索相比：跳跃搜索对数据分布不敏感，但在均匀分布数据上效率较低</li>
-          </ul>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'notes'" class="notes-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>学习笔记</h3>
-          <p>跳跃搜索是一种介于线性搜索和二分搜索之间的算法，它通过分块跳跃的方式减少比较次数。</p>
-          <p>跳跃搜索的核心思想是：将数组分成大小为√n的块，首先在块之间跳跃，找到可能包含目标值的块，然后在该块内进行线性搜索。</p>
-          <p>选择√n作为步长的原因是：这使得块间跳跃和块内搜索的时间复杂度相等，从而达到总体时间复杂度的最优解。</p>
-          <p>跳跃搜索的优点包括：</p>
-          <ul style="text-align: left;">
-            <li>实现简单，易于理解</li>
-            <li>对数据访问模式友好，特别是对于磁盘等顺序存储设备</li>
-            <li>不需要像二分搜索那样对数组进行随机访问</li>
-          </ul>
-          <p>在实际应用中，跳跃搜索通常用于以下情况：</p>
-          <ul style="text-align: left;">
-            <li>当数据量较大，但内存有限时</li>
-            <li>当需要减少磁盘I/O操作时</li>
-            <li>当实现二分搜索的成本较高时</li>
-          </ul>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -421,9 +268,9 @@ def jump_search(arr, target):
 
 /* 跳跃搜索特有样式 */
 .jump-search-detail {
-  background-color: white;
+  background-color: var(--surface);
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
   margin-top: 32px;
   padding: 24px;
   position: relative;
@@ -437,14 +284,16 @@ def jump_search(arr, target):
 /* 跳跃状态 */
 .jumping {
   background-color: var(--accent-color);
+  color: var(--text-on-bright);
   transform: scale(1.2);
-  border-color: #e68a00;
+  border-color: var(--text-on-bright);
 }
 
 /* 检查状态 */
 .checking {
   background-color: var(--warning-color);
-  border-color: #d4a700;
+  color: var(--text-on-bright);
+  border-color: var(--text-on-bright);
 }
 
 /* 找到状态 */
@@ -487,7 +336,7 @@ def jump_search(arr, target):
 }
 
 .button-group button:disabled {
-  background-color: #a0a0a0;
+  background-color: var(--surface-2);
   cursor: not-allowed;
 }
 
@@ -500,14 +349,14 @@ def jump_search(arr, target):
   margin-top: 20px;
   max-height: 200px;
   overflow-y: auto;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-1);
   border-radius: 4px;
   padding: 10px;
 } */
 
 /* .step-item { */
   /* padding: 5px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-1);
   display: flex;
 }
 
@@ -523,7 +372,7 @@ def jump_search(arr, target):
 
 /* 步骤类型样式 */
 .step-item.info {
-  color: #666;
+  color: var(--text-2);
 }
 
 .step-item.jumping {
@@ -550,10 +399,10 @@ def jump_search(arr, target):
 /* 搜索控制样式 */
 .search-controls {
   margin-top: 20px;
-  background-color: #f9f9f9;
+  background-color: var(--surface-muted);
   padding: 15px;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* 滑块控制样式 */
@@ -586,7 +435,7 @@ def jump_search(arr, target):
 .short-input {
   width: 60px;
   padding: 5px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-1);
   border-radius: 4px;
 }
 
@@ -597,7 +446,7 @@ def jump_search(arr, target):
   gap: 15px;
   margin-bottom: 15px;
   padding: 10px;
-  background-color: #f5f5f5;
+  background-color: var(--surface-2);
   border-radius: 4px;
 }
 
@@ -608,7 +457,7 @@ def jump_search(arr, target):
 
 .stat-label {
   font-size: 0.9em;
-  color: #666;
+  color: var(--text-2);
 }
 
 .stat-value {

@@ -2,9 +2,9 @@
 /* DFS特有样式 */
 .dfs-detail {
   /* 保留组件特有样式 */
-  background-color: white;
+  background-color: var(--surface);
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
   margin-top: 32px;
   padding: 24px;
   position: relative;
@@ -21,7 +21,7 @@
 }
 .node-label {
   font-size: 12px;
-  fill: #333;
+  fill: var(--text-2);
   pointer-events: none;
 }
 .node.visited {
@@ -51,7 +51,7 @@
   gap: 15px;
   margin-bottom: 15px;
   padding: 10px;
-  background-color: #f0f0f0;
+  background-color: var(--surface-2);
   border-radius: 6px;
 }
 .stat-item {
@@ -59,10 +59,10 @@
   flex-direction: column;
 }
 .step-item.backtrack {
-  background-color: #ffe6e6;
+  background-color: var(--tint-red);
 }
 .step-item.complete {
-  background-color: #d5f5e3;
+  background-color: var(--tint-green);
 }
 .node-label {
   font-size: 14px;

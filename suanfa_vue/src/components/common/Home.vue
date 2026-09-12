@@ -37,20 +37,46 @@ const complexityCompareRows = [
           <p>DFS、BFS、最短路径算法、最小生成树、网络流和拓扑排序算法</p>
           <router-link to="/algorithms/graph">查看详情</router-link>
         </div>
-        <div class="category-card disabled-card">
+        <div class="category-card">
           <h3>动态规划</h3>
-          <p>背包问题、最长公共子序列、最长递增子序列、编辑距离和矩阵链乘</p>
-          <span class="card-disabled">敬请期待</span>
+          <p>线性 DP（爬楼梯、最大子数组和、LIS）、背包（0/1 与完全）、字符串 DP（LCS、编辑距离）与区间 DP（矩阵链乘）</p>
+          <router-link to="/algorithms/dp">查看详情</router-link>
         </div>
-        <div class="category-card disabled-card">
+        <div class="category-card">
           <h3>贪心算法</h3>
-          <p>活动选择问题、霍夫曼编码、最小生成树和分数背包问题</p>
-          <span class="card-disabled">敬请期待</span>
+          <p>活动选择、分数背包、哈夫曼编码，以及「贪心什么时候会失败」的找零反例</p>
+          <router-link to="/algorithms/greedy">查看详情</router-link>
         </div>
         <div class="category-card disabled-card">
           <h3>更多分类</h3>
-          <p>分治算法、数学与数论算法、字符串算法、机器学习算法等</p>
+          <p>分治算法、数学与数论算法、字符串匹配、数据结构专题等</p>
           <span class="card-disabled">敬请期待</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="learning-tools">
+      <h2>学习工具</h2>
+      <div class="category-grid">
+        <div class="category-card">
+          <h3>🏋️ 算法训练</h3>
+          <p>经典题单 + 分级提示 + 参考解答，学完算法来实战，跟踪通过状态。</p>
+          <router-link to="/training">去刷题</router-link>
+        </div>
+        <div class="category-card">
+          <h3>📅 学习日历</h3>
+          <p>标记进度、写笔记、评论、刷题都会记录为学习活跃，看看你的连续学习天数。</p>
+          <router-link to="/calendar">查看日历</router-link>
+        </div>
+        <div class="category-card">
+          <h3>🤖 AI 助教</h3>
+          <p>原理讲解、复杂度分析、刷题思路引导，随时向 AI 算法助教提问。</p>
+          <router-link to="/ai">开始对话</router-link>
+        </div>
+        <div class="category-card">
+          <h3>💬 算法评论</h3>
+          <p>在每个算法详情页与同学们交流学习心得、答疑补充。</p>
+          <router-link to="/algorithms/sorting">去讨论</router-link>
         </div>
       </div>
     </section>
@@ -101,7 +127,7 @@ const complexityCompareRows = [
 }
 
 .hero {
-  background-color: #1e88e5;
+  background-image: linear-gradient(135deg, var(--brand-700), var(--brand-500));
   color: white;
   padding: 60px 20px;
   text-align: center;
@@ -122,8 +148,8 @@ const complexityCompareRows = [
 }
 
 .btn-primary {
-  background-color: white;
-  color: #1e88e5;
+  background-color: var(--surface-inverse);
+  color: var(--text-on-inverse);
   padding: 12px 24px;
   border-radius: 4px;
   font-weight: bold;
@@ -132,20 +158,20 @@ const complexityCompareRows = [
 }
 
 .btn-primary:hover {
-  background-color: #f0f0f0;
+  background-color: var(--surface-inverse-hover);
   transform: translateY(-2px);
 }
 
-.algorithm-categories, .featured-content {
+.algorithm-categories, .learning-tools, .featured-content {
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto 40px;
 }
 
-.algorithm-categories h2, .featured-content h2 {
+.algorithm-categories h2, .learning-tools h2, .featured-content h2 {
   text-align: center;
   margin-bottom: 30px;
-  color: #333;
+  color: var(--text-1);
 }
 
 .category-grid {
@@ -156,30 +182,30 @@ const complexityCompareRows = [
 
 .category-card {
   padding: 25px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-1);
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
   transition: all 0.3s;
 }
 
 .category-card:hover {
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
   transform: translateY(-5px);
 }
 
 .category-card h3 {
-  color: #1e88e5;
+  color: var(--c-blue);
   margin-top: 0;
   margin-bottom: 15px;
 }
 
 .category-card p {
-  color: #666;
+  color: var(--text-2);
   margin-bottom: 20px;
 }
 
 .category-card a {
-  color: #42b983;
+  color: var(--c-green);
   text-decoration: none;
   font-weight: 500;
 }
@@ -193,7 +219,7 @@ const complexityCompareRows = [
 }
 
 .card-disabled {
-  color: #999;
+  color: var(--text-3);
   cursor: not-allowed;
   font-weight: 500;
 }
@@ -206,19 +232,19 @@ const complexityCompareRows = [
 
 .feature-item {
   padding: 25px;
-  background-color: #f9f9f9;
+  background-color: var(--surface-muted);
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
 }
 
 .feature-item h3 {
-  color: #333;
+  color: var(--text-1);
   margin-top: 0;
   margin-bottom: 15px;
 }
 
 .feature-item p {
-  color: #666;
+  color: var(--text-2);
   margin-bottom: 20px;
 }
 
@@ -230,22 +256,22 @@ const complexityCompareRows = [
 .complexity-table th, .complexity-table td {
   padding: 12px 15px;
   text-align: left;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-1);
 }
 
 .complexity-table th {
-  background-color: #f0f0f0;
+  background-color: var(--surface-2);
   font-weight: bold;
 }
 
 .visualization-example {
   height: 200px;
-  background-color: #e0e0e0;
+  background-color: var(--surface-2);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   border-radius: 4px;
-  color: #666;
+  color: var(--text-2);
 }
 </style>

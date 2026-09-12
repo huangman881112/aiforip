@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: frontend/sorting_algorithms
+title: 排序算法可视化组件集
+scope:
+    - suanfa_vue/src/components/algorithms/sorting_algorithms/
+source_files: []
+depends_on: []
+related_to: []

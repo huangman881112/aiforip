@@ -1,0 +1,12 @@
+schema_version: 1
+module_path: frontend/app_shell
+title: 小白学算法前端应用壳（Vue3 + Vite 单页应用）
+scope:
+    - suanfa_vue/src/
+    - suanfa_vue/index.html
+    - suanfa_vue/vite.config.js
+source_files: []
+depends_on: []
+related_to:
+    - path: backend
+    - path: scripts

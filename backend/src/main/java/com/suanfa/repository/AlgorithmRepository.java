@@ -52,6 +52,18 @@ public class AlgorithmRepository {
                 a.description(), a.complexity(), a.route(), a.complexityDetails());
     }
 
+    /** 只在 id 不存在时插入（用于补齐种子中新增的算法，不覆盖既有行）。返回 true = 新插入。 */
+    public boolean insertIfAbsent(Algorithm a) {
+        int n = jdbc.update("""
+                INSERT OR IGNORE INTO algorithms (id, name, category, sub_category, difficulty, stability,
+                                                  description, complexity, route, complexity_details)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                a.id(), a.name(), a.category(), a.subCategory(), a.difficulty(), a.stability(),
+                a.description(), a.complexity(), a.route(), a.complexityDetails());
+        return n > 0;
+    }
+
     public long count() {
         Long n = jdbc.queryForObject("SELECT COUNT(*) FROM algorithms", Long.class);
         return n == null ? 0 : n;

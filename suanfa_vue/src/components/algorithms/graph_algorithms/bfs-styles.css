@@ -1,14 +1,14 @@
 @import './common-graph-styles.css';
 .detail-container{
-  background-color: white;
+  background-color: var(--surface);
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
   margin-top: 32px;
   padding: 24px;
   position: relative;
 }
 .basic-info h3 {
-  color: #2c3e50;
+  color: var(--text-1);
   margin-top: 0;
 }
 .visualization .controls {
@@ -17,7 +17,7 @@
   gap: 15px;
   margin-bottom: 20px;
   padding: 15px;
-  background-color: #f5f5f5;
+  background-color: var(--surface-2);
   border-radius: 6px;
 }
 .control-group {
@@ -27,12 +27,12 @@
 .control-group label {
   margin-bottom: 5px;
   font-weight: bold;
-  color: #2c3e50;
+  color: var(--text-1);
 }
 .control-group input,
 .control-group select {
   padding: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-1);
   border-radius: 4px;
   font-size: 14px;
 }
@@ -42,7 +42,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #7f8c8d;
+  color: var(--text-2);
 }
 /* 最小生成树节点样式 */
 svg .node.mst-node {
@@ -51,7 +51,7 @@ svg .node.mst-node {
 .search-status {
   font-weight: bold;
   margin-bottom: 15px;
-  color: #2c3e50;
+  color: var(--text-1);
 }
 .step-item.add {
   background-color: #d48817;
@@ -60,7 +60,7 @@ svg .node.mst-node {
   background-color: #82d319;
 }
 .step-item.init {
-  background-color: #2a2c2b;
+  background-color: var(--code-bg);
 }
 .step-item.search {
   background-color: #2fc776;
@@ -69,7 +69,7 @@ svg .node.mst-node {
   background-color: #212cca;
 }
 .code-section {
-  background-color: #f8f9fa;
+  background-color: var(--surface-muted);
   padding: 15px;
   border-radius: 6px;
   overflow-x: auto;
@@ -137,13 +137,13 @@ code {
 .queue-container {
   margin-top: 20px;
   padding: 10px;
-  background-color: #f5f5f5;
+  background-color: var(--surface-2);
   border-radius: 6px;
 }
 .queue-title {
   font-weight: bold;
   margin-bottom: 10px;
-  color: #2c3e50;
+  color: var(--text-1);
 }
 .queue-items {
   display: flex;

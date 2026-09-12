@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 import { useSearchingVisualization } from '../../../composables/useSearchingVisualization.js'
 
 // 定义emits
@@ -38,9 +37,6 @@ const {
 
 // 插值查找专属状态
 const isAnimating = ref(false)
-
-// 控制标签页切换
-const activeTab = ref('basic')
 
 // 生成新列表：复用共享脚手架（数据生成/校验/重置搜索），并将目标值设为数组中的随机元素
 const generateNewList = async () => {
@@ -212,99 +208,11 @@ const currentStepInfo = computed(() => {
   <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>插值查找</h2>
-      <div class="tabs">
-          <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-          <button :class="{ active: activeTab === 'search' }" @click="activeTab = 'search'">查找</button>
-          <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-          <button :class="{ active: activeTab === 'notes' }" @click="activeTab = 'notes'">笔记</button>
-        </div>
     </div>
 
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>插值查找是二分查找的改进版本，它根据目标值与数组边界值的关系，估计目标值可能的位置，从而加速查找过程。对于均匀分布的数据集，插值查找通常比二分查找更快。</p>
 
-          <AlgorithmComplexity algorithm-id="interpolation-search" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function interpolationSearch(arr, target):
-  left = 0
-  right = arr.length - 1
-
-  while left <= right and target >= arr[left] and target <= arr[right]:
-    if arr[left] == arr[right]:
-      if arr[left] == target:
-        return left
-      return -1
-
-    // 计算插值位置
-    pos = left + floor(((target - arr[left]) * (right - left)) / (arr[right] - arr[left]))
-
-    if arr[pos] == target:
-      return pos
-    else if arr[pos] < target:
-      left = pos + 1
-    else:
-      right = pos - 1
-
-  return -1</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>def interpolation_search(arr, target):
-    left = 0
-    right = len(arr) - 1
-
-    while left <= right and target >= arr[left] and target <= arr[right]:
-        if arr[left] == arr[right]:
-            if arr[left] == target:
-                return left
-            return -1
-
-        # 计算插值位置
-        pos = left + ((target - arr[left]) * (right - left)) // (arr[right] - arr[left])
-
-        if arr[pos] == target:
-            return pos
-        elif arr[pos] < target:
-            left = pos + 1
-        else:
-            right = pos - 1
-
-    return -1</code></pre>
-
-            <h3>JavaScript 实现</h3>
-            <pre><code>function interpolationSearch(arr, target) {
-  let left = 0;
-  let right = arr.length - 1;
-
-  while (left <= right && target >= arr[left] && target <= arr[right]) {
-    // 避免除以零
-    if (arr[left] === arr[right]) {
-      if (arr[left] === target) return left;
-      return -1;
-    }
-
-    // 计算插值位置
-    const pos = left + Math.floor(((target - arr[left]) * (right - left)) / (arr[right] - arr[left]));
-
-    if (arr[pos] === target) {
-      return pos; // 找到目标
-    } else if (arr[pos] < target) {
-      left = pos + 1; // 目标在右侧
-    } else {
-      right = pos - 1; // 目标在左侧
-    }
-  }
-
-  return -1; // 未找到目标
-}</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'search'" class="search-section">
+      <div class="search-section">
         <h3>可视化演示</h3>
         <div class="stats-container">
           <div class="stat-item">
@@ -367,7 +275,6 @@ const currentStepInfo = computed(() => {
             <button @click="resetSearch" :disabled="!isSearching && searchSteps.length === 0" :class="{ 'clicked': isButtonClicked }">重置搜索</button>
            </div>
 
-
           <div class="step-details">
             <h4>当前步骤详情</h4>
             {{ currentStep }}
@@ -384,47 +291,6 @@ const currentStepInfo = computed(() => {
           </div>
         </div>
       </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>算法优化</h3>
-          <p>插值查找可以通过以下方式进行优化：</p>
-          <ol style="text-align: left;">
-            <li><strong>边界检查优化</strong>：对于边界条件的快速处理可以减少不必要的计算。</li>
-            <li><strong>递归实现</strong>：对于某些场景，递归实现可能比迭代实现更简洁。</li>
-            <li><strong>混合策略</strong>：在数据分布不均匀的情况下，可以结合二分查找和插值查找的优点。</li>
-          </ol>
-
-          <h3>适用场景</h3>
-          <p>插值查找特别适用于以下场景：</p>
-          <ul style="text-align: left;">
-            <li>数据分布均匀的有序数组</li>
-            <li>大型数据集，且查找频率高的情况</li>
-            <li>当数据值范围较大，但实际数据量较小的情况</li>
-          </ul>
-
-          <h3>与二分查找的比较</h3>
-          <p>插值查找与二分查找的主要区别在于：</p>
-          <ul style="text-align: left;">
-            <li>二分查找总是检查中间元素，而插值查找根据目标值估算可能的位置</li>
-            <li>对于均匀分布的数据，插值查找通常比二分查找更快</li>
-            <li>对于非均匀分布的数据，插值查找可能不如二分查找稳定</li>
-          </ul>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'notes'" class="notes-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>学习笔记</h3>
-          <p>插值查找是二分查找的一个有趣变体，它试图通过估计目标值的位置来加速查找过程。</p>
-          <p>插值查找的核心思想是：如果数据是均匀分布的，那么目标值很可能位于与它和数组边界值的比例相对应的位置。</p>
-          <p>例如，如果目标值接近数组的最大值，那么它很可能位于数组的右侧；如果目标值接近数组的最小值，那么它很可能位于数组的左侧。</p>
-          <p>插值查找的关键公式是：</p>
-          <pre><code>pos = left + ((target - arr[left]) * (right - left)) / (arr[right] - arr[left])</code></pre>
-          <p>这个公式基于线性插值的思想，假设数据在[left, right]区间内均匀分布。</p>
-          <p>尽管插值查找在均匀分布的数据上表现出色，但在最坏情况下（数据分布极不均匀），它的时间复杂度会退化为O(n)，因此在实际应用中需要根据数据特性选择合适的算法。</p>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -434,13 +300,12 @@ const currentStepInfo = computed(() => {
 
 /* 插值查找特有样式 */
 .interpolation-search-detail {
-  background-color: white;
+  background-color: var(--surface);
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
   margin-top: 32px;
   padding: 24px;
   position: relative;
 }
-
 
 </style>

@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 import { useGraphVisualization } from '../../../composables/useGraphVisualization.js'
 
 // 定义emits
@@ -87,9 +86,6 @@ const {
 const closeDetail = () => {
   emit('close')
 }
-
-// 控制标签页切换
-const activeTab = ref('basic')
 
 // Floyd-Warshall 专属状态
 const visitedNodes = ref([])
@@ -240,179 +236,11 @@ const isPathEdge = (from, to) => {
   <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>Floyd-Warshall算法</h2>
-      <div class="tabs">
-        <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ active: activeTab === 'search' }" @click="activeTab = 'search'">查找</button>
-        <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="{ active: activeTab === 'learning' }" @click="activeTab = 'learning'">学习</button>
-      </div>
     </div>
 
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>Floyd-Warshall算法是一种用于寻找加权图中所有节点对之间最短路径的动态规划算法。它能够处理包含负权边的图，但不能处理包含负权环的图。</p>
 
-          <AlgorithmComplexity algorithm-id="floyd-warshall" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function FloydWarshall(graph):
-  V = 图中节点数量
-  dist = V×V的矩阵
-  
-  // 初始化距离矩阵
-  for i from 0 to V-1:
-    for j from 0 to V-1:
-      if i == j:
-        dist[i][j] = 0
-      else:
-        dist[i][j] = 图中i到j的直接边权重，如果没有边则为无穷大
-  
-  // Floyd-Warshall主算法
-  for k from 0 to V-1:
-    for i from 0 to V-1:
-      for j from 0 to V-1:
-        if dist[i][k] + dist[k][j] < dist[i][j]:
-          dist[i][j] = dist[i][k] + dist[k][j]
-  
-  // 检查负权环
-  for i from 0 to V-1:
-    if dist[i][i] < 0:
-      return "图中存在负权环"
-  
-  return dist</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>def floyd_warshall(graph):
-    # 节点列表
-    nodes = list(graph.keys())
-    n = len(nodes)
-    
-    # 创建节点到索引的映射
-    node_to_idx = {node: i for i, node in enumerate(nodes)}
-    
-    # 初始化距离矩阵
-    INF = float('inf')
-    dist = [[INF] * n for _ in range(n)]
-    
-    # 对角线元素设为0
-    for i in range(n):
-        dist[i][i] = 0
-    
-    # 填充直接边的权重
-    for u in graph:
-        for edge in graph[u]:
-            v, w = edge['node'], edge['weight']
-            dist[node_to_idx[u]][node_to_idx[v]] = w
-    
-    # Floyd-Warshall算法主循环
-    for k in range(n):
-        for i in range(n):
-            for j in range(n):
-                if dist[i][k] + dist[k][j] < dist[i][j]:
-                    dist[i][j] = dist[i][k] + dist[k][j]
-    
-    # 检查负权环
-    for i in range(n):
-        if dist[i][i] < 0:
-            return None, True  # 存在负权环
-    
-    # 转换回节点标签
-    result = {}
-    for i in range(n):
-        result[nodes[i]] = {}
-        for j in range(n):
-            result[nodes[i]][nodes[j]] = dist[i][j]
-    
-    return result, False
-
-# 示例图
-# graph = {
-#     'A': [{'node': 'B', 'weight': 4}, {'node': 'C', 'weight': 2}],
-#     'B': [{'node': 'C', 'weight': 5}, {'node': 'D', 'weight': 10}],
-#     'C': [{'node': 'E', 'weight': 3}],
-#     'D': [{'node': 'E', 'weight': 4}],
-#     'E': []
-# }
-# distances, has_negative_cycle = floyd_warshall(graph)</code></pre>
-
-            <h3>JavaScript 实现</h3>
-            <pre><code>function floydWarshall(graph) {
-    // 节点列表
-    const nodes = Object.keys(graph);
-    const n = nodes.length;
-    
-    // 创建节点到索引的映射
-    const nodeToIdx = {};
-    nodes.forEach((node, idx) => {
-        nodeToIdx[node] = idx;
-    });
-    
-    // 初始化距离矩阵
-    const INF = Infinity;
-    const dist = Array(n).fill().map(() => Array(n).fill(INF));
-    
-    // 对角线元素设为0
-    for (let i = 0; i < n; i++) {
-        dist[i][i] = 0;
-    }
-    
-    // 填充直接边的权重
-    for (const u in graph) {
-        for (const edge of graph[u]) {
-            const v = edge.node;
-            const w = edge.weight;
-            dist[nodeToIdx[u]][nodeToIdx[v]] = w;
-        }
-    }
-    
-    // Floyd-Warshall算法主循环
-    for (let k = 0; k < n; k++) {
-        for (let i = 0; i < n; i++) {
-            for (let j = 0; j < n; j++) {
-                if (dist[i][k] !== INF && dist[k][j] !== INF && dist[i][k] + dist[k][j] < dist[i][j]) {
-                    dist[i][j] = dist[i][k] + dist[k][j];
-                }
-            }
-        }
-    }
-    
-    // 检查负权环
-    let hasNegativeCycle = false;
-    for (let i = 0; i < n; i++) {
-        if (dist[i][i] < 0) {
-            hasNegativeCycle = true;
-            break;
-        }
-    }
-    
-    // 转换回节点标签
-    const result = {};
-    nodes.forEach((u, i) => {
-        result[u] = {};
-        nodes.forEach((v, j) => {
-            result[u][v] = dist[i][j];
-        });
-    });
-    
-    return { distances: result, hasNegativeCycle };
-}
-
-// 示例图
-// const graph = {
-//     'A': [{ node: 'B', weight: 4 }, { node: 'C', weight: 2 }],
-//     'B': [{ node: 'C', weight: 5 }, { node: 'D', weight: 10 }],
-//     'C': [{ node: 'E', weight: 3 }],
-//     'D': [{ node: 'E', weight: 4 }],
-//     'E': []
-// };
-// const result = floydWarshall(graph);</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'search'" class="search-section">
+      <div class="search-section">
         <h3>Floyd-Warshall搜索可视化</h3>
         <p>Floyd-Warshall算法用于寻找加权图中所有节点对之间的最短路径，能够处理包含负权边的图，但不能处理包含负权环的图。</p>
       <div class="visualization-container">
@@ -450,7 +278,7 @@ const isPathEdge = (from, to) => {
                     <!-- 边路径 -->
                     <path
                       :d="getEdgePath(nodesPositions[node], nodesPositions[edge.node]).edgePath"
-                      stroke="#666"
+                      stroke="#6b7c99"
                       stroke-width="2"
                       fill="none"
                       :class="{ 'path-highlight': isPathEdge(node, edge.node) }"
@@ -468,7 +296,7 @@ const isPathEdge = (from, to) => {
                       :y="(nodesPositions[node].y + nodesPositions[edge.node].y) / 2 + 25"
                       text-anchor="middle"
                       dominant-baseline="middle"
-                      fill="#333"
+                      fill="#e9eff8"
                       font-size="12"
                     >
                       {{ edge.weight }}
@@ -488,8 +316,8 @@ const isPathEdge = (from, to) => {
                     :class="{
                       'visited': visitedNodes.includes(node),
                       'current': path.includes(node),
-                      'target': node === targetNode.value,
-                      'start': node === startNode.value
+                      'target': node === targetNode,
+                      'start': node === startNode
                     }"
                   />
                   <text
@@ -502,14 +330,14 @@ const isPathEdge = (from, to) => {
                     {{ node }}
                   </text>
                   <text
-                    v-if="node === startNode.value || node === targetNode.value"
+                    v-if="node === startNode || node === targetNode"
                     :x="nodesPositions[node].x + 25"
                     :y="nodesPositions[node].y + 60"
                     text-anchor="middle"
                     dominant-baseline="middle"
                     class="node-label"
                   >
-                    {{ node === startNode.value ? '起点' : '终点' }}
+                    {{ node === startNode ? '起点' : '终点' }}
                   </text>
                 </g>
               </template>
@@ -541,7 +369,7 @@ const isPathEdge = (from, to) => {
             <div class="slider-group">
               <label>目标节点:</label>
               <select v-model="targetNode" :disabled="isSearching">
-                <option v-for="node in Object.keys(currentGraph)" :key="node" :value="node" :disabled="node === startNode.value">{{ node }}</option>
+                <option v-for="node in Object.keys(currentGraph)" :key="node" :value="node" :disabled="node === startNode">{{ node }}</option>
               </select>
             </div>
             <div class="slider-group">
@@ -576,50 +404,6 @@ const isPathEdge = (from, to) => {
           </div>
         </div>
      </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section">
-        <div class="markdown-content" style="text-align: left;">
-          <h3>算法变种</h3>
-          <p>Floyd-Warshall算法有一些重要的变种和扩展：</p>
-          <ol>
-            <li><strong>Johnson算法</strong>：结合了Bellman-Ford和Dijkstra算法的思想，用于稀疏图上的所有节点对最短路径问题，时间复杂度为O(VE + V²logV)。</li>
-            <li><strong>扩展Floyd-Warshall</strong>：可以用于寻找最长路径，但只适用于有向无环图(DAG)。</li>
-            <li><strong>传递闭包算法</strong>：基于Floyd-Warshall的思想，用于判断图中任意两个节点之间是否可达。</li>
-          </ol>
-
-          <h3>应用场景</h3>
-          <p>Floyd-Warshall算法广泛应用于以下场景：</p>
-          <ul>
-            <li>网络路由算法</li>
-            <li>交通网络规划</li>
-            <li>游戏开发中的寻路算法</li>
-            <li>机器人路径规划</li>
-            <li>电路设计</li>
-            <li>物流优化</li>
-            <li>地图服务中的路径计算</li>
-          </ul>
-
-          <h3>局限性</h3>
-          <p>Floyd-Warshall算法的主要局限性：</p>
-          <ul>
-            <li>时间复杂度为O(V³)，对于大规模图效率较低</li>
-            <li>不能处理包含负权环的图</li>
-            <li>空间复杂度为O(V²)，需要存储所有节点对之间的距离</li>
-          </ul>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'learning'" class="learning-section">
-        <div class="markdown-content" style="text-align: left;">
-          <h3>学习笔记</h3>
-          <p>Floyd-Warshall算法是一种基于动态规划的全源最短路径算法，它的核心思想是通过逐步引入中间节点来优化任意两点之间的最短路径估计。</p>
-          <p>与Dijkstra算法不同，Floyd-Warshall算法可以处理包含负权边的图，但不能处理包含负权环的图。</p>
-          <p>Floyd-Warshall算法的关键在于状态转移方程：dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])，表示从i到j的最短路径要么是当前已知的直接路径，要么是通过中间节点k的路径。</p>
-          <p>算法的时间复杂度为O(V³)，这使得它在节点数量较多的图上效率较低，但对于中等规模的图来说，实现简单且易于理解。</p>
-          <p>在实际应用中，如果图是稀疏的（边数远少于V²），通常会选择其他更高效的算法，如Johnson算法。</p>
-          <p>检测负权环是Floyd-Warshall算法的一个重要应用，通过检查对角线元素是否为负来判断图中是否存在负权环。</p>
-        </div>
-      </div>
      </div>
  </div>
 </template>

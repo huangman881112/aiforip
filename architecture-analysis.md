@@ -361,6 +361,52 @@ GET  /api/benchmarks                        → 触发并返回算法基准测�
 
 ---
 
+## 7. AI 算法助教链路（2026-09-05 接入本地 API 中转站；2026-09-08 支持页面配置第三方中转站）
+
+```
+AiChatPage.vue ──POST /api/ai/chat/stream（Cookie JWT）──▶ AiController（登录/参数/限流 守卫，彻底失败退还额度）
+                                                        │
+                     AiKnowledgeService（Mongo algorithm_content → 27 条站内资料，内存缓存，回退 seed JSON）
+                                                        │ 召回 Top-3 → system prompt + refs
+                     AiChatService（java.net.http 流式 SSE，模型熔断 + 故障转移，可热加载）
+            ┌─────────────────────────────┼─────────────────────────────┐
+            │ AiSettingsController（仅管理员白名单）                app_settings（SQLite）
+AiSettingsPanel.vue ──GET/PUT /api/ai/settings、POST /settings/{test,reset}──▶ AiSettingsService → reload()
+            │ 地址/token(脱敏)/模型选择/测试连接                  ↑ 页面配置优先级高于 yml（enabled=false 同名模型可屏蔽 env 坏兜底）
+            ▼
+  http://192.168.1.8:8000/v1（中转站：deepseek-chat 主 / qwen3.5:9b 兜底） 或任意第三方 OpenAI 兼容端点
+```
+
+| 项 | 改造前 | 改造后 |
+|---|---|---|
+| 传输 | RestTemplate 一次性 JSON，等全文才渲染 | SSE 逐字流式 + 可中断（AbortController） |
+| 可用性 | 单模型，上游 429/额度用尽即整个助教挂掉 | 备用模型链 + 熔断表（额度 5min、配置类 15min、5xx 1min），全熔断时退化到最快恢复项 |
+| 错误 | 统一“AI 服务暂时不可用”，真实原因只进日志 | 解析中转站三类错误体（OpenAI/上游原始 JSON/SSE 内嵌 error），带状态码回传前端，提供「重试」 |
+| 知识 | 无，模型自说自话与站内文案不一致 | 站内清单 + 别名打分召回 Top-3 摘录注入 prompt；返回 refs 渲染成可点击「站内参考」 |
+| 滥用 | 无限制 | 每人每分钟限流（默认 12）+ 历史截断（24 条）+ 单条头尾clip + max_tokens 上限 |
+| 前端 | 丢历史、IME 误发送、长会话无错可回退 | localStorage 会话恢复、组词安全 Enter、停止生成、错误重试、回答内链走 SPA 路由 |
+
+关键设计点：
+
+- **中转站可视化配置**（2026-09-08）：`AiSettingsPanel.vue` 支持添加/编辑多个第三方 OpenAI 兼容中转站（地址、token、模型清单、默认模型、每模型 max_tokens/超时/reasoning_effort、自定义路由头）；「测试连接」两步：`GET /models` 拉真实路由名（可一键加入模型）+ 小预算对话探活，未保存的草稿也能先试再存；token 永不回显（只给脱敏串，留空=沿用，`__CLEAR__`=清除）；存 `app_settings(key=ai.providers)`，保存即 `reload()` 热生效，与 yml 叠加而非替换；门禁 `suanfa.ai.admin-usernames`（默认 admin），`/api/ai/status` 下发 `canManage` 控制入口。
+- **模型清单按身份裁剪**（2026-09-10）：只有管理员（`AI_ADMIN_USERNAMES` 白名单）能看到全量模型；普通用户只能选管理员开放的那些。
+  新增模型级开关 `user-visible`（页面「对用户开放」勾选，默认 true，因此存量配置零行为变化）：
+  裁剪发生在**服务端**——`/api/ai/status`、`/api/ai/models` 按角色下发（普通用户还顺带去掉不可用项与内部 `note`），
+  对话时 `AiChatService.usableModels(privileged)` / `findModel(token, privileged)` 决定降级链与可指定模型，
+  **未登录则完全不下发清单**（`loginRequired: true`，连 `baseUrl` 也不给），前端换成「登录后选择模型」入口，
+  普通用户选「自动」也只会在开放的模型里降级，手改请求体 `model` 越权会在限流前被 400 拦下（不烧额度）；
+  `/api/ai/upstream-models`（上游真实清单）由「需登录」收紧为「仅管理员」。与 `enabled`（对所有人屏蔽）职责不同。
+- **用户中断≠模型故障**：点「停止回答」抛 `ClientDisconnectedException`，不记熔断不降级（否则连点几次停止就能把唯一健康主模型误熔断 30s）。
+- **失败不烧额度**：上游全挂/参数错/并发满时 `AiRateLimiter.refund()` 退还每分钟额度；已吐字的请求不退。
+- **熔断状态可见**：`/api/ai/status` 每个模型带 `cooldownSeconds`，前端下拉显示「刚失败，约 Xs 后重试」；网络层异常（连接拒绝等）也记 30s 熔断，避免每条请求先撞一遍死上游。
+- **中转站特性**：`/v1` 路由 `require_auth=false` 但会注入各上游 key，模型名即路由键；聚合类模型（kimi/glm/minimax/mimo）受 OpenCode 月度额度限制，因此主模型选 `deepseek-chat`（独立额度）。
+- **错误先于鉴权**：中转站先校验模型名再鉴权，所以“Invalid token”与“Model not supported”含义完全不同，describeError() 区分处理。
+- **本地兜底模型的坑**：llama.cpp 上的 qwen3.5:9b 会先输出上万字 reasoning_content，`max_tokens<5000` 时常常 finish_reason=length 且 content 为空（`enable_thinking:false` 无效，`reasoning_effort:low` 有效但不彻底）；因此支持 `name@maxTokens@timeoutSeconds@reasoningEffort` 逐项预算，主模型仍保持 1200。
+- **不泄露思考链**：reasoning 只下发一个事件作为“模型在思考”信号，思考文本自始至终不进浏览器。
+- **降级不阻断**：未登录/未配 key/后端离线 → 前端 `localAiAnswer()` 用站内资料模板作答（含多算法对比表）。
+
+---
+
 ## 附录 A：证据索引
 
 - 路由：`src/router/index.js`（28 条懒加载路由，Edmonds-Karp/Ford-Fulkerson 为内联动态导入；`/task-export` 已删除）

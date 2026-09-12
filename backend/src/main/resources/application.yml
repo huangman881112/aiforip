@@ -5,6 +5,9 @@ spring:
   datasource:
     url: jdbc:sqlite:data/suanfa.db
     driver-class-name: org.sqlite.JDBC
+  data:
+    mongodb:
+      uri: mongodb://127.0.0.1:27017/suanfa
   sql:
     init:
       mode: always
@@ -20,8 +23,77 @@ suanfa:
     # cookie 过期天数
     expiry-days: 7
   cors:
-    # 逗号分隔的允许来源（dev 默认值，生产用环境变量覆盖）
-    allowed-origins: "http://localhost:5173"
+    # 允许的来源（dev 默认 "*" 全开：前端可能以 localhost/127.0.0.1/局域网 IP 访问；生产用环境变量覆盖为显式域名）
+    allowed-origins: "*"
+  ai:
+    # AI 助教：OpenAI 兼容 chat/completions 接口（默认指向局域网 API 中转站，按模型名前缀路由上游）。
+    # 未配置 api-key 时接口返回 503，前端降级为「本地答疑模式」。
+    base-url: ${AI_BASE_URL:http://192.168.1.8:8000/v1}
+    api-key: ${AI_API_KEY:}
+    # 中转站模型名由其「模型来源」前缀决定；deepseek-chat 走 DeepSeek 官方，额度独立于聚合站
+    model: ${AI_MODEL:deepseek-chat}
+    # 主模型限流/额度用尽/超时时按顺序自动降级（本地 llama/Ollama 兜底，保证内网也能用）。
+    # 支持 name@maxTokens@timeoutSeconds 单独设预算：本地思考型模型光 reasoning 就要 2000+ token。
+    fallback-models: ${AI_FALLBACK_MODELS:qwen3.5:9b@6000@150@low}
+    timeout-seconds: ${AI_TIMEOUT_SECONDS:90}
+    max-tokens: ${AI_MAX_TOKENS:1200}
+    temperature: ${AI_TEMPERATURE:0.4}
+    # 站内资料召回（轻量 RAG）：把算法清单与命中摘录注入 system prompt
+    knowledge-enabled: ${AI_KNOWLEDGE:true}
+    # 每个用户每分钟最多提问次数（<=0 关闭）
+    rate-per-minute: ${AI_RATE_PER_MINUTE:12}
+    # 允许在「AI 助教」页面修改中转站配置（地址/token/模型/测试连接）的用户名白名单，逗号分隔
+    # 白名单内的用户（管理员）才能看到全量模型；普通用户只能选模型上 user-visible=true（默认）的，
+    # 选「自动」时的降级链也只在这些模型里跑；/api/ai/upstream-models（上游真实清单）也仅白名单可调
+    # 未登录拿不到任何模型信息：/api/ai/status、/api/ai/models 返回 loginRequired=true 且清单为空
+    admin-usernames: ${AI_ADMIN_USERNAMES:admin}
+
+    # ---------- 多中转站 / 多模型（可选） ----------
+    # 提醒：不改这里也行 —— 登录管理员后在页面上「AI 助教 → ⚙️ 中转站配置」即可配第三方
+    # 中转站（地址 / token / 模型 / 测试连接），保存在 app_settings 表并热生效，优先级高于以下配置。
+    # 环境变量写法（只改环境就能加中转站），与下面的 providers 合并，优先级更高：
+    #   AI_PROVIDERS_JSON='[{"id":"local","label":"本机","baseUrl":"http://127.0.0.1:8080/v1","requireKey":false,"models":[{"name":"qwen3.5:9b","maxTokens":6000,"timeoutSeconds":150,"reasoningEffort":"low"}]}]'
+    # 字段名用 camelCase；详见 backend/.env.example 与 AiProperties
+    providers-json: ${AI_PROVIDERS_JSON:}
+    #
+    # provider 各自拥有 base-url / api-key / 额外请求头，模型可单独设预算与推理档位；
+    # 与上面的旧写法共存（providers 优先，旧写法的模型追加在后）。
+    # 打开后可用管理员身份调 GET /api/ai/upstream-models 校对中转站真实存在的模型名。
+    # providers:
+    #   - id: relay-a
+    #     label: 局域网中转站 A
+    #     base-url: ${RELAY_A_BASE_URL:http://192.168.1.8:8000/v1}
+    #     api-key: ${RELAY_A_API_KEY:}
+    #     headers:                # 部分聚合站要求的路由 / 计费头
+    #       X-Title: suanfa-ai
+    #     max-tokens: 1200        # provider 级默认预算，模型未设时继承
+    #     timeout-seconds: 60
+    #     models:
+    #       - name: deepseek-chat
+    #         label: DeepSeek Chat
+    #         primary: true       # 默认模型（前端顶栏展示的就是它，也是降级链首位）
+    #       - name: kimi-k2
+    #         label: Kimi K2（聚合，月度限额）
+    #         max-tokens: 1500
+    #         note: 额度用尽会返回 429，熔断 5 分钟
+    #       - name: claude-opus
+    #         label: 内测 / 按量付费的贵模型
+    #         user-visible: false  # 仅管理员可用：普通用户看不到这项，也不会被他们的降级链选中
+    #   - id: local
+    #     label: 本机 llama.cpp
+    #     base-url: ${LOCAL_LLM_BASE_URL:http://127.0.0.1:8080/v1}
+    #     require-key: false      # 本地服务无 token，也算「已配置」
+    #     models:
+    #       - name: qwen3.5:9b
+    #         label: Qwen3.5 9B（本地兜底）
+    #         max-tokens: 6000    # 思考型模型需要大预算，否则只剩 reasoning 没有答案
+    #         timeout-seconds: 150
+    #         reasoning-effort: low
+  code:
+    # 代码工作台（手动测试执行代码）：需登录；编译/运行 wall-time 超时（秒）；每人每分钟运行次数（<=0 关闭）
+    compile-timeout-seconds: ${CODE_COMPILE_TIMEOUT:10}
+    run-timeout-seconds: ${CODE_RUN_TIMEOUT:10}
+    rate-per-minute: ${CODE_RATE_PER_MINUTE:15}
 
 logging:
   level:

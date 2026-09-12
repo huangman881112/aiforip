@@ -1,0 +1,117 @@
+# 知识卡导出索引文件
+schema_version: 1
+locale: zh-CN
+branch: main
+nodes_managed: true
+exported_at: "2026-09-11T13:58:41Z"
+modules:
+    "":
+        dir_name: 算法学习站（前后端一体化工程）
+        title: 算法学习站（前后端一体化工程）
+        scope:
+            - architecture-analysis.md
+            - project_plan.md
+            - .gitignore
+            - .ruff_cache/
+        source_files: []
+        children:
+            - archive
+            - backend
+            - frontend
+            - scripts
+        depends_on: []
+        related_to: []
+    archive:
+        dir_name: 算法学习网站归档页面与调试工具
+        title: 算法学习网站归档页面与调试工具
+        scope:
+            - archive/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    backend:
+        dir_name: 算法学习平台后端服务（Spring Boot + SQLite + MongoDB）
+        title: 算法学习平台后端服务（Spring Boot + SQLite + MongoDB）
+        scope:
+            - backend/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: frontend/app_shell
+            - path: scripts
+    frontend:
+        dir_name: 小白学算法前端应用（Vue3 + Vite 单页应用）
+        title: 小白学算法前端应用（Vue3 + Vite 单页应用）
+        scope:
+            - suanfa_vue/
+        source_files: []
+        children:
+            - frontend/app_shell
+            - frontend/graph_algorithms
+            - frontend/greedy_algorithms
+            - frontend/searching_algorithms
+            - frontend/sorting_algorithms
+        depends_on: []
+        related_to: []
+    frontend/app_shell:
+        dir_name: 小白学算法前端应用壳（Vue3 + Vite 单页应用）
+        title: 小白学算法前端应用壳（Vue3 + Vite 单页应用）
+        scope:
+            - suanfa_vue/src/
+            - suanfa_vue/index.html
+            - suanfa_vue/vite.config.js
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: backend
+            - path: scripts
+    frontend/graph_algorithms:
+        dir_name: 图算法可视化组件集
+        title: 图算法可视化组件集
+        scope:
+            - suanfa_vue/src/components/algorithms/graph_algorithms/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    frontend/greedy_algorithms:
+        dir_name: 贪心算法可视化页面
+        title: 贪心算法可视化页面
+        scope:
+            - suanfa_vue/src/components/algorithms/greedy_algorithms/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    frontend/searching_algorithms:
+        dir_name: 搜索算法可视化组件集
+        title: 搜索算法可视化组件集
+        scope:
+            - suanfa_vue/src/components/algorithms/searching_algorithms/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    frontend/sorting_algorithms:
+        dir_name: 排序算法可视化组件集
+        title: 排序算法可视化组件集
+        scope:
+            - suanfa_vue/src/components/algorithms/sorting_algorithms/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    scripts:
+        dir_name: 项目辅助脚本集（后端启动_样式迁移_算法内容生成_联调 Mock）
+        title: 项目辅助脚本集（后端启动/样式迁移/算法内容生成/联调 Mock）
+        scope:
+            - scripts/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: backend
+            - path: frontend/app_shell

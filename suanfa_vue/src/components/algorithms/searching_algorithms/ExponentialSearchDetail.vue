@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 import { useSearchingVisualization } from '../../../composables/useSearchingVisualization.js'
 
 // 定义emits
@@ -64,9 +63,6 @@ const binarySearchIndex = ref(-1)
 const closeDetail = () => {
   emit('close')
 }
-
-// 控制标签页切换
-const activeTab = ref('basic')
 
 // 生成新列表/重置搜索由 useSearchingVisualization 提供
 // （生成新列表调用上方 generateRandomData 覆盖；重置搜索通过 onReset 钩子清除二分搜索子过程状态）
@@ -259,64 +255,11 @@ const arrayIsEmpty = computed(() => searchData.value.length === 0);
   <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>指数搜索</h2>
-      <div class="tabs">
-        <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ active: activeTab === 'search' }" @click="activeTab = 'search'">查找</button>
-        <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="{ active: activeTab === 'notes' }" @click="activeTab = 'notes'">笔记</button>
-      </div>
     </div>
 
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>指数搜索是一种结合了线性搜索和二分搜索优点的搜索算法，特别适用于大规模有序数组。</p>
 
-          <AlgorithmComplexity algorithm-id="exponential-search" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function exponentialSearch(arr, target):
-  if arr[0] == target:
-    return 0
-  
-  // 找到指数边界
-  bound = 1
-  while bound < len(arr) and arr[bound] < target:
-    bound *= 2
-  
-  // 在确定的边界内进行二分搜索
-  return binarySearch(arr, target, bound/2, min(bound, len(arr)-1))</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>def exponential_search(arr, target):
-    if arr[0] == target:
-        return 0
-    
-    # 找到指数边界
-    bound = 1
-    while bound < len(arr) and arr[bound] < target:
-        bound *= 2
-    
-    # 在确定的边界内进行二分搜索
-    left = bound // 2
-    right = min(bound, len(arr) - 1)
-    
-    while left <= right:
-        mid = (left + right) // 2
-        if arr[mid] == target:
-            return mid
-        elif arr[mid] < target:
-            left = mid + 1
-        else:
-            right = mid - 1
-    
-    return -1</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'search'" class="search-section">
+      <div class="search-section">
         <h3>可视化演示</h3>
         <div class="stats-container">
           <div class="stat-item">
@@ -403,41 +346,6 @@ const arrayIsEmpty = computed(() => searchData.value.length === 0);
           </div>
         </div>
       </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>算法优化</h3>
-          <p>指数搜索的主要优势在于当目标值靠近数组开头时表现优异，以下是一些进一步优化的思路：</p>
-          <ol style="text-align: left;">
-            <li><strong>自适应边界增长</strong>：根据数据分布调整边界增长速度。</li>
-            <li><strong>插值搜索结合</strong>：在确定边界后使用插值搜索代替二分搜索，对于均匀分布的数据更高效。</li>
-            <li><strong>并行化处理</strong>：对于超大数组，可以并行执行指数搜索的不同阶段。</li>
-          </ol>
-
-          <h3>适用场景</h3>
-          <p>指数搜索特别适用于以下场景：</p>
-          <ul style="text-align: left;">
-            <li>大规模有序数组</li>
-            <li>目标值大概率出现在数组前半部分的情况</li>
-            <li>内存受限环境，因为它比二分搜索需要更少的比较操作</li>
-          </ul>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'notes'" class="notes-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>学习笔记</h3>
-          <p>指数搜索，也称为加拉格尔搜索，是一种介于线性搜索和二分搜索之间的算法。</p>
-          <p>它的核心思想是先通过指数增长的方式快速找到一个包含目标值的边界，然后在该边界内使用二分搜索。</p>
-          <p>指数搜索的主要优点是：</p>
-          <ul style="text-align: left;">
-            <li>对于大数组，性能优于线性搜索</li>
-            <li>当目标值靠近数组开头时，性能甚至优于二分搜索</li>
-            <li>不需要预先知道数组大小（在某些实现中）</li>
-          </ul>
-          <p>在实际应用中，指数搜索常用于数据库查询和大型文件检索等场景。</p>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -445,9 +353,9 @@ const arrayIsEmpty = computed(() => searchData.value.length === 0);
 <style scoped>
 .exponential-search-detail{
     /* 与线性查找保持一致的容器样式 */
-  background-color: white;
+  background-color: var(--surface);
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
   margin-top: 32px;
   padding: 24px;
   position: relative;

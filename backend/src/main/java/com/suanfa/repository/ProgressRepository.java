@@ -36,13 +36,13 @@ public class ProgressRepository {
         return rows.stream().findFirst();
     }
 
-    /** 存在则更新 status + updated_at，否则插入。返回保存后的记录。 */
+    /** 存在则更新 status + updated_at，否则插入。返回保存后的记录（时间用 localtime，与学习日历按天分组一致）。 */
     public Progress upsert(long userId, String algorithmId, String status) {
         jdbc.update("""
-                INSERT INTO progress (user_id, algorithm_id, status)
-                VALUES (?, ?, ?)
+                INSERT INTO progress (user_id, algorithm_id, status, updated_at)
+                VALUES (?, ?, ?, datetime('now','localtime'))
                 ON CONFLICT (user_id, algorithm_id)
-                DO UPDATE SET status = excluded.status, updated_at = datetime('now')
+                DO UPDATE SET status = excluded.status, updated_at = datetime('now','localtime')
                 """, userId, algorithmId, status);
         return findByUserAndAlgorithm(userId, algorithmId)
                 .orElseThrow(() -> new IllegalStateException("progress upsert failed"));

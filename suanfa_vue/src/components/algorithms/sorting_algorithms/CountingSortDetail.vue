@@ -1,16 +1,12 @@
 <script setup>
 // 计数排序详情组件
 import { ref, onMounted } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 import { useSortingVisualization } from '../../../composables/useSortingVisualization.js'
 
 const emit = defineEmits(['close'])
 
 // 计数排序专属状态（数据生成器闭包引用，须在脚手架之前声明）
 const maxDataValue = ref(20) // 计数排序的数据范围上限
-
-// 标签页管理
-const activeTab = ref('basic')
 
 // 可视化共享脚手架（列表大小/随机数据/统计状态/生成新列表/重置排序）
 const {
@@ -183,94 +179,14 @@ onMounted(() => {
 
 <template>
   <div class="counting-sort-detail detail-container sort-detail">
-  <button class="btn-secondary btn-sm" @click="closeDetail">×</button>
+  <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>计数排序</h2>
-      <div class="tabs">
-        <button :class="['tab-btn', { 'active': activeTab === 'basic' }]" @click="activeTab = 'basic'">基础</button>
-        <button :class="['tab-btn', { 'active': activeTab === 'sort' }]" @click="activeTab = 'sort'">排序</button>
-        <button :class="['tab-btn', { 'active': activeTab === 'advanced' }]" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="['tab-btn', { 'active': activeTab === 'notes' }]" @click="activeTab = 'notes'">笔记</button>
-      </div>
     </div>
 
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>计数排序是一种非比较排序算法，它通过计算每个元素出现的次数来进行排序。</p>
 
-          <AlgorithmComplexity algorithm-id="counting-sort" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function countingSort(arr, maxValue):
-  // 创建计数数组
-  counts = array of zeros with size maxValue + 1
-  // 统计每个元素出现的次数
-  for i from 0 to length(arr)-1:
-    counts[arr[i]]++
-  // 计算累计计数
-  for i from 1 to maxValue:
-    counts[i] += counts[i-1]
-  // 创建输出数组
-  output = array of zeros with size length(arr)
-  // 从后向前遍历原数组，放置元素
-  for i from length(arr)-1 down to 0:
-    output[counts[arr[i]]-1] = arr[i]
-    counts[arr[i]]--
-  return output</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>def counting_sort(arr):
-    if not arr:
-        return []
-    max_val = max(arr)
-    # 创建计数数组
-    counts = [0] * (max_val + 1)
-    # 统计每个元素出现的次数
-    for num in arr:
-        counts[num] += 1
-    # 计算累计计数
-    for i in range(1, len(counts)):
-        counts[i] += counts[i-1]
-    # 创建输出数组
-    output = [0] * len(arr)
-    # 从后向前遍历原数组，放置元素
-    for i in range(len(arr)-1, -1, -1):
-        num = arr[i]
-        output[counts[num]-1] = num
-        counts[num] -= 1
-    return output</code></pre>
-
-            <h3>JavaScript 实现</h3>
-            <pre><code>function countingSort(arr) {
-    if (arr.length === 0) return [];
-    const maxVal = Math.max(...arr);
-    // 创建计数数组
-    const counts = new Array(maxVal + 1).fill(0);
-    // 统计每个元素出现的次数
-    for (const num of arr) {
-        counts[num]++;
-    }
-    // 计算累计计数
-    for (let i = 1; i <= maxVal; i++) {
-        counts[i] += counts[i - 1];
-    }
-    // 创建输出数组
-    const output = new Array(arr.length);
-    // 从后向前遍历原数组，放置元素
-    for (let i = arr.length - 1; i >= 0; i--) {
-        const num = arr[i];
-        output[counts[num] - 1] = num;
-        counts[num]--;
-    }
-    return output;
-}</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'sort'" class="sort-section">
+      <div class="sort-section">
         <h3>可视化演示</h3>
         <div class="stats-container">
           <div class="stat-item">
@@ -315,10 +231,10 @@ onMounted(() => {
               <label>数据范围: 1-{{ maxDataValue }}</label>
               <input type="range" min="10" max="100" v-model.number="maxDataValue" :disabled="isSorting" @input="maxDataValue = Number($event.target.value); generateNewList()">
             </div>
-            <button @click="generateNewList" :disabled="isSorting" class="btn btn-secondary">生成新列表</button>
-            <button @click="countingSort" :disabled="isSorting" :class="['btn', 'btn-primary', { 'clicked': isButtonClicked }]" ref="sortButton">开始排序</button>
-            <button @click="testSort" :disabled="isSorting" class="btn btn-success">测试排序</button>
-            <button @click="resetSort" :disabled="!isSorting && sortedData && data && sortedData.join(',') === data.join(',')" class="btn btn-warning">重置排序</button>
+            <button @click="generateNewList" :disabled="isSorting">生成新列表</button>
+            <button @click="countingSort" :disabled="isSorting" :class="{ 'clicked': isButtonClicked }" ref="sortButton">开始排序</button>
+            <button @click="testSort" :disabled="isSorting">测试排序</button>
+            <button @click="resetSort" :disabled="!isSorting && sortedData && data && sortedData.join(',') === data.join(',')">重置排序</button>
             <div class="speed-control">
               <label>动画速度:</label>
               <input type="range" min="100" max="1000" v-model="animationSpeed" :disabled="isSorting">
@@ -342,114 +258,12 @@ onMounted(() => {
           </div>
         </div>
       </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>算法优化</h3>
-          <p>计数排序的标准实现可以通过以下方式进行优化：</p>
-          <ol style="text-align: left;">
-            <li><strong>处理负整数</strong>：通过偏移量将负整数映射到非负索引。</li>
-            <li><strong>内存优化</strong>：只创建实际需要大小的计数数组，而不是从0到最大值。</li>
-            <li><strong>原地计数排序</strong>：在某些情况下，可以实现原地计数排序以减少内存使用。</li>
-          </ol>
-
-          <h3>适用场景</h3>
-          <p>计数排序适用于已知范围的整数排序，且当这个范围不是特别大时效率很高。在实际应用中，计数排序常被用作基数排序的子过程。</p>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'notes'" class="notes-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>学习笔记</h3>
-          <p>计数排序的核心思想是统计每个元素出现的次数，然后根据这些计数来重建排序后的数组。</p>
-          <p>计数排序是稳定的排序算法，因为我们从后向前遍历原数组来放置元素，这样可以保持相等元素的相对顺序。</p>
-          <p>计数排序的时间复杂度是O(n + k)，其中n是数组长度，k是数据范围。当k远大于n时，计数排序的效率会降低。</p>
-        </div>
-      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 @import './common-sort-styles.css';
-
-/* 计数排序特有样式 */
-.counting-sort-detail {
-  /* 保留组件特有样式 */
-}
-
-/* 覆盖标签页样式以使用新的按钮样式 */
-.tabs button {
-  padding: 8px 16px;
-  border: none;
-  background-color: #e2e8f0;
-  color: #64748b;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 14px;
-}
-
-.tabs button:hover {
-  background-color: #cbd5e1;
-}
-
-.tabs button.active {
-  background-color: #3b82f6;
-  color: white;
-  font-weight: 500;
-}
-
-/* 覆盖控件按钮样式 */
-.controls button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background-color: #3b82f6;
-  color: white;
-}
-
-.controls button:hover {
-  background-color: #2563eb;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
-}
-
-.controls button.clicked {
-  transform: translateY(0);
-  box-shadow: none;
-}
-
-.controls button:disabled {
-  background-color: #94a3b8;
-  color: #f8fafc;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-/* 关闭按钮样式 */
-.close-btn {
-  background-color: #e2e8f0;
-  color: #64748b;
-  font-size: 24px;
-  padding: 4px 10px;
-}
-
-.close-btn:hover {
-  background-color: #cbd5e1;
-  transform: translateY(-1px);
-}
-
-.close-btn:active {
-  transform: translateY(0);
-}
+@import './common-algorithm-page.css';
+@import './counting-sort-detail.css';
 </style>

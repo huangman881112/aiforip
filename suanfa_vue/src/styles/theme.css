@@ -1,0 +1,135 @@
+/**
+ * 全站配色主题（Design Tokens）
+ *
+ * 说明：
+ * - 深色主题只在 :root 中维护，组件样式一律引用变量，禁止再写 #fff / #f8fafc 之类的硬编码底色。
+ * - 需要换肤（如提供「浅色模式」开关）时，只需在 html/body 上覆盖下列变量，无需改动任何组件样式。
+ *   例：html[data-theme='light'] { --app-bg: #f5f7fa; --surface: #ffffff; ... }
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* ==================== 品牌色 ==================== */
+  /* 实心填充 / 渐变用（在深底上足够醒目） */
+  --brand-500: #1e88e5;
+  --brand-600: #1565c0;
+  --brand-700: #0d47a1;
+  --brand-400: #42a5f5;
+  /* 浅色洗色（hover / 选中底色），深色主题下用半透明 */
+  --brand-50: rgba(77, 163, 255, 0.1);
+  --brand-100: rgba(77, 163, 255, 0.18);
+  --brand-200: rgba(77, 163, 255, 0.32);
+
+  /* ==================== 页面画布（深色） ==================== */
+  --app-bg: #0b111d; /* 最底层背景 */
+  --app-bg-2: #101a2b; /* 次层背景 / 页面内容区 */
+  --surface: #16223a; /* 卡片、面板（原 #fff） */
+  --surface-muted: #121d31; /* 区块底色、表头、浅色分区（原 #f8fafc 系） */
+  --surface-2: #1d2b45; /* 输入框、标签、分隔条（原 #f0f0f0 / #e2e8f0 系） */
+  --surface-3: #24365a; /* hover 提亮 */
+  --code-bg: #0e1626; /* 代码块 / 深色可视区 */
+
+  /* ==================== 文字 ==================== */
+  --text-1: #e9eff8; /* 正文、标题（原 #333 / #1e293b） */
+  --text-2: #aebccd; /* 次要文字（原 #666 / #64748b） */
+  --text-3: #7e8fa5; /* 占位、辅助说明（原 #999 / #aaa） */
+  --text-on-brand: #ffffff;
+  --text-on-bright: #10203a; /* 亮色块（黄/琥珀高亮态）上的深色文字 */
+
+  /* 反色面：放在品牌色块上的白色按钮/文字牌 */
+  --surface-inverse: #f5f9ff;
+  --surface-inverse-hover: #ffffff;
+  --text-on-inverse: var(--brand-700);
+
+  /* ==================== 边框 ==================== */
+  --border-1: #23324c; /* 常规描边（原 #e0e0e0 / #e2e8f0 系） */
+  --border-2: #33456a; /* 强调描边（原 #ccc / #ddd 系） */
+
+  /* ==================== 语义强调色（深色主题下提亮） ==================== */
+  --c-blue: #6cb6ff;
+  --c-green: #5ed49a;
+  --c-red: #ff7b72;
+  --c-orange: #ffa94d;
+  --c-amber: #ffd666;
+  --c-purple: #b39dfa;
+  --c-cyan: #5eead4;
+  --c-pink: #f9a8d4;
+
+  /* 半透明色块（原浅色主题里的 #e3f2fd / #e8f5e9 等淡彩底） */
+  --tint-blue: rgba(66, 165, 245, 0.14);
+  --tint-green: rgba(66, 185, 131, 0.14);
+  --tint-red: rgba(239, 68, 68, 0.14);
+  --tint-amber: rgba(245, 158, 11, 0.16);
+  --tint-orange: rgba(255, 152, 0, 0.16);
+  --tint-purple: rgba(139, 92, 246, 0.16);
+  --tint-cyan: rgba(20, 184, 166, 0.16);
+  --tint-pink: rgba(236, 72, 153, 0.16);
+
+  --tint-blue-border: rgba(66, 165, 245, 0.34);
+  --tint-green-border: rgba(66, 185, 131, 0.34);
+  --tint-red-border: rgba(239, 68, 68, 0.34);
+  --tint-amber-border: rgba(245, 158, 11, 0.36);
+  --tint-orange-border: rgba(255, 152, 0, 0.36);
+  --tint-purple-border: rgba(139, 92, 246, 0.34);
+  --tint-cyan-border: rgba(20, 184, 166, 0.34);
+  --tint-pink-border: rgba(236, 72, 153, 0.34);
+
+  /* 滚动条 / 遮罩 */
+  --scrollbar-thumb: #2a3b58;
+  --scrollbar-track: #101a2b;
+  --overlay-bg: rgba(4, 8, 16, 0.68);
+
+  /* ==================== 兼容旧组件的别名（JumpSearchDetail 等直接引用） ==================== */
+  --primary-color: var(--brand-500);
+  --secondary-color: var(--c-blue);
+  --accent-color: var(--c-amber);
+  --success-color: var(--c-green);
+  --warning-color: var(--c-orange);
+  --danger-color: var(--c-red);
+
+  /* ==================== 导航栏 ==================== */
+  --nav-bg: #0f1828;
+  --nav-bg-sticky: rgba(15, 24, 40, 0.88);
+  --nav-border: #1e2c47;
+  --nav-shadow: 0 1px 12px rgba(0, 0, 0, 0.45);
+  --nav-backdrop-blur: saturate(150%) blur(10px);
+
+  --nav-text: #b9c7da;
+  --nav-text-muted: #8296b0;
+  --nav-text-hover: #f2f7ff;
+  --nav-hover-bg: var(--brand-50);
+  --nav-active-bg: var(--brand-100);
+  --nav-active-text: #7cc0ff;
+  --nav-accent: #4da3ff;
+  --nav-accent-soft: rgba(77, 163, 255, 0.28);
+
+  --nav-logo-start: #58acff;
+  --nav-logo-end: #9ad0ff;
+
+  --nav-menu-bg: #101a2b;
+  --nav-menu-border: #22314e;
+  --nav-menu-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
+  --nav-menu-hover-bg: rgba(77, 163, 255, 0.12);
+  --nav-menu-active-bg: rgba(77, 163, 255, 0.2);
+  --nav-menu-indicator: var(--nav-accent);
+  --nav-caret: #8296b0;
+
+  --nav-divider: #1e2c47;
+  --nav-auth-btn-text: #ffffff;
+  --nav-auth-btn-bg: var(--brand-500);
+  --nav-auth-btn-bg-hover: #1976d2;
+  --nav-link-plain: var(--c-blue);
+  --nav-link-plain-hover: #a6d3ff;
+
+  --nav-radius: 8px;
+  --nav-radius-menu: 10px;
+  --nav-transition: 0.2s ease;
+
+  /* ==================== 页脚 ==================== */
+  --footer-bg: #080d16;
+  --footer-border: #1b2536;
+  --footer-text: #8d9db2;
+  --footer-text-strong: #dfe8f4;
+  --footer-title: var(--c-blue);
+}

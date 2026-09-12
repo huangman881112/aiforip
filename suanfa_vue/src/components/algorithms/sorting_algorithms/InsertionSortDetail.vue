@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 import { useSortingVisualization } from '../../../composables/useSortingVisualization.js'
 
 // 定义emits
@@ -25,9 +24,6 @@ const {
 const closeDetail = () => {
   emit('close')
 }
-
-// 控制标签页切换
-const activeTab = ref('basic')
 
 // 插入排序专属状态
 const shiftCount = ref(0)
@@ -204,6 +200,7 @@ const testSort = async () => {
 <style scoped>
 @import './common-sort-styles.css';
 @import './common-algorithm-page.css';
+@import './insertion-sort-detail.css';
 
 /* 插入排序特有样式 */
 .insertion-sort-detail {
@@ -216,65 +213,11 @@ const testSort = async () => {
   <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>插入排序</h2>
-      <div class="tabs">
-        <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ active: activeTab === 'sort' }" @click="activeTab = 'sort'">排序</button>
-        <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="{ active: activeTab === 'notes' }" @click="activeTab = 'notes'">笔记</button>
-      </div>
     </div>
 
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>插入排序是一种简单直观的排序算法。</p>
 
-          <AlgorithmComplexity algorithm-id="insertion-sort" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function insertionSort(arr):
-  n = length(arr)
-  for i from 1 to n-1:
-    key = arr[i]
-    j = i - 1
-    while j >= 0 and arr[j] > key:
-      arr[j+1] = arr[j]
-      j = j - 1
-    arr[j+1] = key
-  return arr</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>def insertion_sort(arr):
-    n = len(arr)
-    for i in range(1, n):
-        key = arr[i]
-        j = i - 1
-        while j >= 0 and arr[j] > key:
-            arr[j + 1] = arr[j]
-            j -= 1
-        arr[j + 1] = key
-    return arr</code></pre>
-
-            <h3>JavaScript 实现</h3>
-            <pre><code>function insertionSort(arr) {
-    const n = arr.length;
-    for (let i = 1; i < n; i++) {
-        let key = arr[i];
-        let j = i - 1;
-        while (j >= 0 && arr[j] > key) {
-            arr[j + 1] = arr[j];
-            j--;
-        }
-        arr[j + 1] = key;
-    }
-    return arr;
-}</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'sort'" class="sort-section">
+      <div class="sort-section">
         <h3>可视化演示</h3>
         <div class="stats-container">
           <div class="stat-item">
@@ -303,7 +246,7 @@ const testSort = async () => {
               :class="{
                 'compared': comparedIndices.includes(index),
                 'inserted': insertedIndices.includes(index),
-                'sorted': isSorting && data.value && sortedData[index] === data.value.slice().sort((a, b) => a - b)[index]
+                'sorted': isSorting && data && sortedData[index] === data.slice().sort((a, b) => a - b)[index]
               }" 
               :style="{ height: `${value * 3}px` }"
               :data-value="value"
@@ -317,7 +260,7 @@ const testSort = async () => {
             <button @click="generateNewList" :disabled="isSorting">生成新列表</button>
             <button @click="insertionSort" :disabled="isSorting" :class="{ 'clicked': isButtonClicked }" ref="sortButton">开始排序</button>
             <button @click="testSort" :disabled="isSorting">测试排序</button>
-            <button @click="resetSort" :disabled="!isSorting && sortedData && data.value && sortedData.join(',') === data.value.join(',')">重置排序</button>
+            <button @click="resetSort" :disabled="!isSorting && sortedData && data && sortedData.join(',') === data.join(',')">重置排序</button>
             <div class="speed-control">
               <label>动画速度:</label>
               <input type="range" min="100" max="1000" v-model="animationSpeed" :disabled="isSorting">
@@ -339,30 +282,6 @@ const testSort = async () => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>算法优化</h3>
-          <p>插入排序的标准实现可以通过以下方式进行优化：</p>
-          <ol style="text-align: left;">
-            <li><strong>二分查找优化</strong>：使用二分查找来找到插入位置，减少比较次数。</li>
-            <li><strong>希尔排序</strong>：先进行宏观调整，再进行微观调整，是插入排序的改进版。</li>
-            <li><strong>直接交换改为移动</strong>：如我们的实现中所示，先移动元素，最后再插入，减少交换次数。</li>
-          </ol>
-
-          <h3>适用场景</h3>
-          <p>插入排序适用于小规模数据或几乎已经有序的数据。在实际应用中，插入排序常被用作快速排序的补充，用于处理小规模的子数组。</p>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'notes'" class="notes-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>学习笔记</h3>
-          <p>插入排序的核心思想是将数组分为已排序部分和未排序部分，然后从未排序部分取出元素，插入到已排序部分的正确位置。</p>
-          <p>插入排序是稳定的排序算法，因为相等元素的相对顺序不会改变。</p>
-          <p>与冒泡排序相比，插入排序通常更高效，因为它的比较和移动操作更集中，且对于几乎有序的数据，插入排序可以达到接近线性的性能。</p>
         </div>
       </div>
     </div>

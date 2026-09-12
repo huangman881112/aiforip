@@ -3,7 +3,7 @@
 // numNodes 校验、节点位置生成、箭头边路径计算、生成新图、重置搜索、统计状态。
 // 各 Detail 只保留算法专属逻辑（图生成器 generateGraph + 搜索/遍历函数 + 自定义 ref），
 // 算法专属状态的重置通过 onReset 钩子注入。
-import { ref, watch, nextTick, onMounted } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 
 /**
  * @param {Object} [options]
@@ -38,7 +38,6 @@ export function useGraphVisualization(options = {}) {
   // 图数据（初始图在 setup 时生成一次）
   const graph = ref(generateGraph(defaultSize))
   const currentGraph = ref({ ...graph.value })
-  const nodesPositions = ref({})
 
   // 可视化统计状态
   const isSearching = ref(false)
@@ -66,6 +65,10 @@ export function useGraphVisualization(options = {}) {
     })
     return positions
   }
+
+  // 首帧渲染发生在 onMounted 之前，必须在 setup 内同步生成初始位置，
+  // 否则模板读 nodesPositions[node].x 会取到 undefined 而崩溃。
+  const nodesPositions = ref(generateNodesPositions())
 
   // 生成带箭头的边路径（边 + 箭头分开）
   const getEdgePath = (start, end) => {
@@ -133,11 +136,6 @@ export function useGraphVisualization(options = {}) {
       onReset()
     }
   }
-
-  // 组件挂载时生成节点位置
-  onMounted(() => {
-    nodesPositions.value = generateNodesPositions()
-  })
 
   return {
     numNodes, minNodes: minSize, maxNodes: maxSize,

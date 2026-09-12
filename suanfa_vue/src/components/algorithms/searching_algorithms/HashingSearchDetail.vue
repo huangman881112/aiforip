@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 import { useSearchingVisualization } from '../../../composables/useSearchingVisualization.js'
 
 // 定义emits
@@ -49,9 +48,6 @@ const isAnimating = ref(false)
 
 // 数据和哈希表
 const hashTable = ref(Array(hashTableSize.value).fill(null).map(() => []))
-
-// 控制标签页切换
-const activeTab = ref('basic')
 
 // 生成随机数据由 useSearchingVisualization 提供（generateRandomData 覆盖：互不重复数据）
 
@@ -294,115 +290,11 @@ buildHashTable()
   <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>哈希查找</h2>
-      <div class="tabs">
-        <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ active: activeTab === 'search' }" @click="activeTab = 'search'">查找</button>
-        <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="{ active: activeTab === 'notes' }" @click="activeTab = 'notes'">笔记</button>
-      </div>
     </div>
 
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>哈希查找是一种基于哈希表的高效查找算法。它通过哈希函数将键值映射到表中的特定位置，从而实现O(1)时间复杂度的查找。当多个键值映射到同一位置时，需要通过碰撞处理技术解决冲突。</p>
 
-          <AlgorithmComplexity algorithm-id="hashing-search" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function hashingSearch(arr, target):
-  // 创建哈希表
-  hashTable = createHashTable()
-  
-  // 将所有元素插入哈希表
-  for each item in arr:
-    index = hashFunction(item)
-    insertIntoHashTable(hashTable, index, item)
-  
-  // 查找目标值
-  index = hashFunction(target)
-  return searchInHashTable(hashTable, index, target)</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>class HashTable:
-    def __init__(self, size):
-        self.size = size
-        self.table = [[] for _ in range(size)]
-    
-    def hash_function(self, key):
-        return key % self.size
-    
-    def insert(self, key):
-        index = self.hash_function(key)
-        self.table[index].append(key)
-    
-    def search(self, key):
-        index = self.hash_function(key)
-        
-        for i, item in enumerate(self.table[index]):
-            if item == key:
-                return (index, i)  # 返回哈希表中的索引和链表中的位置
-        
-        return (-1, -1)  # 未找到
-
-def hashing_search(arr, target):
-    # 创建哈希表
-    hash_table = HashTable(len(arr) * 2)
-    
-    # 将所有元素插入哈希表
-    for item in arr:
-        hash_table.insert(item)
-    
-    # 查找目标值
-    return hash_table.search(target)</code></pre>
-
-            <h3>JavaScript 实现</h3>
-            <pre><code>class HashTable {
-    constructor(size) {
-        this.size = size;
-        this.table = new Array(size).fill(null).map(() => []);
-    }
-    
-    hashFunction(key) {
-        return key % this.size;
-    }
-    
-    insert(key) {
-        const index = this.hashFunction(key);
-        this.table[index].push(key);
-    }
-    
-    search(key) {
-        const index = this.hashFunction(key);
-        
-        for (let i = 0; i < this.table[index].length; i++) {
-            if (this.table[index][i] === key) {
-                return { index, listIndex: i };  # 返回哈希表中的索引和链表中的位置
-            }
-        }
-        
-        return { index: -1, listIndex: -1 };  # 未找到
-    }
-}
-
-function hashingSearch(arr, target) {
-    // 创建哈希表
-    const hashTable = new HashTable(arr.length * 2);
-    
-    // 将所有元素插入哈希表
-    for (const item of arr) {
-        hashTable.insert(item);
-    }
-    
-    // 查找目标值
-    return hashTable.search(target);
-}</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'search'" class="search-section">
+      <div class="search-section">
         <h3>可视化演示</h3>
         <div class="stats-container">
           <div class="stat-item">
@@ -506,60 +398,6 @@ function hashingSearch(arr, target) {
           </div>
         </div>
       </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>碰撞处理方法</h3>
-          <div class="collision-methods">
-            <div class="method-item">
-              <h4>链地址法 (Chaining)</h4>
-              <p>链地址法是一种常用的碰撞处理技术，它将哈希到同一位置的所有元素存储在一个链表中。当查找时，首先通过哈希函数定位到链表，然后在链表中线性查找目标值。</p>
-              <p><strong>优点：</strong>实现简单，不会导致聚集现象，哈希表利用率高。</p>
-              <p><strong>缺点：</strong>查找时间会随着链表长度增加而增加，需要额外空间存储链表指针。</p>
-            </div>
-            <div class="method-item">
-              <h4>线性探测法 (Linear Probing)</h4>
-              <p>线性探测法是一种开放寻址技术，当发生碰撞时，它会按顺序检查下一个可用的哈希表位置。具体来说，如果位置 i 被占用，就尝试位置 i+1，然后是 i+2，依此类推。</p>
-              <p><strong>优点：</strong>不需要额外空间存储链表，缓存利用率高。</p>
-              <p><strong>缺点：</strong>可能导致聚集现象，降低查找效率。</p>
-            </div>
-          </div>
-
-          <h3>算法优化</h3>
-          <p>哈希查找的性能很大程度上取决于哈希函数的质量和碰撞处理技术的选择。以下是一些优化建议：</p>
-          <ol style="text-align: left;">
-            <li><strong>选择合适的哈希函数</strong>：一个好的哈希函数应该能够将键值均匀地分布在哈希表中，减少碰撞的发生。</li>
-            <li><strong>调整哈希表大小</strong>：当哈希表的负载因子（元素数量/哈希表大小）过高时，碰撞的概率会增加。通常当负载因子超过 0.7 时，考虑扩容哈希表。</li>
-            <li><strong>选择合适的碰撞处理技术</strong>：根据具体应用场景选择合适的碰撞处理技术。链地址法适用于插入和删除频繁的场景，而开放寻址技术适用于查找频繁的场景。</li>
-            <li><strong>使用再哈希法</strong>：当发生碰撞时，使用另一个哈希函数计算下一个位置，可以减少聚集现象。</li>
-          </ol>
-
-          <h3>适用场景</h3>
-          <p>哈希查找适用于需要频繁查找的场景，特别是当数据量较大且可以接受额外空间开销时。常见的应用包括：</p>
-          <ul style="text-align: left;">
-            <li>数据库索引</li>
-            <li>缓存实现</li>
-            <li>符号表</li>
-            <li>集合和映射数据结构</li>
-          </ul>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'notes'" class="notes-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>学习笔记</h3>
-          <p>哈希查找是一种高效的查找算法，它通过哈希函数将键值映射到表中的特定位置，从而实现快速查找。</p>
-          <p>哈希查找的核心思想是将查找转化为直接寻址，理想情况下可以在 O(1) 时间内找到目标值。</p>
-          <p>哈希函数的选择是哈希查找的关键。一个好的哈希函数应该具备以下特性：</p>
-          <ol style="text-align: left;">
-            <li>确定性：相同的输入应该产生相同的输出。</li>
-            <li>均匀性：将键值均匀地分布在哈希表中。</li>
-            <li>高效性：计算哈希值的时间应该尽可能短。</li>
-          </ol>
-          <p>碰撞是哈希查找中不可避免的问题，选择合适的碰撞处理技术对于提高哈希查找的性能至关重要。</p>
-          <p>在实际应用中，哈希查找通常与其他数据结构和算法结合使用，以提高系统的整体性能。</p>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -569,9 +407,9 @@ function hashingSearch(arr, target) {
 
 .hashing-search-detail{
     /* 与线性查找保持一致的容器样式 */
-  background-color: white;
+  background-color: var(--surface);
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
   margin-top: 32px;
   padding: 24px;
   position: relative;
@@ -588,15 +426,16 @@ function hashingSearch(arr, target) {
 
 .hash-bucket {
   width: 80px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-1);
   border-radius: 4px;
   padding: 5px;
-  background-color: #f0f0f0;
+  background-color: var(--surface-2);
   transition: all 0.3s;
 }
 
 .hash-bucket.current {
   background-color: #ffeb3b;
+  color: var(--text-on-bright);
   transform: scale(1.05);
 }
 
@@ -619,7 +458,7 @@ function hashingSearch(arr, target) {
 .bucket-index {
   font-weight: bold;
   text-align: center;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border-1);
   margin-bottom: 5px;
 }
 
@@ -630,7 +469,7 @@ function hashingSearch(arr, target) {
 .bucket-item {
   padding: 3px;
   margin: 2px 0;
-  background-color: white;
+  background-color: var(--surface);
   border-radius: 2px;
   text-align: center;
 }
@@ -656,8 +495,8 @@ function hashingSearch(arr, target) {
   flex: 1;
   min-width: 300px;
   padding: 15px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-1);
   border-radius: 4px;
-  background-color: #f9f9f9;
+  background-color: var(--surface-muted);
 }
 </style>

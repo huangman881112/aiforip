@@ -1,14 +1,10 @@
 <script setup>
 // 桶排序详情组件
 import { ref, onMounted } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 import { useSortingVisualization } from '../../../composables/useSortingVisualization.js'
 
 // 定义emits
 const emit = defineEmits(['close'])
-
-// 标签页管理
-const activeTab = ref('basic')
 
 // 可视化共享脚手架（列表大小/随机数据/统计状态/生成新列表/重置排序）
 const {
@@ -239,118 +235,11 @@ onMounted(() => {
   <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>桶排序</h2>
-      <div class="tabs">
-        <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ active: activeTab === 'sort' }" @click="activeTab = 'sort'">排序</button>
-        <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="{ active: activeTab === 'notes' }" @click="activeTab = 'notes'">笔记</button>
-      </div>
     </div>
 
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>桶排序是一种非比较排序算法，它将元素分配到有限数量的桶中，然后对每个桶再进行排序（可以使用其他排序算法或递归地使用桶排序）。</p>
 
-          <AlgorithmComplexity algorithm-id="bucket-sort" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function bucketSort(arr, bucketCount):
-  // 创建桶
-  buckets = array of bucketCount empty arrays
-  // 确定数据范围
-  minValue = min(arr)
-  maxValue = max(arr)
-  // 计算每个桶的范围
-  bucketRange = (maxValue - minValue) / bucketCount + 1
-  // 将元素分配到桶中
-  for i from 0 to length(arr)-1:
-    bucketIndex = floor((arr[i] - minValue) / bucketRange)
-    add arr[i] to buckets[bucketIndex]
-  // 对每个桶进行排序
-  for i from 0 to bucketCount-1:
-    sort buckets[i] using insertion sort
-  // 合并桶内元素
-  index = 0
-  for i from 0 to bucketCount-1:
-    for j from 0 to length(buckets[i])-1:
-      arr[index++] = buckets[i][j]
-  return arr</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>def bucket_sort(arr, bucket_count=5):
-    if not arr:
-        return []
-    min_val = min(arr)
-    max_val = max(arr)
-    # 计算每个桶的范围
-    bucket_range = (max_val - min_val) / bucket_count + 1
-    # 创建桶
-    buckets = [[] for _ in range(bucket_count)]
-    # 将元素分配到桶中
-    for num in arr:
-        bucket_index = int((num - min_val) / bucket_range)
-        # 确保索引不超出范围
-        bucket_index = min(bucket_index, bucket_count - 1)
-        buckets[bucket_index].append(num)
-    # 对每个桶进行排序
-    for i in range(bucket_count):
-        # 使用插入排序对桶内元素排序
-        for j in range(1, len(buckets[i])):
-            key = buckets[i][j]
-            k = j - 1
-            while k >= 0 and buckets[i][k] > key:
-                buckets[i][k + 1] = buckets[i][k]
-                k -= 1
-            buckets[i][k + 1] = key
-    # 合并桶内元素
-    sorted_arr = []
-    for bucket in buckets:
-        sorted_arr.extend(bucket)
-    return sorted_arr</code></pre>
-
-            <h3>JavaScript 实现</h3>
-            <pre><code>function bucketSort(arr, bucketCount = 5) {
-    if (arr.length === 0) return [];
-    const minVal = Math.min(...arr);
-    const maxVal = Math.max(...arr);
-    // 计算每个桶的范围
-    const bucketRange = (maxVal - minVal) / bucketCount + 1;
-    // 创建桶
-    const buckets = Array.from({ length: bucketCount }, () => []);
-    // 将元素分配到桶中
-    for (const num of arr) {
-        let bucketIndex = Math.floor((num - minVal) / bucketRange);
-        // 确保索引不超出范围
-        bucketIndex = Math.min(bucketIndex, bucketCount - 1);
-        buckets[bucketIndex].push(num);
-    }
-    // 对每个桶进行排序
-    for (let i = 0; i < bucketCount; i++) {
-        // 使用插入排序对桶内元素排序
-        for (let j = 1; j < buckets[i].length; j++) {
-            const key = buckets[i][j];
-            let k = j - 1;
-            while (k >= 0 && buckets[i][k] > key) {
-                buckets[i][k + 1] = buckets[i][k];
-                k--;
-            }
-            buckets[i][k + 1] = key;
-        }
-    }
-    // 合并桶内元素
-    const sortedArr = [];
-    for (const bucket of buckets) {
-        sortedArr.push(...bucket);
-    }
-    return sortedArr;
-}</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'sort'" class="sort-section">
+      <div class="sort-section">
         <h3>可视化演示</h3>
         <div class="stats-container">
           <div class="stat-item">
@@ -426,31 +315,6 @@ onMounted(() => {
           </div>
         </div>
       </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>算法优化</h3>
-          <p>桶排序的性能很大程度上取决于数据的分布和桶的数量。以下是一些优化建议：</p>
-          <ol style="text-align: left;">
-            <li><strong>桶的数量选择</strong>：通常选择桶的数量为元素数量的平方根或立方根。</li>
-            <li><strong>动态桶大小</strong>：根据数据分布调整桶的大小，而不是使用均匀分布。</li>
-            <li><strong>桶内排序算法选择</strong>：对于小数据集可以使用插入排序，对于大数据集可以考虑快速排序或归并排序。</li>
-            <li><strong>并行化处理</strong>：对不同桶的排序可以并行处理，提高效率。</li>
-          </ol>
-
-          <h3>适用场景</h3>
-          <p>桶排序适用于均匀分布的数据。当数据分布不均匀时，可能会导致某些桶中的元素过多，影响排序效率。桶排序常被用于外部排序，例如对大文件进行排序。</p>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'notes'" class="notes-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>学习笔记</h3>
-          <p>桶排序的核心思想是将数据分散到不同的桶中，然后对每个桶单独排序。</p>
-          <p>桶排序的平均时间复杂度取决于桶内排序算法的选择和数据分布。当桶的数量接近元素数量且数据均匀分布时，桶排序的性能接近线性。</p>
-          <p>桶排序是稳定的排序算法，只要桶内使用的排序算法是稳定的。</p>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -458,6 +322,7 @@ onMounted(() => {
 <style scoped>
 @import './common-sort-styles.css';
 @import './common-algorithm-page.css';
+@import './bucket-sort-detail.css';
 
 /* 桶排序特有样式 */
 .bucket-sort-detail {
@@ -474,15 +339,15 @@ onMounted(() => {
 
 .bucket-item {
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-1);
   border-radius: 4px;
-  background-color: #f9f9f9;
+  background-color: var(--surface-muted);
   min-width: 150px;
 }
 
 .bucket-item.active {
-  background-color: #e6f7ff;
-  border-color: #91d5ff;
+  background-color: var(--tint-blue);
+  border-color: var(--tint-blue-border);
 }
 
 .bucket-number {

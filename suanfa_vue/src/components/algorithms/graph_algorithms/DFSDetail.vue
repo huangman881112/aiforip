@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 import { useGraphVisualization } from '../../../composables/useGraphVisualization.js'
 
 // 定义emits
@@ -93,9 +92,6 @@ const {
 const closeDetail = () => {
   emit('close')
 }
-
-// 控制标签页切换
-const activeTab = ref('basic')
 
 // DFS 专属状态
 const visitedNodes = ref([])
@@ -243,80 +239,11 @@ const isPathEdge = (from, to) => {
   <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>深度优先搜索(DFS)</h2>
-      <div class="tabs">
-        <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ active: activeTab === 'sort' }" @click="activeTab = 'sort'">查找</button>
-        <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="{ active: activeTab === 'notes' }" @click="activeTab = 'notes'">学习</button>
-      </div>
     </div>
 
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>深度优先搜索(DFS)是一种用于遍历或搜索树或图的算法。它尽可能深地搜索树的分支，当节点v的所有边都已被探寻过，搜索将回溯到发现节点v的那条边的起始节点。</p>
 
-          <AlgorithmComplexity algorithm-id="dfs" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function DFS(graph, start, visited):
-  if start not in visited:
-    visited.add(start)
-    print(start)
-    for neighbor in graph[start]:
-      DFS(graph, neighbor, visited)
-  return visited</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>def dfs(graph, start, visited=None):
-    if visited is None:
-        visited = set()
-    if start not in visited:
-        visited.add(start)
-        print(start, end=" ")
-        for neighbor in graph[start]:
-            dfs(graph, neighbor, visited)
-    return visited
-
-# 示例图
-# graph = {
-#     'A': ['B', 'C'],
-#     'B': ['A', 'D', 'E'],
-#     'C': ['A', 'F'],
-#     'D': ['B'],
-#     'E': ['B', 'F'],
-#     'F': ['C', 'E']
-# }
-# dfs(graph, 'A')  # 输出: A B D E F C</code></pre>
-
-            <h3>JavaScript 实现</h3>
-            <pre><code>function dfs(graph, start, visited = new Set()) {
-    if (!visited.has(start)) {
-        visited.add(start);
-        console.log(start);
-        for (const neighbor of graph[start]) {
-            dfs(graph, neighbor, visited);
-        }
-    }
-    return visited;
-}
-
-// 示例图
-// const graph = {
-//     'A': ['B', 'C'],
-//     'B': ['A', 'D', 'E'],
-//     'C': ['A', 'F'],
-//     'D': ['B'],
-//     'E': ['B', 'F'],
-//     'F': ['C', 'E']
-// };
-// dfs(graph, 'A');  // 输出: A B D E F C</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'sort'" class="sort-section">
+      <div class="sort-section">
         <h3>DFS搜索可视化</h3>
         <p>深度优先搜索(DFS)是一种用于遍历或搜索树或图的算法。它尽可能深地搜索图的分支，当节点的所有边都已被探寻过，搜索将回溯到发现该节点的那条边的起始节点。</p>
       <div class="visualization-container">
@@ -353,7 +280,7 @@ const isPathEdge = (from, to) => {
                       <!-- 边路径 (黑色) -->
                       <path
                         :d="getEdgePath(nodesPositions[node], nodesPositions[neighbor]).edgePath"
-                        stroke="#666"
+                        stroke="#6b7c99"
                         stroke-width="2"
                         fill="none"
                         :class="{ 'path-highlight': isPathEdge(node, neighbor) }"
@@ -380,8 +307,8 @@ const isPathEdge = (from, to) => {
                       :class="{
                         'visited': visitedNodes.includes(node),
                         'current': path.length > 0 && path[path.length - 1] === node,
-                        'target': node === targetNode.value,
-                        'start': node === startNode.value
+                        'target': node === targetNode,
+                        'start': node === startNode
                       }"
                     />
                     <text
@@ -394,14 +321,14 @@ const isPathEdge = (from, to) => {
                       {{ node }}
                     </text>
                     <text
-                      v-if="node === startNode.value || node === targetNode.value"
+                      v-if="node === startNode || node === targetNode"
                       :x="nodesPositions[node].x + 25"
                       :y="nodesPositions[node].y + 60"
                       text-anchor="middle"
                       dominant-baseline="middle"
                       class="node-label"
                     >
-                      {{ node === startNode.value ? '起点' : '终点' }}
+                      {{ node === startNode ? '起点' : '终点' }}
                     </text>
                   </g>
                 </template>
@@ -433,7 +360,7 @@ const isPathEdge = (from, to) => {
             <div class="slider-group">
               <label>目标节点:</label>
               <select v-model="targetNode" :disabled="isSearching">
-                <option v-for="node in Object.keys(currentGraph)" :key="node" :value="node" :disabled="node === startNode.value">{{ node }}</option>
+                <option v-for="node in Object.keys(currentGraph)" :key="node" :value="node" :disabled="node === startNode">{{ node }}</option>
               </select>
             </div>
             <div class="slider-group">
@@ -469,40 +396,6 @@ const isPathEdge = (from, to) => {
         </div>
        </div>
      
-      </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section">
-        <div class="markdown-content">
-          <h3>算法变种</h3>
-          <p>深度优先搜索有一些重要的变种：</p>
-          <ol>
-            <li><strong>迭代深度优先搜索(IDDFS)</strong>：结合了深度优先搜索和广度优先搜索的优点，用于有无限状态空间的情况。</li>
-            <li><strong>双向深度优先搜索</strong>：从起始节点和目标节点同时开始搜索，当两边相遇时找到路径。</li>
-            <li><strong>深度受限搜索</strong>：对深度优先搜索设置最大深度限制，避免在无限图中陷入死循环。</li>
-          </ol>
-
-          <h3>应用场景</h3>
-          <p>深度优先搜索广泛应用于以下场景：</p>
-          <ul>
-            <li>图的遍历和连通性分析</li>
-            <li>拓扑排序</li>
-            <li>寻找路径和环检测</li>
-            <li>解决迷宫问题</li>
-            <li>生成树和森林的构建</li>
-            <li>强连通分量的查找</li>
-            <li>回溯算法（如N皇后问题）</li>
-          </ul>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'notes'" class="notes-section">
-        <div class="markdown-content">
-          <h3>学习笔记</h3>
-          <p>深度优先搜索是一种非常重要的图算法，它的核心思想是尽可能深地探索图的分支，直到无法继续为止，然后回溯。</p>
-          <p>DFS可以用递归或栈来实现。递归实现更直观，但对于大规模图可能会导致栈溢出；栈实现则更健壮。</p>
-          <p>DFS的一个重要特性是它可以用来检测图中是否存在环。在遍历过程中，如果我们遇到一个已经访问过但尚未完成遍历的节点，那么图中存在环。</p>
-          <p>与广度优先搜索(BFS)相比，DFS更适合于寻找路径存在性问题，而BFS更适合于寻找最短路径问题。</p>
-        </div>
       </div>
     </div>
 </template>

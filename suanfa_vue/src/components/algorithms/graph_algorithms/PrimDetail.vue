@@ -12,145 +12,9 @@
       <h2>Prim算法</h2>
        <button class="close-btn" @click="closeDetail">×</button>
       <p>Prim算法是一种用于构建最小生成树(MST)的贪心算法，它从一个起始顶点开始，逐步扩展生成树，每次选择与当前生成树相邻且权重最小的边加入生成树。</p>
-      <!-- 标签页控制 -->
-      <div class="tabs">
-        <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ active: activeTab === 'search' }" @click="activeTab = 'search'">查找</button>
-        <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="{ active: activeTab === 'learning' }" @click="activeTab = 'learning'">学习</button>
-      </div>
     </div>
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-        <h2>Prim算法基础</h2>
-
-        <div class="section-card">
-          <h3>算法描述</h3>
-          <p>Prim算法是一种贪心算法，用于在加权连通图中构建最小生成树(MST)。算法的核心思想是：</p>
-          <ol>
-            <li>从一个起始顶点开始，初始时生成树仅包含该顶点</li>
-            <li>在每一步中，选择一条权重最小的边，该边连接当前生成树中的顶点与不在生成树中的顶点</li>
-            <li>将选择的边和顶点加入生成树</li>
-            <li>重复步骤2-3，直到所有顶点都被加入生成树</li>
-          </ol>
-        </div>
-
-        <AlgorithmComplexity algorithm-id="prim" />
-
-      
-          <div class="code-examples">
-          <h3>伪代码</h3>
-          <pre><code>function Prim(G, start):
-  for each vertex v in G:
-    key[v] = ∞
-    parent[v] = null
-  key[start] = 0
-  mstSet = empty set
-  priorityQueue = all vertices ordered by key
-
-  while priorityQueue is not empty:
-    u = extractMin(priorityQueue)
-    add u to mstSet
-    for each neighbor v of u:
-      if v not in mstSet and weight(u,v) < key[v]:
-        key[v] = weight(u,v)
-        parent[v] = u
-  return parent</code></pre>
-
-          <h3>Python实现</h3>
-          <pre><code>import heapq
-
-def prim(graph, start):
-    mst = []
-    visited = set([start])
-    edges = [
-        (cost, start, to)
-        for to, cost in graph[start].items()
-    ]
-    heapq.heapify(edges)
-
-    while edges:
-        cost, from_node, to_node = heapq.heappop(edges)
-        if to_node not in visited:
-            visited.add(to_node)
-            mst.append((from_node, to_node, cost))
-
-            for next_node, next_cost in graph[to_node].items():
-                if next_node not in visited:
-                    heapq.heappush(edges, (next_cost, to_node, next_node))
-    return mst
-
-# 示例图（邻接表表示）
-graph = {
-    'A': {'B': 2, 'C': 3},
-    'B': {'A': 2, 'C': 1, 'D': 1},
-    'C': {'A': 3, 'B': 1, 'D': 4, 'E': 5},
-    'D': {'B': 1, 'C': 4, 'E': 2},
-    'E': {'C': 5, 'D': 2}
-}
-
-# 测试
-mst = prim(graph, 'A')
-print("最小生成树的边:")
-for edge in mst:
-    print(f"{edge[0]} - {edge[1]}: {edge[2]}")</code></pre>
-
-          <h3>JavaScript实现</h3>
-          <pre><code>function prim(graph, start) {
-  const mst = [];
-  const visited = new Set([start]);
-  const edges = [];
-
-  // 初始化边集合
-  for (const [to, cost] of Object.entries(graph[start])) {
-    edges.push({ from: start, to, cost });
-  }
-
-  // 使用优先队列（最小堆）
-  edges.sort((a, b) => a.cost - b.cost);
-
-  while (edges.length > 0) {
-    const { from, to, cost } = edges.shift();
-
-    if (!visited.has(to)) {
-      visited.add(to);
-      mst.push({ from, to, cost });
-
-      // 添加新的边
-      for (const [nextTo, nextCost] of Object.entries(graph[to])) {
-        if (!visited.has(nextTo)) {
-          edges.push({ from: to, to: nextTo, cost: nextCost });
-        }
-      }
-
-      // 重新排序边集合
-      edges.sort((a, b) => a.cost - b.cost);
-    }
-  }
-
-  return mst;
-}
-
-// 示例图（邻接表表示）
-const graph = {
-  'A': { 'B': 2, 'C': 3 },
-  'B': { 'A': 2, 'C': 1, 'D': 1 },
-  'C': { 'A': 3, 'B': 1, 'D': 4, 'E': 5 },
-  'D': { 'B': 1, 'C': 4, 'E': 2 },
-  'E': { 'C': 5, 'D': 2 }
-};
-
-// 测试
-const mst = prim(graph, 'A');
-console.log("最小生成树的边:");
-mst.forEach(edge => {
-  console.log(`${edge.from} - ${edge.to}: ${edge.cost}`);
-});</code></pre> 
-        </div>
-      </div>
-      </div>
-      <div v-if="activeTab === 'search'" class="search-section">
+      <div class="search-section">
         <h3>Prim算法可视化</h3>
         <p>Prim算法用于构建最小生成树，从一个起始顶点开始，每次选择权重最小的边加入生成树。</p>
         <div class="visualization-container">
@@ -213,7 +77,7 @@ mst.forEach(edge => {
                       class="node"
                       :class="{
                         'visited': visitedNodes.includes(node),
-                        'start': node === startNode.value,
+                        'start': node === startNode,
                         'mst-node': isMSTNode(node)
                       }"
                     />
@@ -227,7 +91,7 @@ mst.forEach(edge => {
                       {{ node }}
                     </text>
                     <text
-                      v-if="node === startNode.value"
+                      v-if="node === startNode"
                       :x="nodesPositions[node].x"
                       :y="nodesPositions[node].y + 40"
                       text-anchor="middle"
@@ -298,82 +162,12 @@ mst.forEach(edge => {
           </div>
         </div>
       </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section">
-        <div class="markdown-content" style="text-align: left;">
-          <h3>算法变种</h3>
-          <p>Prim算法有一些重要的变种和优化：</p>
-          <ol>
-            <li><strong>标准Prim算法</strong>：使用优先队列来选择最小权重的边。</li>
-            <li><strong>使用斐波那契堆的Prim算法</strong>：可以将时间复杂度优化到O(E + V log V)。</li>
-            <li><strong>适用于稠密图的Prim算法</strong>：对于稠密图，可以使用邻接矩阵表示，时间复杂度为O(V²)。</li>
-          </ol>
-
-          <h3>与Kruskal算法的比较</h3>
-          <p>Prim算法和Kruskal算法都是构建最小生成树的贪心算法，但它们有以下区别：</p>
-          <ul>
-            <li>Prim算法从一个顶点开始，逐步扩展生成树；Kruskal算法从所有边开始，按权重排序逐步添加。</li>
-            <li>Prim算法更适合于稠密图；Kruskal算法更适合于稀疏图。</li>
-            <li>Prim算法使用优先队列；Kruskal算法使用并查集(Union-Find)数据结构。</li>
-          </ul>
-
-          <h3>应用场景</h3>
-          <p>Prim算法广泛应用于以下场景：</p>
-          <ul>
-            <li>网络设计（如计算机网络、通信网络）</li>
-            <li>电路设计</li>
-            <li>交通网络规划</li>
-            <li>管道网络优化</li>
-            <li>数据聚类</li>
-            <li>图像分割</li>
-            <li>旅行商问题近似解</li>
-          </ul>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'learning'" class="learning-section">
-        <div class="markdown-content" style="text-align: left;">
-          <h3>学习资源</h3>
-          <p>以下是学习Prim算法的一些优质资源：</p>
-          <ul>
-            <li><strong>算法导论</strong>：第23章详细介绍了最小生成树算法，包括Prim算法和Kruskal算法。</li>
-            <li><strong>数据结构与算法分析</strong>：提供了Prim算法的多种实现方式和复杂度分析。</li>
-            <li><strong>在线课程</strong>：Coursera上的算法课程通常会详细讲解最小生成树算法。</li>
-            <li><strong>可视化工具</strong>：使用算法可视化工具可以帮助理解Prim算法的执行过程。</li>
-          </ul>
-
-          <h3>常见问题</h3>
-          <dl>
-            <dt><strong>Prim算法是否总是能找到最小生成树？</strong></dt>
-            <dd>是的，当图中的边权重都是正数时，Prim算法总是能找到最小生成树。</dd>
-
-            <dt><strong>Prim算法的时间复杂度取决于什么？</strong></dt>
-            <dd>Prim算法的时间复杂度取决于用于选择最小权重边的数据结构。使用二叉堆时为O(E log V)，使用斐波那契堆时为O(E + V log V)。</dd>
-
-            <dt><strong>Prim算法和Dijkstra算法有什么相似之处？</strong></dt>
-            <dd>两者都使用优先队列来选择下一个节点，并且都可以用类似的方式实现。但Prim算法寻找最小生成树，而Dijkstra算法寻找最短路径。</dd>
-          </dl>
-
-          <h3>实践提示</h3>
-          <p>在实现Prim算法时，需要注意以下几点：</p>
-          <ul>
-            <li>选择合适的数据结构来表示图（邻接表或邻接矩阵）。</li>
-            <li>使用高效的优先队列实现来降低时间复杂度。</li>
-            <li>确保正确处理图中的负权重边（虽然在最小生成树问题中，通常假设边权重为正）。</li>
-            <li>对于大型图，可以考虑使用并行化技术来加速算法。</li>
-          </ul>
-        </div>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
-
-// 标签页状态
-const activeTab = ref('basic');
 
 // Prim算法可视化相关状态
 const numNodes = ref(5);

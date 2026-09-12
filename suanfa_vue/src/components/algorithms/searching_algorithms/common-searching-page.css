@@ -5,7 +5,7 @@
 }
 
 .sorting-page-container h1, .searching-page-container h1 {
-  color: #333;
+  color: var(--text-1);
   font-size: 2.5rem;
   margin-bottom: 15px;
   text-align: center;
@@ -13,7 +13,7 @@
 }
 
 .page-description {
-  color: #666;
+  color: var(--text-2);
   text-align: center;
   margin-bottom: 30px;
   font-size: 1.1rem;
@@ -32,15 +32,15 @@
   padding: 8px 16px;
   border-radius: 20px;
   border: none;
-  background-color: #f0f0f0;
-  color: #666;
+  background-color: var(--surface-2);
+  color: var(--text-2);
   font-size: 14px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .category-tabs button:hover {
-  background-color: #e0e0e0;
+  background-color: var(--surface-2);
 }
 
 .category-tabs button.active {
@@ -56,9 +56,9 @@
 }
 
 .algorithm-card {
-  background-color: white;
+  background-color: var(--surface);
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
   padding: 20px;
   transition: transform 0.3s, box-shadow 0.3s;
   cursor: pointer;
@@ -66,7 +66,7 @@
 
 .algorithm-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 }
 
 .algorithm-card.selected {
@@ -78,7 +78,7 @@
 }
 
 .card-header h3 {
-  color: #333;
+  color: var(--text-1);
   font-size: 1.3rem;
   margin-bottom: 10px;
 }
@@ -97,28 +97,28 @@
 }
 
 .difficulty-tag {
-  background-color: #e6f7ff;
-  color: #1890ff;
+  background-color: var(--tint-blue);
+  color: var(--c-blue);
 }
 
 .category-tag {
-  background-color: #fff7e6;
-  color: #faad14;
+  background-color: var(--tint-amber);
+  color: var(--c-amber);
 }
 
 .complexity-display {
   font-size: 14px;
   font-weight: 500;
-  color: #999;
+  color: var(--text-3);
 }
 
 .complexity-tag {
-  background-color: #f0f0f0;
-  color: #333;
+  background-color: var(--surface-2);
+  color: var(--text-1);
 }
 
 .card-description {
-  color: #666;
+  color: var(--text-2);
   font-size: 0.95rem;
   line-height: 1.5;
   margin-bottom: 15px;
@@ -133,8 +133,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  background-color: #fafafa;
-  border-top: 1px solid #f0f0f0;
+  background-color: var(--surface-muted);
+  border-top: 1px solid var(--border-1);
 }
 
 .detail-btn {
@@ -167,9 +167,9 @@
 }
 
 .algorithm-detail {
-  background-color: white;
+  background-color: var(--surface);
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
   padding: 24px;
   margin-top: 24px;
   box-sizing: border-box;
@@ -181,11 +181,11 @@
   align-items: center;
   margin-bottom: 24px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-1);
 }
 
 .detail-header h2 {
-  color: #333;
+  color: var(--text-1);
   font-size: 1.6rem;
   margin: 0;
 }
@@ -215,20 +215,20 @@
 }
 
 .detail-section h3 {
-  color: #333;
+  color: var(--text-1);
   font-size: 1.2rem;
   margin-bottom: 12px;
 }
 
 .detail-section p {
-  color: #666;
+  color: var(--text-2);
   line-height: 1.6;
   font-size: 14px;
 }
 
 /* 算法可视化容器 */
 .visualization-container {
-  background-color: #f9f9f9;
+  background-color: var(--surface-muted);
   border-radius: 8px;
   padding: 20px;
   margin-top: 20px;
@@ -258,7 +258,7 @@
 .visualization-container input[type="number"],
 .visualization-container input[type="text"] {
   padding: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-1);
   border-radius: 4px;
 }
 

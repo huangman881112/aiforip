@@ -1,0 +1,14 @@
+/* 插入排序特有样式（.step-item.compare/.select/.finish 已移至 common-sort-styles.css） */
+.bar.inserted {
+  background-color: #14b8a6;
+}
+
+.step-item.insert {
+  background-color: var(--tint-cyan);
+  color: var(--c-cyan);
+}
+
+.step-item.shift {
+  background-color: var(--tint-blue);
+  color: var(--c-purple);
+}

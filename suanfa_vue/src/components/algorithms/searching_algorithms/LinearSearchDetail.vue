@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 import { useSearchingVisualization } from '../../../composables/useSearchingVisualization.js'
 
 // 定义emits
@@ -21,9 +20,6 @@ const {
 const closeDetail = () => {
   emit('close')
 }
-
-// 控制标签页切换
-const activeTab = ref('basic')
 
 // 线性查找算法实现
 const linearSearch = async () => {
@@ -145,50 +141,11 @@ const testSearch = async () => {
   <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>线性查找</h2>
-      <div class="tabs">
-        <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ active: activeTab === 'search' }" @click="activeTab = 'search'">查找</button>
-        <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="{ active: activeTab === 'notes' }" @click="activeTab = 'notes'">笔记</button>
-      </div>
     </div>
 
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>线性查找是一种简单的搜索算法，它按顺序检查数组中的每个元素，直到找到目标值或遍历完整个数组。</p>
 
-          <AlgorithmComplexity algorithm-id="linear-search" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function linearSearch(arr, target):
-  for i from 0 to len(arr)-1:
-    if arr[i] == target:
-      return i  // 找到目标，返回索引
-  return -1  // 未找到目标</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>def linear_search(arr, target):
-    for i in range(len(arr)):
-        if arr[i] == target:
-            return i
-    return -1</code></pre>
-
-            <h3>JavaScript 实现</h3>
-            <pre><code>function linearSearch(arr, target) {
-    for (let i = 0; i < arr.length; i++) {
-        if (arr[i] === target) {
-            return i;
-        }
-    }
-    return -1;
-}</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'search'" class="search-section">
+      <div class="search-section">
         <h3>可视化演示</h3>
         <div class="stats-container">
           <div class="stat-item">
@@ -262,30 +219,6 @@ const testSearch = async () => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>算法优化</h3>
-          <p>线性查找的标准实现简单但效率较低，可以通过以下方式进行优化：</p>
-          <ol style="text-align: left;">
-            <li><strong>哨兵查找</strong>：在数组末尾放置目标值作为哨兵，可以减少循环中的条件判断。</li>
-            <li><strong>分块查找</strong>：对于大规模数据，可以先进行分块，再在块内进行线性查找。</li>
-            <li><strong>插值查找</strong>：对于均匀分布的数据，可以使用插值查找提高效率。</li>
-          </ol>
-
-          <h3>适用场景</h3>
-          <p>线性查找适用于小规模数据或无序数据。对于大规模有序数据，建议使用二分查找、插值查找等更高效的算法。</p>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'notes'" class="notes-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>学习笔记</h3>
-          <p>线性查找是最基本的搜索算法之一，理解它对于学习更复杂的搜索算法很有帮助。</p>
-          <p>线性查找的核心思想是按顺序检查数组中的每个元素，直到找到目标值或遍历完整个数组。</p>
-          <p>虽然线性查找效率不高，但它实现简单，易于理解，并且不需要数据有序。</p>
         </div>
       </div>
     </div>

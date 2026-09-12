@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 import { useGraphVisualization } from '../../../composables/useGraphVisualization.js'
 
 // 定义emits
@@ -95,7 +94,6 @@ const closeDetail = () => {
 }
 
 // 控制标签页切换
-const activeTab = ref('basic')
 
 // BFS 专属状态
 const visitedNodes = ref([])
@@ -223,5 +221,168 @@ const isPathEdge = (from, to) => {
   return false;
 }
 
-// 重置搜索与 onMounted 布局由 useGraphVisualization 提供
+// 重置搜索与节点初始布局由 useGraphVisualization 提供
 </script>
+
+<style scoped src="./dfs-styles.css"></style>
+
+<template>
+  <div class="bfs-detail detail-container">
+    <button class="close-btn" @click="closeDetail">×</button>
+    <div class="modal-header">
+      <h2>广度优先搜索(BFS)</h2>
+    </div>
+
+    <div class="modal-content">
+      <div class="sort-section">
+        <h3>BFS搜索可视化</h3>
+        <p>广度优先搜索(BFS)是一种用于遍历或搜索树或图的算法。它从起始节点开始，先访问所有距离为1的邻居节点，再访问距离为2的节点，逐层向外扩展，直至找到目标节点或遍历完整个连通分量。</p>
+
+        <div class="visualization-container">
+          <div class="stats-container">
+            <div class="stat-item">
+              <span class="stat-label">搜索状态:</span>
+              <span class="stat-value">{{ searchStatus }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">当前步骤:</span>
+              <span class="stat-value">{{ currentStep }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">已访问节点:</span>
+              <span class="stat-value">{{ visitedNodes.join(', ') }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">当前路径:</span>
+              <span class="stat-value">{{ path.length > 0 ? path.join(' -> ') : '无' }}</span>
+            </div>
+          </div>
+
+          <div class="graph-container">
+            <div class="graph-left">
+              <!-- 合并后的SVG容器：边和节点 -->
+              <svg width="100%" height="100%" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet">
+                <!-- 边 -->
+                <template v-for="(neighbors, node) in currentGraph" :key="node + '-edges'">
+                  <template v-for="neighbor in neighbors" :key="node + '-' + neighbor">
+                    <template v-if="nodesPositions[node] && nodesPositions[neighbor]">
+                      <!-- 边路径 (黑色) -->
+                      <path
+                        :d="getEdgePath(nodesPositions[node], nodesPositions[neighbor]).edgePath"
+                        stroke="#6b7c99"
+                        stroke-width="2"
+                        fill="none"
+                        :class="{ 'path-highlight': isPathEdge(node, neighbor) }"
+                      />
+                      <!-- 箭头路径 (红色) -->
+                      <path
+                        :d="getEdgePath(nodesPositions[node], nodesPositions[neighbor]).arrowPath"
+                        stroke="#ff0000"
+                        stroke-width="2"
+                        fill="none"
+                      />
+                    </template>
+                  </template>
+                </template>
+
+                <!-- 节点 (绘制在边上方) -->
+                <template v-for="node in Object.keys(currentGraph)" :key="node">
+                  <g v-if="nodesPositions[node]">
+                    <circle
+                      :cx="nodesPositions[node].x + 25"
+                      :cy="nodesPositions[node].y + 25"
+                      r="25"
+                      class="node"
+                      :class="{
+                        'visited': visitedNodes.includes(node),
+                        'current': path.length > 0 && path[path.length - 1] === node,
+                        'target': node === targetNode,
+                        'start': node === startNode
+                      }"
+                    />
+                    <text
+                      :x="nodesPositions[node].x + 25"
+                      :y="nodesPositions[node].y + 25"
+                      text-anchor="middle"
+                      dominant-baseline="middle"
+                      class="node-text"
+                    >
+                      {{ node }}
+                    </text>
+                    <text
+                      v-if="node === startNode || node === targetNode"
+                      :x="nodesPositions[node].x + 25"
+                      :y="nodesPositions[node].y + 60"
+                      text-anchor="middle"
+                      dominant-baseline="middle"
+                      class="node-label"
+                    >
+                      {{ node === startNode ? '起点' : '终点' }}
+                    </text>
+                  </g>
+                </template>
+              </svg>
+            </div>
+            <div class="graph-right" style="width: 40%; align-items: center; padding-top: 10%;">
+              <div class="graph-info">
+                <h4>图结构信息</h4>
+                <div v-for="(neighbors, node) in currentGraph" :key="node" class="graph-node-info" style="text-align: left;">
+                  <p>{{ node }}: {{ neighbors.join(', ') }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="slider-controls">
+            <div class="slider-group">
+              <label>节点数量: {{ numNodes }}</label>
+              <input type="text" :min="minNodes" :max="maxNodes" v-model.number="numNodes" :disabled="isSearching" @input="numNodes = Number($event.target.value)" class="short-input">
+              <span class="range-info">({{ minNodes }}-{{ maxNodes }})</span>
+            </div>
+            <div class="slider-group">
+              <label>起始节点:</label>
+              <select v-model="startNode" :disabled="isSearching">
+                <option v-for="node in Object.keys(currentGraph)" :key="node" :value="node">{{ node }}</option>
+              </select>
+            </div>
+            <div class="slider-group">
+              <label>目标节点:</label>
+              <select v-model="targetNode" :disabled="isSearching">
+                <option v-for="node in Object.keys(currentGraph)" :key="node" :value="node" :disabled="node === startNode">{{ node }}</option>
+              </select>
+            </div>
+            <div class="slider-group">
+              <label>动画速度:</label>
+              <input type="range" min="100" max="1000" v-model="animationSpeed" :disabled="isSearching">
+            </div>
+          </div>
+
+          <div class="button-group">
+            <button @click="generateNewGraph" :disabled="isSearching" :class="{ 'clicked': isButtonClicked }">生成新图</button>
+            <button @click="bfsSearch" :disabled="isSearching" :class="{ 'clicked': isButtonClicked }">开始搜索</button>
+            <button @click="resetSearch" :disabled="isSearching" :class="{ 'clicked': isButtonClicked }">重置搜索</button>
+          </div>
+
+          <div class="error-message" v-if="errorMessage">
+            <p>{{ errorMessage }}</p>
+          </div>
+
+          <div class="step-details">
+            <h4>当前步骤详情</h4>
+            <p>{{ currentStepDetails }}</p>
+          </div>
+
+          <div class="steps-history">
+            <h4>搜索步骤历史</h4>
+            <div class="steps-container">
+              <div v-for="step in searchSteps" :key="step.step" :class="'step-item ' + step.type">
+                <span class="step-number">{{ step.step }}.</span>
+                <span class="step-details">{{ step.details }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

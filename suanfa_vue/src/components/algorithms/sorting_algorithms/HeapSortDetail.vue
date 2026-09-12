@@ -3,134 +3,13 @@
     <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>堆排序</h2>
-      <div class="tabs">
-        <button :class="{ 'active': activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ 'active': activeTab === 'sorting' }" @click="activeTab = 'sorting'">排序</button>
-        <button :class="{ 'active': activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="{ 'active': activeTab === 'notes' }" @click="activeTab = 'notes'">笔记</button>
-      </div>
     </div>
     
     <!-- 标签页内容 -->
     <div class="tab-content">
-      <!-- 基础标签页 -->
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <p>堆排序是一种基于比较的排序算法，它利用堆这种数据结构来进行排序。堆是一个近似完全二叉树的结构，并同时满足堆的性质：即子节点的键值或索引总是小于（或者大于）它的父节点。</p>
-
-        <AlgorithmComplexity algorithm-id="heap-sort" />
-        
-        <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function heapify(arr, n, i):
-  最大 = i
-  左子节点 = 2*i + 1
-  右子节点 = 2*i + 2
-
-  如果 左子节点 < n 且 arr[左子节点] > arr[最大]:
-    最大 = 左子节点
-
-  如果 右子节点 < n 且 arr[右子节点] > arr[最大]:
-    最大 = 右子节点
-
-  如果 最大 != i:
-    交换 arr[i] 和 arr[最大]
-    heapify(arr, n, 最大)
-
-function heapSort(arr):
-  n = arr的长度
-
-  # 构建最大堆
-  对于 i 从 n//2 - 1 到 0:
-    heapify(arr, n, i)
-
-  # 一个个交换元素
-  对于 i 从 n-1 到 0:
-    交换 arr[0] 和 arr[i]
-    heapify(arr, i, 0)</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>def heapify(arr, n, i):
-    largest = i  # 初始化最大元素为根节点
-    left = 2 * i + 1
-    right = 2 * i + 2
-
-    # 检查左子节点是否大于根节点
-    if left < n and arr[left] > arr[largest]:
-        largest = left
-
-    # 检查右子节点是否大于目前的最大节点
-    if right < n and arr[right] > arr[largest]:
-        largest = right
-
-    # 如果最大节点不是根节点，则交换并继续堆化
-    if largest != i:
-        arr[i], arr[largest] = arr[largest], arr[i]
-        heapify(arr, n, largest)
-
-
-def heapSort(arr):
-    n = len(arr)
-
-    # 构建最大堆（重新排列数组）
-    for i in range(n // 2 - 1, -1, -1):
-        heapify(arr, n, i)
-
-    # 一个个提取堆顶元素
-    for i in range(n - 1, 0, -1):
-        arr[i], arr[0] = arr[0], arr[i]  # 交换
-        heapify(arr, i, 0)
-
-    return arr</code></pre>
-
-            <h3>JavaScript 实现</h3>
-            <pre><code>function heapify(arr, n, i) {
-    let largest = i;
-    let left = 2 * i + 1;
-    let right = 2 * i + 2;
-
-    // 检查左子节点是否大于根节点
-    if (left < n && arr[left] > arr[largest]) {
-        largest = left;
-    }
-
-    // 检查右子节点是否大于目前的最大节点
-    if (right < n && arr[right] > arr[largest]) {
-        largest = right;
-    }
-
-    // 如果最大节点不是根节点
-    if (largest !== i) {
-        [arr[i], arr[largest]] = [arr[largest], arr[i]]; // 交换
-
-        // 递归地堆化受影响的子树
-        heapify(arr, n, largest);
-    }
-}
-
-function heapSort(arr) {
-    const n = arr.length;
-
-    // 构建最大堆
-    for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
-        heapify(arr, n, i);
-    }
-
-    // 一个个提取堆顶元素
-    for (let i = n - 1; i > 0; i--) {
-        // 将当前堆顶（最大值）移到数组末尾
-        [arr[0], arr[i]] = [arr[i], arr[0]];
-
-        // 在减小的堆中调用heapify
-        heapify(arr, i, 0);
-    }
-
-    return arr;
-}</code></pre>
-          </div>
-      </div>
       
       <!-- 排序标签页 -->
-      <div v-if="activeTab === 'sorting'" class="sort-section">
+      <div class="sort-section">
         <h3>可视化演示</h3>
         <div class="stats-container">
           <div class="stat-item">
@@ -184,118 +63,22 @@ function heapSort(arr) {
         </div>
       </div>
       
-      <!-- 进阶标签页 -->
-      <div v-if="activeTab === 'advanced'" class="advanced-section" style="text-align: left;">
-        <h3>算法优化</h3>
-        <p>堆排序的主要优化方向包括：</p>
-        <ol style="text-align: left;">
-          <li><strong>自底向上构建堆</strong>：传统方法是从最后一个非叶子节点开始向上构建堆，这已经是最优的方法。</li>
-          <li><strong>避免递归</strong>：可以将递归实现的heapify函数改为迭代实现，减少函数调用开销。</li>
-          <li><strong>并行化</strong>：在大规模数据排序时，可以考虑并行构建堆。</li>
-          <li><strong>混合排序</strong>：对于小规模数据，可以在堆排序的最后阶段切换到插入排序。</li>
-        </ol>
-
-        <h3>应用场景</h3>
-        <p>堆排序适用于以下场景：</p>
-        <ul style="text-align: left;">
-          <li>需要稳定的O(n log n)时间复杂度的场景</li>
-          <li>不需要稳定排序的场景</li>
-          <li>内存受限的环境（原地排序）</li>
-          <li>需要构建优先队列的场景</li>
-        </ul>
-
-        <h3>与其他排序算法的比较</h3>
-        <table class="comparison-table">
-          <thead>
-            <tr>
-              <th>算法</th>
-              <th>平均时间复杂度</th>
-              <th>最坏时间复杂度</th>
-              <th>空间复杂度</th>
-              <th>稳定性</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>堆排序</td>
-              <td>O(n log n)</td>
-              <td>O(n log n)</td>
-              <td>O(1)</td>
-              <td>不稳定</td>
-            </tr>
-            <tr>
-              <td>快速排序</td>
-              <td>O(n log n)</td>
-              <td>O(n²)</td>
-              <td>O(log n)</td>
-              <td>不稳定</td>
-            </tr>
-            <tr>
-              <td>归并排序</td>
-              <td>O(n log n)</td>
-              <td>O(n log n)</td>
-              <td>O(n)</td>
-              <td>稳定</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
       
-      <!-- 学习标签页 -->
-      <div v-if="activeTab === 'notes'" class="notes-section" style="text-align: left;">
-        <h3>学习笔记</h3>
-        <div class="markdown-content">
-          <div class="note-item">
-            <h4>堆的性质</h4>
-            <p>堆是一个完全二叉树，且满足父节点的值大于或等于（最大堆）或小于或等于（最小堆）其子节点的值。</p>
-          </div>
-          
-          <div class="note-item">
-            <h4>堆的存储</h4>
-            <p>堆通常使用数组来存储，对于索引为i的节点：</p>
-            <ul style="text-align: left;">
-              <li>父节点索引：(i-1)/2（整数除法）</li>
-              <li>左子节点索引：2*i + 1</li>
-              <li>右子节点索引：2*i + 2</li>
-            </ul>
-          </div>
-          
-          <div class="note-item">
-            <h4>堆排序的两个阶段</h4>
-            <ol style="text-align: left;">
-              <li><strong>构建最大堆</strong>：将输入数组转化为最大堆结构</li>
-              <li><strong>排序</strong>：重复从堆中取出最大元素，并重新调整堆结构</li>
-            </ol>
-          </div>
-          
-          <div class="note-item">
-            <h4>关键点</h4>
-            <p>堆排序的关键在于理解heapify操作，它用于维护堆的性质。在排序过程中，每次将堆顶元素（最大值）与数组末尾元素交换，然后对剩余元素重新heapify。</p>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+@import './common-sort-styles.css';
 @import './common-algorithm-page.css';
-
-/* 堆排序特有样式 */
-.heap-sort-detail {
-  /* 保留组件特有样式 */
-}
+@import './heap-sort-detail.css';
 </style>
 
 <script setup>
 import { ref } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 
 // 定义emits
 const emit = defineEmits(['close'])
-
-// 控制标签页切换
-const activeTab = ref('basic')
 
 // 堆排序专属状态（可视化模型与共享 composable 不同：originalList + stepsHistory 字符串 + 枚举状态，保持独立）
 const listSize = ref(20)
@@ -537,7 +320,3 @@ const getBarColor = (index) => {
   }
 }
 </script>
-
-<style scoped>
-@import './heap-sort-detail.css';
-</style>

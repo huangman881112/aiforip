@@ -1,2 +1,5 @@
 target/
 data/
+
+# 本地密钥（含 AI 中转站 token），不入库
+.env

@@ -1,0 +1,17 @@
+/* 计数排序特有样式（.step-item.swap/.finish 已移至 common-sort-styles.css） */
+.bar.selected {
+  background-color: #f97316;
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+}
+
+.bar.min {
+  background-color: #ef4444;
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+.step-item.count {
+  background-color: var(--tint-amber);
+  color: var(--c-amber);
+}

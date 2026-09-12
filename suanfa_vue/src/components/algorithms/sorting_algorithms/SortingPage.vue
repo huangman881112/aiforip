@@ -1,31 +1,16 @@
 <script setup>
 // 排序算法页面组件
 import { ref, computed } from 'vue'
-import BubbleSortDetail from './BubbleSortDetail.vue'
-import QuickSortDetail from './QuickSortDetail.vue'
-import MergeSortDetail from './MergeSortDetail.vue'
-import HeapSortDetail from './HeapSortDetail.vue'
-import InsertionSortDetail from './InsertionSortDetail.vue'
-import SelectionSortDetail from './SelectionSortDetail.vue'
-import ShellSortDetail from './ShellSortDetail.vue'
-import CountingSortDetail from './CountingSortDetail.vue'
-import BucketSortDetail from './BucketSortDetail.vue'
-import RadixSortDetail from './RadixSortDetail.vue'
+import { useRouter } from 'vue-router'
 // 单一数据源
 import { sortingAlgorithms } from '../../../data/algorithms'
 import ProgressMark from '../../common/ProgressMark.vue'
 
-// 当前选中的算法ID（语义 id，如 'bubble-sort'）
-const selectedAlgorithm = ref(null)
+const router = useRouter()
 
-// 滚动到详情区域
-const scrollToDetail = () => {
-  setTimeout(() => {
-    const detailElement = document.querySelector('.detail-container');
-    if (detailElement) {
-      detailElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, 100);
+// 点击卡片/查看详情 -> 统一详情页路由
+const openDetail = (id) => {
+  router.push(`/algorithms/sorting/${id}`)
 }
 
 // 分类标签
@@ -78,7 +63,7 @@ const filteredAlgorithms = computed(() => {
 
     <!-- 算法卡片容器 -->
     <div class="algorithms-grid">
-      <div v-for="algorithm in filteredAlgorithms" :key="algorithm.id" :class="['algorithm-card', { 'selected': selectedAlgorithm === algorithm.id }]" @click="selectedAlgorithm = algorithm.id">
+      <div v-for="algorithm in filteredAlgorithms" :key="algorithm.id" class="algorithm-card" @click="openDetail(algorithm.id)">
         <div class="card-header">
           <h3>{{ algorithm.name }}</h3>
           <div class="tags-container">
@@ -93,31 +78,10 @@ const filteredAlgorithms = computed(() => {
         <div class="card-footer">
           <span class="complexity">{{ algorithm.complexity }}</span>
           <ProgressMark :algorithm-id="algorithm.id" />
-          <button class="detail-btn" @click.stop="selectedAlgorithm = algorithm.id; scrollToDetail()">查看详情</button>
+          <button class="detail-btn" @click.stop="openDetail(algorithm.id)">查看详情</button>
         </div>
       </div>
     </div>
-
-    <!-- 冒泡排序详情 -->
-    <BubbleSortDetail v-if="selectedAlgorithm === 'bubble-sort'" @close="selectedAlgorithm = null" />
-    <!-- 快速排序详情 -->
-    <QuickSortDetail v-if="selectedAlgorithm === 'quick-sort'" @close="selectedAlgorithm = null" />
-    <!-- 归并排序详情 -->
-    <MergeSortDetail v-if="selectedAlgorithm === 'merge-sort'" @close="selectedAlgorithm = null" />
-    <!-- 堆排序详情 -->
-    <HeapSortDetail v-if="selectedAlgorithm === 'heap-sort'" @close="selectedAlgorithm = null" />
-    <!-- 插入排序详情 -->
-    <InsertionSortDetail v-if="selectedAlgorithm === 'insertion-sort'" @close="selectedAlgorithm = null" />
-    <!-- 选择排序详情 -->
-    <SelectionSortDetail v-if="selectedAlgorithm === 'selection-sort'" @close="selectedAlgorithm = null" />
-    <!-- 希尔排序详情 -->
-    <ShellSortDetail v-if="selectedAlgorithm === 'shell-sort'" @close="selectedAlgorithm = null" />
-    <!-- 计数排序详情 -->
-    <CountingSortDetail v-if="selectedAlgorithm === 'counting-sort'" @close="selectedAlgorithm = null" />
-    <!-- 桶排序详情 -->
-    <BucketSortDetail v-if="selectedAlgorithm === 'bucket-sort'" @close="selectedAlgorithm = null" />
-    <!-- 基数排序详情 -->
-    <RadixSortDetail v-if="selectedAlgorithm === 'radix-sort'" @close="selectedAlgorithm = null" />
   </div>
 </template>
 

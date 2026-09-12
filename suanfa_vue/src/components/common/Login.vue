@@ -95,28 +95,28 @@ function switchMode() {
 .auth-card {
   width: 100%;
   max-width: 380px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
   padding: 32px;
 }
 
 .auth-card h2 {
   margin: 0 0 4px;
-  color: #333;
+  color: var(--text-1);
   font-size: 1.4rem;
 }
 
 .auth-subtitle {
   margin: 0 0 24px;
-  color: #999;
+  color: var(--text-3);
   font-size: 0.9rem;
 }
 
 .auth-form label {
   display: block;
   margin-bottom: 16px;
-  color: #555;
+  color: var(--text-2);
   font-size: 0.9rem;
 }
 
@@ -125,7 +125,7 @@ function switchMode() {
   width: 100%;
   margin-top: 6px;
   padding: 10px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-1);
   border-radius: 4px;
   font-size: 0.95rem;
   box-sizing: border-box;
@@ -137,7 +137,7 @@ function switchMode() {
 }
 
 .auth-error {
-  color: #d32f2f;
+  color: var(--c-red);
   font-size: 0.85rem;
   margin: 0 0 12px;
 }
@@ -166,12 +166,12 @@ function switchMode() {
 .auth-switch {
   margin: 20px 0 0;
   text-align: center;
-  color: #999;
+  color: var(--text-3);
   font-size: 0.9rem;
 }
 
 .auth-switch a {
-  color: #1e88e5;
+  color: var(--c-blue);
   text-decoration: none;
 }
 </style>

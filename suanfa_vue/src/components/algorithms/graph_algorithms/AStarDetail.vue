@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 import { useGraphVisualization } from '../../../composables/useGraphVisualization.js'
 
 // 定义emits
@@ -90,9 +89,6 @@ const {
 const closeDetail = () => {
   emit('close')
 }
-
-// 控制标签页切换
-const activeTab = ref('basic')
 
 // A* 专属状态
 const visitedNodes = ref([])
@@ -293,106 +289,12 @@ const isPathEdge = (from, to) => {
     <div class="modal-header">
       <h2>A*算法详情</h2>
       <button class="close-btn" @click="closeDetail">×</button>
-       <!-- 标签页控制 -->
-      <div class="tabs">
-      <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-      <button :class="{ active: activeTab === 'search' }" @click="activeTab = 'search'">查找</button>
-      <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-      <button :class="{ active: activeTab === 'learning' }" @click="activeTab = 'learning'">学习</button>
-      </div>
     </div>
     <!-- 标签页内容 -->
     <div class="modal-content">
-      <!-- 基础标签页 -->
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>A*算法是一种启发式搜索算法，它结合了Dijkstra算法和贪心最佳优先搜索的优点。A*算法使用启发式函数来估计从当前节点到目标节点的最短路径，从而加速搜索过程。</p>
-
-          <AlgorithmComplexity algorithm-id="astar" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function AStar(graph, start, goal, heuristic):
-  openSet = {start}
-  closedSet = {}
-  gScore = map with infinity for all nodes
-  gScore[start] = 0
-  fScore = map with infinity for all nodes
-  fScore[start] = heuristic(start, goal)
-  parent = {}
-  
-  while openSet not empty:
-    current = node in openSet with lowest fScore
-    
-    if current == goal:
-      return reconstructPath(parent, current)
-    
-    openSet.remove(current)
-    closedSet.add(current)
-    
-    for each neighbor of current:
-      if neighbor in closedSet:
-        continue
-      
-      tentativeGScore = gScore[current] + distance(current, neighbor)
-      
-      if neighbor not in openSet:
-        openSet.add(neighbor)
-      else if tentativeGScore >= gScore[neighbor]:
-        continue
-      
-      parent[neighbor] = current
-      gScore[neighbor] = tentativeGScore
-      fScore[neighbor] = gScore[neighbor] + heuristic(neighbor, goal)
-  
-  return failure</code></pre>
-
-            <h3>Python 实现</h3>
-        <pre><code class="language-python">def a_star_search(graph, start, goal, heuristic):
-    open_set = set([start])
-    closed_set = set()
-    g_score = {node: float('inf') for node in graph}
-    g_score[start] = 0
-    f_score = {node: float('inf') for node in graph}
-    f_score[start] = heuristic(start, goal)
-    parent = {}
-
-    while open_set:
-        current = min(open_set, key=lambda x: f_score[x])
-
-        if current == goal:
-            path = []
-            while current in parent:
-                path.append(current)
-                current = parent[current]
-            path.append(start)
-            return path[::-1]
-
-        open_set.remove(current)
-        closed_set.add(current)
-
-        for neighbor, weight in graph[current].items():
-            if neighbor in closed_set:
-                continue
-
-            tentative_g_score = g_score[current] + weight
-            if neighbor not in open_set:
-                open_set.add(neighbor)
-            elif tentative_g_score >= g_score[neighbor]:
-                continue
-
-            parent[neighbor] = current
-            g_score[neighbor] = tentative_g_score
-            f_score[neighbor] = g_score[neighbor] + heuristic(neighbor, goal)
-
-    return None</code></pre>
-    </div>
-        </div>
-  
-      </div>
 
       <!-- 查找标签页 -->
-      <div v-else-if="activeTab === 'search'" class="search-content">
+      <div class="search-content">
          <h3>A*搜索可视化</h3>
         <p>A*算法用于寻找带权图中单源最短路径，能够处理包含负权边的图，但不能处理包含负权环的图。</p>
       <div class="visualization-container">
@@ -428,14 +330,14 @@ const isPathEdge = (from, to) => {
                   <!-- 边路径 -->
                   <path
                     :d="getEdgePath(nodesPositions[fromNode], nodesPositions[edge.node]).edgePath"
-                    stroke="#666"
+                    stroke="#6b7c99"
                     stroke-width="2"
                     fill="none"
                   />
                   <!-- 箭头路径 -->
                   <path
                     :d="getEdgePath(nodesPositions[fromNode], nodesPositions[edge.node]).arrowPath"
-                    stroke="#666"
+                    stroke="#6b7c99"
                     stroke-width="2"
                     fill="none"
                   />
@@ -444,7 +346,7 @@ const isPathEdge = (from, to) => {
                     :x="(nodesPositions[fromNode].x + nodesPositions[edge.node].x) / 2 + 10"
                     :y="(nodesPositions[fromNode].y + nodesPositions[edge.node].y) / 2 - 10"
                     font-size="12"
-                    fill="#333"
+                    fill="#e9eff8"
                   >
                     {{ edge.weight }}
                   </text>
@@ -460,8 +362,8 @@ const isPathEdge = (from, to) => {
                 r="25"
                 class="node"
                 :class="{
-                  'start': node === startNode.value,
-                  'target': node === targetNode.value,
+                  'start': node === startNode,
+                  'target': node === targetNode,
                   'visited': visitedNodes.includes(node),
                   'current': path.includes(node)
                 }"
@@ -506,7 +408,7 @@ const isPathEdge = (from, to) => {
             <div class="slider-group">
               <label>目标节点:</label>
               <select v-model="targetNode" :disabled="isSearching">
-                <option v-for="node in Object.keys(currentGraph)" :key="node" :value="node" :disabled="node === startNode.value">{{ node }}</option>
+                <option v-for="node in Object.keys(currentGraph)" :key="node" :value="node" :disabled="node === startNode">{{ node }}</option>
               </select>
             </div>
             <div class="slider-group">
@@ -542,70 +444,7 @@ const isPathEdge = (from, to) => {
           </div>
       </div>
       </div>
-      <!-- 进阶标签页 -->
-      <div v-else-if="activeTab === 'advanced'" class="advanced-section">
-        <div class="markdown-content" style="text-align: left;">
-        <h3>算法变种</h3>
-        <p>A*算法有许多变种，适用于不同的场景：</p>
-        <ul>
-          <li><strong>加权A*</strong>：对g(n)或h(n)使用不同的权重，以平衡搜索速度和路径质量。</li>
-          <li><strong>增量A*</strong>：当图发生变化时，避免重新从头开始搜索。</li>
-          <li><strong>动态A*</strong>：适用于动态变化的环境，如机器人导航。</li>
-          <li><strong>分层A*</strong>：将搜索空间划分为多个层级，加速搜索过程。</li>
-        </ul>
 
-        <h3>优化技巧</h3>
-        <ol>
-          <li><strong>选择合适的启发函数</strong>：启发函数越接近实际代价，搜索效率越高。</li>
-          <li><strong>使用高效的数据结构</strong>：开放列表可以使用优先队列实现，以快速找到f值最小的节点。</li>
-          <li><strong>剪枝策略</strong>：提前排除不可能的路径，减少搜索空间。</li>
-        </ol>
-
-        <h3>应用场景</h3>
-        <p>A*算法在以下领域有广泛应用：</p>
-        <ul>
-          <li>游戏开发中的寻路算法</li>
-          <li>机器人导航</li>
-          <li>网络路由</li>
-          <li>地图软件中的路径规划</li>
-          <li>人工智能中的问题求解</li>
-        </ul>
-        </div>
-      </div>
-
-      <!-- 学习标签页 -->
-      <div v-else-if="activeTab === 'learning'" class="learning-section">
-        <div class="markdown-content" style="text-align: left;">
-        <h3>学习资源</h3>
-        <p>以下是学习A*算法的推荐资源：</p>
-        <ul>
-          <li><a href="https://en.wikipedia.org/wiki/A*_search_algorithm" target="_blank">维基百科 - A*搜索算法</a></li>
-          <li><a href="https://www.redblobgames.com/pathfinding/a-star/introduction.html" target="_blank">Red Blob Games - A*算法介绍</a></li>
-          <li><a href="https://www.geeksforgeeks.org/a-search-algorithm/" target="_blank">GeeksforGeeks - A*搜索算法</a></li>
-        </ul>
-
-        <h3>常见问题</h3>
-        <dl>
-          <dt>Q: A*算法与Dijkstra算法有什么区别？</dt>
-          <dd>A: A*算法结合了Dijkstra算法的优点（保证找到最短路径）和贪心最佳优先搜索的优点（使用启发式函数加速搜索）。Dijkstra算法会探索所有可能的路径，而A*算法会优先探索更可能接近目标的路径。</dd>
-
-          <dt>Q: 什么是可接受的启发函数？</dt>
-          <dd>A: 可接受的启发函数是指不会高估从当前节点到目标节点的实际代价的函数。使用可接受的启发函数可以保证A*算法找到最短路径。</dd>
-
-          <dt>Q: 什么是一致的启发函数？</dt>
-          <dd>A: 一致的启发函数是指对于任意节点n和n的邻居m，启发函数满足h(n) ≤ c(n,m) + h(m)，其中c(n,m)是从n到m的实际代价。一致的启发函数一定是可接受的。</dd>
-        </dl>
-
-        <h3>实践提示</h3>
-        <p>在实现A*算法时，需要注意以下几点：</p>
-        <ul>
-          <li>选择合适的启发函数对算法性能至关重要。</li>
-          <li>确保启发函数是可接受的，以保证找到最短路径。</li>
-          <li>对于大型图，可以考虑使用剪枝策略或并行化技术来提高性能。</li>
-          <li>在动态环境中，可能需要使用A*算法的变种，如动态A*。</li>
-        </ul>
-        </div>
-      </div>
     </div>
   </div>
 </template>

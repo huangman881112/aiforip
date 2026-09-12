@@ -78,9 +78,9 @@ async function toggle(next) {
 }
 
 .pm-btn {
-  border: 1px solid #ddd;
-  background: #fff;
-  color: #666;
+  border: 1px solid var(--border-1);
+  background: var(--surface);
+  color: var(--text-2);
   font-size: 0.78rem;
   padding: 4px 10px;
   border-radius: 12px;
@@ -91,7 +91,7 @@ async function toggle(next) {
 
 .pm-btn:hover:not(:disabled) {
   border-color: #1e88e5;
-  color: #1e88e5;
+  color: var(--c-blue);
 }
 
 .pm-btn.active {

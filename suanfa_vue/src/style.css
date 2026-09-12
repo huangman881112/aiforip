@@ -3,9 +3,10 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* 全站深色主题：颜色值统一由 styles/theme.css 提供 */
+  color-scheme: dark;
+  color: var(--text-1);
+  background-color: var(--app-bg);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,19 +14,55 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--app-bg);
+  background-image:
+    radial-gradient(1100px 520px at 12% -10%, rgba(30, 136, 229, 0.16), transparent 60%),
+    radial-gradient(900px 480px at 88% 0%, rgba(66, 185, 131, 0.1), transparent 55%);
+  background-attachment: fixed;
+  color: var(--text-1);
+}
+
+/* 滚动条与选中文本也走主题变量 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-2);
+}
+
+::selection {
+  background: var(--brand-100);
+  color: var(--text-1);
+}
+
 /* 复杂度分析样式 */
 .complexity-analysis {
   margin: 20px 0;
   padding: 15px;
-  background-color: #f8fafc;
+  background-color: var(--surface-muted);
   border-radius: 8px;
 }
 
 .complexity-item {
   padding: 15px;
-  background-color: white;
+  background-color: var(--surface);
   border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
 }
 
 .merged-complexity {
@@ -35,7 +72,7 @@
 .complexity-row {
   margin-bottom: 15px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-1);
   display: flex;
   align-items: center;
 }
@@ -49,7 +86,7 @@
 .complexity-title {
   font-weight: 600;
   margin-right: 8px;
-  color: #1e293b;
+  color: var(--text-1);
   display: inline-block;
   text-align: left;
   width: auto;
@@ -72,7 +109,7 @@
   content: '•';
   position: absolute;
   left: -20px;
-  color: #1e88e5;
+  color: var(--c-blue);
 }
 
 .complexity-subitems li span:first-child {
@@ -84,25 +121,17 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: var(--c-blue);
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  color: var(--nav-link-plain-hover);
 }
 
 h1 {
   font-size: 2.5rem;
   line-height: 1.2;
-  color: #333;
+  color: var(--text-1);
   text-align: center;
   margin-bottom: 15px;
 }
@@ -114,12 +143,13 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--surface-2);
+  color: var(--text-1);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: border-color 0.25s, background-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: var(--brand-400);
 }
 button:focus,
 button:focus-visible {
@@ -131,23 +161,9 @@ button:focus-visible {
 }
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 .btn {
   padding: 8px 16px;
@@ -233,12 +249,13 @@ button:focus-visible {
 
 /* 次要按钮 */
 .btn-secondary {
-  background-color: #e2e8f0;
-  color: #64748b;
+  background-color: var(--surface-2);
+  color: var(--text-2);
 }
 
 .btn-secondary:hover {
-  background-color: #cbd5e1;
+  background-color: var(--surface-3);
+  color: var(--text-1);
   transform: translateY(-1px);
 }
 
@@ -248,8 +265,8 @@ button:focus-visible {
 
 /* 禁用状态 */
 .btn:disabled {
-  background-color: #94a3b8;
-  color: #f8fafc;
+  background-color: var(--surface-2);
+  color: var(--text-3);
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
@@ -258,9 +275,9 @@ button:focus-visible {
 /* 标签页按钮 */
 .tab-btn {
   padding: 8px 16px;
-  border: none;
-  background-color: #e2e8f0;
-  color: #64748b;
+  border: 1px solid var(--border-1);
+  background-color: var(--surface-2);
+  color: var(--text-2);
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -268,7 +285,8 @@ button:focus-visible {
 }
 
 .tab-btn:hover {
-  background-color: #cbd5e1;
+  background-color: var(--surface-3);
+  color: var(--text-1);
 }
 
 .tab-btn.active {

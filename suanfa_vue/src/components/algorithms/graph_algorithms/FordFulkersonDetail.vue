@@ -10,7 +10,7 @@
   font-weight: bold !important;
 }
 .sink-node {
-  color: #4CAF50 ;
+  color: var(--c-green) ;
   font-size: 1.5em !important;
   font-weight: bold !important;
 }
@@ -29,7 +29,6 @@
 
 <script setup>
 import { ref, nextTick, watch, onMounted } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 
 // 定义emits
 const emit = defineEmits(['close'])
@@ -38,9 +37,6 @@ const emit = defineEmits(['close'])
 const closeDetail = () => {
   emit('close')
 }
-
-// 控制标签页切换
-const activeTab = ref('basic')
 
 // Ford-Fulkerson算法可视化相关状态
 // 图结构控制
@@ -544,228 +540,11 @@ onMounted(() => {
   <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>福特-富尔克森算法(Ford-Fulkerson)</h2>
-      <div class="tabs">
-        <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ active: activeTab === 'search' }" @click="activeTab = 'search'">查找</button>
-        <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="{ active: activeTab === 'notes' }" @click="activeTab = 'notes'">学习</button>
-      </div>
     </div>
 
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>福特-富尔克森算法(Ford-Fulkerson)是一种用于计算网络最大流的贪心算法。它的核心思想是通过反复寻找从源点到汇点的增广路径，并沿着这些路径增加流量，直到无法找到更多增广路径为止。</p>
 
-          <AlgorithmComplexity algorithm-id="ford-fulkerson" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function FordFulkerson(G, s, t):
-  initialize flow on all edges to 0
-  while there exists an augmenting path P from s to t in the residual network G_f:
-    let c_f(P) be the minimum residual capacity on the path P
-    augment the flow along P by c_f(P)
-  return the total flow from s to t</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>from collections import deque
-
-def bfs(residual, source, sink, parent):
-    visited = {node: False for node in residual}
-    queue = deque([source])
-    visited[source] = True
-
-    while queue:
-        current = queue.popleft()
-        for edge in residual[current]:
-            if not visited[edge['node']] and edge['capacity'] > edge['flow']:
-                parent[edge['node']] = current
-                visited[edge['node']] = True
-                if edge['node'] == sink:
-                    return True
-                queue.append(edge['node'])
-    return False
-
-def ford_fulkerson(graph, source, sink):
-    # 创建残量网络
-    residual = {node: [] for node in graph}
-    for node in graph:
-        for neighbor in graph[node]:
-            # 正向边
-            residual[node].append({
-                'node': neighbor['node'],
-                'capacity': neighbor['capacity'],
-                'flow': 0,
-                'is_reverse': False
-            })
-            # 反向边
-            residual[neighbor['node']].append({
-                'node': node,
-                'capacity': 0,
-                'flow': 0,
-                'is_reverse': True
-            })
-
-    parent = {node: -1 for node in graph}
-    max_flow = 0
-
-    while bfs(residual, source, sink, parent):
-        # 找到路径上的最小残量容量
-        path_flow = float('inf')
-        s = sink
-        while s != source:
-            for edge in residual[parent[s]]:
-                if edge['node'] == s and edge['capacity'] - edge['flow'] > 0:
-                    path_flow = min(path_flow, edge['capacity'] - edge['flow'])
-                    break
-            s = parent[s]
-
-        # 更新路径上的流量
-        v = sink
-        while v != source:
-            for edge in residual[parent[v]]:
-                if edge['node'] == v and not edge['is_reverse']:
-                    edge['flow'] += path_flow
-                    break
-            # 更新反向边
-            for edge in residual[v]:
-                if edge['node'] == parent[v] and edge['is_reverse']:
-                    edge['flow'] -= path_flow
-                    break
-            v = parent[v]
-
-        max_flow += path_flow
-        parent = {node: -1 for node in graph}
-
-    return max_flow
-
-# 示例使用
-# graph = {
-#     'A': [{'node': 'B', 'capacity': 16}, {'node': 'D', 'capacity': 13}],
-#     'B': [{'node': 'C', 'capacity': 12}, {'node': 'D', 'capacity': 10}],
-#     'C': [{'node': 'E', 'capacity': 20}],
-#     'D': [{'node': 'B', 'capacity': 4}, {'node': 'C', 'capacity': 9}, {'node': 'E', 'capacity': 14}],
-#     'E': []
-# }
-# source = 'A'
-# sink = 'E'
-# print(f"最大流: {ford_fulkerson(graph, source, sink)}")</code></pre>
-
-            <h3>JavaScript 实现</h3>
-            <pre><code>function bfs(residual, source, sink, parent) {
-    const visited = {};
-    for (const node in residual) {
-        visited[node] = false;
-    }
-
-    const queue = [source];
-    visited[source] = true;
-
-    while (queue.length > 0) {
-        const current = queue.shift();
-        for (const edge of residual[current]) {
-            if (!visited[edge.node] && edge.capacity > edge.flow) {
-                parent[edge.node] = current;
-                visited[edge.node] = true;
-                if (edge.node === sink) {
-                    return true;
-                }
-                queue.push(edge.node);
-            }
-        }
-    }
-    return false;
-}
-
-function fordFulkerson(graph, source, sink) {
-    // 创建残量网络
-    const residual = {};
-    for (const node in graph) {
-        residual[node] = [];
-        for (const neighbor of graph[node]) {
-            // 正向边
-            residual[node].push({
-                node: neighbor.node,
-                capacity: neighbor.capacity,
-                flow: 0,
-                isReverse: false
-            });
-            // 反向边
-            if (!residual[neighbor.node]) {
-                residual[neighbor.node] = [];
-            }
-            residual[neighbor.node].push({
-                node: node,
-                capacity: 0,
-                flow: 0,
-                isReverse: true
-            });
-        }
-    }
-
-    const parent = {};
-    let maxFlow = 0;
-
-    while (bfs(residual, source, sink, parent)) {
-        // 找到路径上的最小残量容量
-        let pathFlow = Infinity;
-        let s = sink;
-        while (s !== source) {
-            for (const edge of residual[parent[s]]) {
-                if (edge.node === s && edge.capacity - edge.flow > 0) {
-                    pathFlow = Math.min(pathFlow, edge.capacity - edge.flow);
-                    break;
-                }
-            }
-            s = parent[s];
-        }
-
-        // 更新路径上的流量
-        let v = sink;
-        while (v !== source) {
-            for (const edge of residual[parent[v]]) {
-                if (edge.node === v && !edge.isReverse) {
-                    edge.flow += pathFlow;
-                    break;
-                }
-            }
-            // 更新反向边
-            for (const edge of residual[v]) {
-                if (edge.node === parent[v] && edge.isReverse) {
-                    edge.flow -= pathFlow;
-                    break;
-                }
-            }
-            v = parent[v];
-        }
-
-        maxFlow += pathFlow;
-        // 重置parent
-        Object.keys(residual).forEach(node => {
-            parent[node] = null;
-        });
-    }
-
-    return maxFlow;
-}
-
-// 示例使用
-// const graph = {
-//     'A': [{ node: 'B', capacity: 16 }, { node: 'D', capacity: 13 }],
-//     'B': [{ node: 'C', capacity: 12 }, { node: 'D', capacity: 10 }],
-//     'C': [{ node: 'E', capacity: 20 }],
-//     'D': [{ node: 'B', capacity: 4 }, { node: 'C', capacity: 9 }, { node: 'E', capacity: 14 }],
-//     'E': []
-// };
-// const source = 'A';
-// const sink = 'E';
-// console.log(`最大流: ${fordFulkerson(graph, source, sink)}`);</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'search'" class="search-section">
+      <div class="search-section">
         <h3>Ford-Fulkerson算法可视化</h3>
         <p>福特-富尔克森算法是一种用于计算网络最大流的贪心算法。它通过反复寻找从源点到汇点的增广路径，并沿着这些路径增加流量。</p>
       <div class="visualization-container">
@@ -905,74 +684,6 @@ function fordFulkerson(graph, source, sink) {
           </div>
         </div>
        </div>
-      </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section">
-        <div class="markdown-content" style="text-align: left;">
-          <h3>算法变种</h3>
-          <p>福特-富尔克森算法有一些重要的变种：</p>
-          <ol>
-            <li><strong>Edmonds-Karp算法</strong>：使用BFS寻找增广路径，时间复杂度为O(V*E²)。</li>
-            <li><strong>Dinic算法</strong>：使用分层图和阻塞流，时间复杂度为O(V²*E)。</li>
-            <li><strong>Push-Relabel算法</strong>：使用预流和重标技术，时间复杂度为O(V³)。</li>
-            <li><strong>Capacity Scaling算法</strong>：按容量大小寻找增广路径，时间复杂度为O(E² log U)，其中U是最大边容量。</li>
-          </ol>
-
-          <h3>应用场景</h3>
-          <p>福特-富尔克森算法广泛应用于以下场景：</p>
-          <ul>
-            <li>网络流问题</li>
-            <li>最大匹配问题</li>
-            <li> bipartite图匹配</li>
-            <li>运输问题</li>
-            <li>任务分配问题</li>
-            <li>网络可靠性分析</li>
-            <li>通信网络中的流量控制</li>
-          </ul>
-
-          <h3>理论扩展</h3>
-          <p>福特-富尔克森算法基于最大流最小割定理，该定理指出网络中的最大流等于最小割的容量。这个定理是网络流理论中的核心结果，也是许多网络流算法的基础。</p>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'notes'" class="learning-section">
-        <div class="markdown-content" style="text-align: left;">
-          <h3>学习笔记</h3>
-          <p>福特-富尔克森算法是解决网络流问题的基础算法，以下是一些学习要点：</p>
-
-          <h4>核心概念</h4>
-          <ul>
-            <li><strong>流网络</strong>：一个有向图，其中每条边都有一个非负容量，且有一个源点和一个汇点。</li>
-            <li><strong>流</strong>：从源点到汇点的流量分配，满足容量约束和流量守恒。</li>
-            <li><strong>残量网络</strong>：表示网络中剩余容量的有向图，包括正向边和反向边。</li>
-            <li><strong>增广路径</strong>：残量网络中从源点到汇点的路径，可以用来增加流量。</li>
-            <li><strong>最小割</strong>：将图分成两个子集S和T(S包含源点，T包含汇点)的边集，其容量之和最小。</li>
-          </ul>
-
-          <h4>算法步骤</h4>
-          <ol>
-            <li>初始化所有边的流量为0。</li>
-            <li>在残量网络中寻找从源点到汇点的增广路径。</li>
-            <li>沿增广路径增加尽可能多的流量（路径上的最小残量容量）。</li>
-            <li>更新残量网络。</li>
-            <li>重复步骤2-4，直到无法找到增广路径。</li>
-          </ol>
-
-          <h4>注意事项</h4>
-          <ul>
-            <li>福特-富尔克森算法的时间复杂度取决于寻找增广路径的方法。</li>
-            <li>如果边容量是无理数，算法可能不会终止。</li>
-            <li>Edmonds-Karp算法是福特-富尔克森算法的一个特例，它使用BFS寻找增广路径，保证在有限时间内终止。</li>
-            <li>在实际应用中，Dinic算法和Push-Relabel算法通常比Edmonds-Karp算法更高效。</li>
-          </ul>
-
-          <h4>参考资源</h4>
-          <ul>
-            <li>《算法导论》（第三版）第26章：最大流</li>
-            <li>《算法》（第四版）第4.3节：最大流</li>
-            <li>维基百科：福特-富尔克森算法</li>
-          </ul>
-        </div>
       </div>
     </div>
 

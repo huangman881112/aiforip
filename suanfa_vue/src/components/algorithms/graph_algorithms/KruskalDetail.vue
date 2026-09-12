@@ -8,7 +8,6 @@
 
 <script setup>
 import { ref, nextTick, watch, onMounted } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 
 // 定义emits
 const emit = defineEmits(['close'])
@@ -17,9 +16,6 @@ const emit = defineEmits(['close'])
 const closeDetail = () => {
   emit('close')
 }
-
-// 控制标签页切换
-const activeTab = ref('basic')
 
 // Kruskal算法可视化相关状态
 // 图结构控制
@@ -416,203 +412,11 @@ onMounted(() => {
   <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>克鲁斯卡尔算法(Kruskal)</h2>
-      <div class="tabs">
-        <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ active: activeTab === 'search' }" @click="activeTab = 'search'">查找</button>
-        <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="{ active: activeTab === 'notes' }" @click="activeTab = 'notes'">学习</button>
-      </div>
     </div>
 
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>克鲁斯卡尔算法(Kruskal)是一种用于寻找加权无向图的最小生成树的算法。它的核心思想是将图中所有边按权重从小到大排序，然后依次添加边到最小生成树中，同时确保不会形成环。</p>
 
-          <AlgorithmComplexity algorithm-id="kruskal" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function Kruskal(G):
-  MST = empty set
-  sort all edges of G by weight in ascending order
-  for each edge (u, v) in sorted order:
-    if adding (u, v) to MST does not form a cycle:
-      add (u, v) to MST
-      if MST has V-1 edges:
-        break
-  return MST</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>class UnionFind:
-    def __init__(self, nodes):
-        self.parent = {node: node for node in nodes}
-        self.rank = {node: 0 for node in nodes}
-    
-    def find(self, node):
-        if self.parent[node] != node:
-            self.parent[node] = self.find(self.parent[node])
-        return self.parent[node]
-    
-    def union(self, node1, node2):
-        root1 = self.find(node1)
-        root2 = self.find(node2)
-        
-        if root1 == root2:
-            return False
-        
-        if self.rank[root1] < self.rank[root2]:
-            self.parent[root1] = root2
-        else:
-            self.parent[root2] = root1
-            if self.rank[root1] == self.rank[root2]:
-                self.rank[root1] += 1
-        return True
-
-def kruskal(graph, edges):
-    nodes = list(graph.keys())
-    uf = UnionFind(nodes)
-    mst = []
-    total_weight = 0
-    
-    # 按权重排序边
-    sorted_edges = sorted(edges, key=lambda x: x['weight'])
-    
-    for edge in sorted_edges:
-        u = edge['from']
-        v = edge['to']
-        weight = edge['weight']
-        
-        if uf.union(u, v):
-            mst.append(edge)
-            total_weight += weight
-            if len(mst) == len(nodes) - 1:
-                break
-    
-    return mst, total_weight
-
-# 示例使用
-# graph = {
-#     'A': [{'node': 'B', 'weight': 7}, {'node': 'D', 'weight': 5}],
-#     'B': [{'node': 'A', 'weight': 7}, {'node': 'C', 'weight': 8}, {'node': 'D', 'weight': 9}, {'node': 'E', 'weight': 7}],
-#     'C': [{'node': 'B', 'weight': 8}, {'node': 'E', 'weight': 5}],
-#     'D': [{'node': 'A', 'weight': 5}, {'node': 'B', 'weight': 9}, {'node': 'E', 'weight': 15}, {'node': 'F', 'weight': 6}],
-#     'E': [{'node': 'B', 'weight': 7}, {'node': 'C', 'weight': 5}, {'node': 'D', 'weight': 15}, {'node': 'F', 'weight': 8}, {'node': 'G', 'weight': 9}],
-#     'F': [{'node': 'D', 'weight': 6}, {'node': 'E', 'weight': 8}, {'node': 'G', 'weight': 11}],
-#     'G': [{'node': 'E', 'weight': 9}, {'node': 'F', 'weight': 11}]
-# }
-# edges = [
-#     {'from': 'A', 'to': 'B', 'weight': 7},
-#     {'from': 'A', 'to': 'D', 'weight': 5},
-#     {'from': 'B', 'to': 'C', 'weight': 8},
-#     {'from': 'B', 'to': 'D', 'weight': 9},
-#     {'from': 'B', 'to': 'E', 'weight': 7},
-#     {'from': 'C', 'to': 'E', 'weight': 5},
-#     {'from': 'D', 'to': 'E', 'weight': 15},
-#     {'from': 'D', 'to': 'F', 'weight': 6},
-#     {'from': 'E', 'to': 'F', 'weight': 8},
-#     {'from': 'E', 'to': 'G', 'weight': 9},
-#     {'from': 'F', 'to': 'G', 'weight': 11}
-# ]
-# mst, total_weight = kruskal(graph, edges)
-# print("最小生成树边:", mst)
-# print("总权重:", total_weight)</code></pre>
-
-            <h3>JavaScript 实现</h3>
-            <pre><code>class UnionFind {
-    constructor(nodes) {
-        this.parent = {};
-        this.rank = {};
-        nodes.forEach(node => {
-            this.parent[node] = node;
-            this.rank[node] = 0;
-        });
-    }
-    
-    find(node) {
-        if (this.parent[node] !== node) {
-            this.parent[node] = this.find(this.parent[node]);
-        }
-        return this.parent[node];
-    }
-    
-    union(node1, node2) {
-        const root1 = this.find(node1);
-        const root2 = this.find(node2);
-        
-        if (root1 === root2) {
-            return false;
-        }
-        
-        if (this.rank[root1] < this.rank[root2]) {
-            this.parent[root1] = root2;
-        } else {
-            this.parent[root2] = root1;
-            if (this.rank[root1] === this.rank[root2]) {
-                this.rank[root1]++;
-            }
-        }
-        return true;
-    }
-}
-
-function kruskal(graph, edges) {
-    const nodes = Object.keys(graph);
-    const uf = new UnionFind(nodes);
-    const mst = [];
-    let totalWeight = 0;
-    
-    // 按权重排序边
-    const sortedEdges = [...edges].sort((a, b) => a.weight - b.weight);
-    
-    for (const edge of sortedEdges) {
-        const u = edge.from;
-        const v = edge.to;
-        const weight = edge.weight;
-        
-        if (uf.union(u, v)) {
-            mst.push(edge);
-            totalWeight += weight;
-            if (mst.length === nodes.length - 1) {
-                break;
-            }
-        }
-    }
-    
-    return { mst, totalWeight };
-}
-
-// 示例使用
-// const graph = {
-//     'A': [{ node: 'B', weight: 7 }, { node: 'D', weight: 5 }],
-//     'B': [{ node: 'A', weight: 7 }, { node: 'C', weight: 8 }, { node: 'D', weight: 9 }, { node: 'E', weight: 7 }],
-//     'C': [{ node: 'B', weight: 8 }, { node: 'E', weight: 5 }],
-//     'D': [{ node: 'A', weight: 5 }, { node: 'B', weight: 9 }, { node: 'E', weight: 15 }, { node: 'F', weight: 6 }],
-//     'E': [{ node: 'B', weight: 7 }, { node: 'C', weight: 5 }, { node: 'D', weight: 15 }, { node: 'F', weight: 8 }, { node: 'G', weight: 9 }],
-//     'F': [{ node: 'D', weight: 6 }, { node: 'E', weight: 8 }, { node: 'G', weight: 11 }],
-//     'G': [{ node: 'E', weight: 9 }, { node: 'F', weight: 11 }]
-// };
-// const edges = [
-//     { from: 'A', to: 'B', weight: 7 },
-//     { from: 'A', to: 'D', weight: 5 },
-//     { from: 'B', to: 'C', weight: 8 },
-//     { from: 'B', to: 'D', weight: 9 },
-//     { from: 'B', to: 'E', weight: 7 },
-//     { from: 'C', to: 'E', weight: 5 },
-//     { from: 'D', to: 'E', weight: 15 },
-//     { from: 'D', to: 'F', weight: 6 },
-//     { from: 'E', to: 'F', weight: 8 },
-//     { from: 'E', to: 'G', weight: 9 },
-//     { from: 'F', to: 'G', weight: 11 }
-// ];
-// const { mst, totalWeight } = kruskal(graph, edges);
-// console.log("最小生成树边:", mst);
-// console.log("总权重:", totalWeight);</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'search'" class="search-section">
+      <div class="search-section">
         <h3>Kruskal算法可视化</h3>
         <p>克鲁斯卡尔算法(Kruskal)是一种用于寻找加权无向图的最小生成树的算法。它通过按权重排序边并使用并查集来避免环的形成。</p>
       <div class="visualization-container">
@@ -752,46 +556,6 @@ function kruskal(graph, edges) {
         </div>
        </div>
       
-      </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section">
-        <div class="markdown-content" style="text-align: left;">
-          <h3>算法变种</h3>
-          <p>克鲁斯卡尔算法有一些重要的变种：</p>
-          <ol>
-            <li><strong>带限制的Kruskal算法</strong>：在某些情况下，我们可能希望限制最小生成树中边的数量或权重，这可以通过修改算法来实现。</li>
-            <li><strong>并行Kruskal算法</strong>：对于大规模图，可以利用并行计算来加速边的排序和并查集操作。</li>
-            <li><strong>动态Kruskal算法</strong>：当图的结构发生变化时，能够高效地更新最小生成树。</li>
-          </ol>
-
-          <h3>应用场景</h3>
-          <p>克鲁斯卡尔算法广泛应用于以下场景：</p>
-          <ul>
-            <li>网络设计（如计算机网络、通信网络）</li>
-            <li>电路设计</li>
-            <li>交通网络规划</li>
-            <li>管道网络设计</li>
-            <li>城市规划</li>
-            <li>机器人路径规划</li>
-            <li>数据聚类</li>
-          </ul>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'notes'" class="learning-section">
-        <div class="markdown-content" style="text-align: left;">
-          <h3>学习笔记</h3>
-          <p>克鲁斯卡尔算法是一种贪心算法，它的核心思想是每次选择权重最小的边，只要这条边不会形成环。</p>
-          <p>Kruskal算法通常与Prim算法进行比较，两者都是用于寻找最小生成树的算法，但它们的 approaches 不同：Kruskal算法从边出发，而Prim算法从节点出发。</p>
-          <p>并查集是Kruskal算法的关键数据结构，它用于高效地检测环的形成。并查集的实现效率直接影响Kruskal算法的性能。</p>
-          <p>Kruskal算法的时间复杂度主要由边的排序决定，通常为O(E log E)，其中E是边的数量。</p>
-          <p>在实现Kruskal算法时，需要注意以下几点：</p>
-          <ul>
-            <li>确保图是连通的，否则Kruskal算法将生成最小生成森林而不是最小生成树。</li>
-            <li>对于无向图，每条边只需要处理一次。</li>
-            <li>并查集的实现应包括路径压缩和按秩合并优化，以提高效率。</li>
-          </ul>
-        </div>
       </div>
     </div>
 </template>

@@ -39,6 +39,12 @@
       <version>3.45.3.0</version>
     </dependency>
 
+    <!-- MongoDB：算法详情内容（文档型数据） -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-mongodb</artifactId>
+    </dependency>
+
     <!-- 密码哈希（BCrypt） -->
     <dependency>
       <groupId>org.springframework.security</groupId>

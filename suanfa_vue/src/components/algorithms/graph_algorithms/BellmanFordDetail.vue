@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 import { useGraphVisualization } from '../../../composables/useGraphVisualization.js'
 
 // 定义emits
@@ -86,9 +85,6 @@ const {
 const closeDetail = () => {
   emit('close')
 }
-
-// 控制标签页切换
-const activeTab = ref('basic')
 
 // Bellman-Ford 专属状态
 const visitedNodes = ref([])
@@ -295,137 +291,11 @@ const getEdgeWeight = (from, to) => {
   <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>Bellman-Ford算法</h2>
-      <div class="tabs">
-        <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ active: activeTab === 'search' }" @click="activeTab = 'search'">查找</button>
-        <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="{ active: activeTab === 'learning' }" @click="activeTab = 'learning'">学习</button>
-      </div>
     </div>
 
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>Bellman-Ford算法是一种用于寻找带权图中单源最短路径的算法。它能够处理包含负权边的图，但不能处理包含负权环的图。</p>
 
-          <AlgorithmComplexity algorithm-id="bellman-ford" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function BellmanFord(graph, start):
-  // 初始化距离和前驱节点
-  for each node v in graph:
-    distance[v] = infinity
-    predecessor[v] = null
-  distance[start] = 0
-
-  // 进行V-1轮松弛
-  for i from 1 to V-1:
-    for each edge (u, v) with weight w in graph:
-      if distance[u] + w < distance[v]:
-        distance[v] = distance[u] + w
-        predecessor[v] = u
-
-  // 检查负权环
-  for each edge (u, v) with weight w in graph:
-    if distance[u] + w < distance[v]:
-      return "图中存在负权环"
-
-  return distance, predecessor</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>def bellman_ford(graph, start):
-    # 初始化距离和前驱节点
-    distance = {node: float('inf') for node in graph}
-    predecessor = {node: None for node in graph}
-    distance[start] = 0
-    
-    # 进行V-1轮松弛
-    nodes = list(graph.keys())
-    for _ in range(len(nodes) - 1):
-        for u in nodes:
-            for edge in graph[u]:
-                v, w = edge['node'], edge['weight']
-                if distance[u] != float('inf') and distance[u] + w < distance[v]:
-                    distance[v] = distance[u] + w
-                    predecessor[v] = u
-    
-    # 检查负权环
-    for u in nodes:
-        for edge in graph[u]:
-            v, w = edge['node'], edge['weight']
-            if distance[u] != float('inf') and distance[u] + w < distance[v]:
-                return None, None, True  # 存在负权环
-    
-    return distance, predecessor, False
-
-# 示例图
-# graph = {
-#     'A': [{'node': 'B', 'weight': 4}, {'node': 'C', 'weight': 2}],
-#     'B': [{'node': 'C', 'weight': 5}, {'node': 'D', 'weight': 10}],
-#     'C': [{'node': 'E', 'weight': 3}],
-#     'D': [{'node': 'E', 'weight': 4}],
-#     'E': []
-# }
-# distance, predecessor, has_negative_cycle = bellman_ford(graph, 'A')</code></pre>
-
-            <h3>JavaScript 实现</h3>
-            <pre><code>function bellmanFord(graph, start) {
-    // 初始化距离和前驱节点
-    const distance = {};
-    const predecessor = {};
-    for (const node in graph) {
-        distance[node] = Infinity;
-        predecessor[node] = null;
-    }
-    distance[start] = 0;
-    
-    // 进行V-1轮松弛
-    const nodes = Object.keys(graph);
-    for (let i = 0; i < nodes.length - 1; i++) {
-        for (const u of nodes) {
-            for (const edge of graph[u]) {
-                const v = edge.node;
-                const w = edge.weight;
-                if (distance[u] !== Infinity && distance[u] + w < distance[v]) {
-                    distance[v] = distance[u] + w;
-                    predecessor[v] = u;
-                }
-            }
-        }
-    }
-    
-    // 检查负权环
-    let hasNegativeCycle = false;
-    for (const u of nodes) {
-        for (const edge of graph[u]) {
-            const v = edge.node;
-            const w = edge.weight;
-            if (distance[u] !== Infinity && distance[u] + w < distance[v]) {
-                hasNegativeCycle = true;
-                break;
-            }
-        }
-        if (hasNegativeCycle) break;
-    }
-    
-    return { distance, predecessor, hasNegativeCycle };
-}
-
-// 示例图
-// const graph = {
-//     'A': [{ node: 'B', weight: 4 }, { node: 'C', weight: 2 }],
-//     'B': [{ node: 'C', weight: 5 }, { node: 'D', weight: 10 }],
-//     'C': [{ node: 'E', weight: 3 }],
-//     'D': [{ node: 'E', weight: 4 }],
-//     'E': []
-// };
-// const result = bellmanFord(graph, 'A');</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'search'" class="search-section">
+      <div class="search-section">
         <h3>Bellman-Ford搜索可视化</h3>
         <p>Bellman-Ford算法用于寻找带权图中单源最短路径，能够处理包含负权边的图，但不能处理包含负权环的图。</p>
       <div class="visualization-container">
@@ -463,7 +333,7 @@ const getEdgeWeight = (from, to) => {
                     <!-- 边路径 -->
                     <path
                       :d="getEdgePath(nodesPositions[node], nodesPositions[edge.node]).edgePath"
-                      stroke="#666"
+                      stroke="#6b7c99"
                       stroke-width="2"
                       fill="none"
                       :class="{ 'path-highlight': isPathEdge(node, edge.node) }"
@@ -501,8 +371,8 @@ const getEdgeWeight = (from, to) => {
                     :class="{
                       'visited': distances[node] !== Infinity && distances[node] !== undefined,
                       'current': path.includes(node),
-                      'target': node === targetNode.value,
-                      'start': node === startNode.value
+                      'target': node === targetNode,
+                      'start': node === startNode
                     }"
                   />
                   <text
@@ -515,14 +385,14 @@ const getEdgeWeight = (from, to) => {
                     {{ node }}
                   </text>
                   <text
-                    v-if="node === startNode.value || node === targetNode.value"
+                    v-if="node === startNode || node === targetNode"
                     :x="nodesPositions[node].x + 25"
                     :y="nodesPositions[node].y + 60"
                     text-anchor="middle"
                     dominant-baseline="middle"
                     class="node-label"
                   >
-                    {{ node === startNode.value ? '起点' : '终点' }}
+                    {{ node === startNode ? '起点' : '终点' }}
                   </text>
                   <text
                     v-if="distances[node] !== Infinity && distances[node] !== undefined"
@@ -563,7 +433,7 @@ const getEdgeWeight = (from, to) => {
             <div class="slider-group">
               <label>目标节点:</label>
               <select v-model="targetNode" :disabled="isSearching">
-                <option v-for="node in Object.keys(currentGraph)" :key="node" :value="node" :disabled="node === startNode.value">{{ node }}</option>
+                <option v-for="node in Object.keys(currentGraph)" :key="node" :value="node" :disabled="node === startNode">{{ node }}</option>
               </select>
             </div>
             <div class="slider-group">
@@ -598,89 +468,6 @@ const getEdgeWeight = (from, to) => {
           </div>
         </div>
        </div>
-      </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section">
-        <div class="markdown-content" style="text-align: left;">
-          <h3>算法变种</h3>
-          <p>Bellman-Ford算法有一些重要的变种：</p>
-          <ol>
-            <li><strong>SPFA算法</strong>（Shortest Path Faster Algorithm）：使用队列优化的Bellman-Ford算法，只处理可能更新距离的节点，平均时间复杂度更低。</li>
-            <li><strong>改进的Bellman-Ford算法</strong>：当在某一轮松弛中没有节点的距离被更新时，可以提前结束算法。</li>
-            <li><strong>双向Bellman-Ford算法</strong>：从起点和终点同时开始搜索，当两边相遇时找到路径，可以减少搜索空间。</li>
-          </ol>
-
-          <h3>应用场景</h3>
-          <p>Bellman-Ford算法广泛应用于以下场景：</p>
-          <ul>
-            <li>寻找带权图中的单源最短路径，特别是当图中存在负权边时</li>
-            <li>检测图中是否存在负权环</li>
-            <li>路由算法，如RIP（Routing Information Protocol）</li>
-            <li>网络流量分析</li>
-            <li>航空路线规划</li>
-          </ul>
-
-          <h3>局限性</h3>
-          <p>Bellman-Ford算法的主要局限性：</p>
-          <ul>
-            <li>时间复杂度较高，为O(V*E)，在稠密图中性能较差</li>
-            <li>不能处理包含负权环的图</li>
-            <li>对于没有负权边的图，Dijkstra算法通常更高效</li>
-          </ul>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'learning'" class="learning-section">
-        <div class="markdown-content" style="text-align: left;">
-          <h3>核心思想</h3>
-          <p>Bellman-Ford算法的核心思想是通过松弛操作逐步逼近最短路径。它的基本步骤是：</p>
-          <ol>
-            <li>初始化起点到所有其他节点的距离为无穷大，起点到自身的距离为0</li>
-            <li>进行V-1轮松弛操作，每轮遍历所有边，尝试更新节点的距离</li>
-            <li>进行第V轮松弛，如果还能更新距离，说明图中存在负权环</li>
-          </ol>
-
-          <h3>与其他算法的对比</h3>
-          <table border="1">
-           <thead>
-            <tr>
-              <th>算法</th>
-              <th>适用场景</th>
-              <th>时间复杂度</th>
-              <th>特点</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-              <td>Bellman-Ford</td>
-              <td>带权图（可含负权边）</td>
-              <td>O(V*E)</td>
-              <td>可检测负权环</td>
-            </tr>
-            <tr>
-              <td>Dijkstra</td>
-              <td>带权图（非负权边）</td>
-              <td>O((V+E)logV)</td>
-              <td>效率高，不能处理负权边</td>
-            </tr>
-            <tr>
-              <td>Floyd-Warshall</td>
-              <td>带权图（所有节点对）</td>
-              <td>O(V³)</td>
-              <td>可处理负权边，不能检测负权环</td>
-            </tr>
-          </tbody>
-          </table>
-
-          <h3>实现注意事项</h3>
-          <p>在实现Bellman-Ford算法时，需要注意以下几点：</p>
-          <ul>
-            <li>确保正确处理无穷大的表示和比较</li>
-            <li>注意负权边的处理，特别是负权环的检测</li>
-            <li>可以通过提前终止优化算法（当某一轮没有更新时）</li>
-            <li>对于大型图，考虑使用SPFA等优化版本</li>
-          </ul>
-        </div>
       </div>
     </div>
 </template>

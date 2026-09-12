@@ -1,14 +1,10 @@
 <script setup>
 // 希尔排序详情组件
 import { ref, onMounted } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 import { useSortingVisualization } from '../../../composables/useSortingVisualization.js'
 
 // 定义emits
 const emit = defineEmits(['close'])
-
-// 标签页管理
-const activeTab = ref('basic')
 
 // 可视化共享脚手架（列表大小/随机数据/统计状态/生成新列表/重置排序）
 const {
@@ -166,77 +162,11 @@ onMounted(() => {
   <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>希尔排序</h2>
-      <div class="tabs">
-        <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ active: activeTab === 'sort' }" @click="activeTab = 'sort'">排序</button>
-        <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="{ active: activeTab === 'notes' }" @click="activeTab = 'notes'">笔记</button>
-      </div>
     </div>
 
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>希尔排序是插入排序的一种改进版本，也称为"缩小增量排序"。</p>
 
-          <AlgorithmComplexity algorithm-id="shell-sort" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function shellSort(arr):
-  n = length(arr)
-  gap = floor(n / 2)
-  while gap > 0:
-    for i from gap to n-1:
-      temp = arr[i]
-      j = i
-      while j >= gap and arr[j-gap] > temp:
-        arr[j] = arr[j-gap]
-        j -= gap
-      arr[j] = temp
-    gap = floor(gap / 2)
-  return arr</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>def shell_sort(arr):
-    n = len(arr)
-    gap = n // 2
-
-    while gap > 0:
-        for i in range(gap, n):
-            temp = arr[i]
-            j = i
-            while j >= gap and arr[j - gap] > temp:
-                arr[j] = arr[j - gap]
-                j -= gap
-            arr[j] = temp
-        gap //= 2
-    return arr</code></pre>
-
-            <h3>JavaScript 实现</h3>
-            <pre><code>function shellSort(arr) {
-    const n = arr.length;
-    let gap = Math.floor(n / 2);
-
-    while (gap > 0) {
-        for (let i = gap; i < n; i++) {
-            const temp = arr[i];
-            let j = i;
-            while (j >= gap && arr[j - gap] > temp) {
-                arr[j] = arr[j - gap];
-                j -= gap;
-            }
-            arr[j] = temp;
-        }
-        gap = Math.floor(gap / 2);
-    }
-    return arr;
-}</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'sort'" class="sort-section">
+      <div class="sort-section">
         <h3>可视化演示</h3>
         <div class="stats-container">
           <div class="stat-item">
@@ -304,30 +234,6 @@ onMounted(() => {
           </div>
         </div>
       </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>算法优化</h3>
-          <p>希尔排序的性能很大程度上依赖于间隔序列的选择。以下是几种常见的间隔序列：</p>
-          <ol style="text-align: left;">
-            <li><strong>Shell原始序列</strong>：n/2, n/4, ..., 1</li>
-            <li><strong>Hibbard序列</strong>：1, 3, 7, 15, ..., 2^k - 1</li>
-            <li><strong>Sedgewick序列</strong>：1, 5, 19, 41, 109, ...</li>
-          </ol>
-
-          <h3>适用场景</h3>
-          <p>希尔排序适用于中等规模的数据集。它比简单的插入排序更高效，尤其是当数据量较大时。希尔排序也不需要额外的存储空间，因此在内存受限的环境中也很有用。</p>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'notes'" class="notes-section" style="text-align: left;">
-        <div class="markdown-content">
-          <h3>学习笔记</h3>
-          <p>希尔排序的核心思想是将数组按照一定的间隔分成多个子数组，然后对每个子数组进行插入排序。随着排序的进行，间隔逐渐减小，直到为1，此时整个数组基本有序，最后进行一次普通的插入排序。</p>
-          <p>希尔排序是不稳定的排序算法，因为相同元素的相对顺序可能会因为相隔较远的比较和交换而改变。</p>
-          <p>希尔排序的平均时间复杂度取决于间隔序列的选择，一般在O(n^1.3)左右，比插入排序的O(n²)要高效。</p>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -335,6 +241,7 @@ onMounted(() => {
 <style scoped>
 @import './common-sort-styles.css';
 @import './common-algorithm-page.css';
+@import './shell-sort-detail.css';
 
 /* 希尔排序特有样式 */
 .shell-sort-detail {

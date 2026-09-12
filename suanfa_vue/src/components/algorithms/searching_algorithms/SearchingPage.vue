@@ -1,27 +1,16 @@
 <script setup>
 // 搜索算法页面组件
 import { ref, computed } from 'vue'
-import LinearSearchDetail from './LinearSearchDetail.vue'
-import BinarySearchDetail from './BinarySearchDetail.vue'
-import InterpolationSearchDetail from './InterpolationSearchDetail.vue'
-import JumpSearchDetail from './JumpSearchDetail.vue'
-import ExponentialSearchDetail from './ExponentialSearchDetail.vue'
-import HashingSearchDetail from './HashingSearchDetail.vue'
+import { useRouter } from 'vue-router'
 // 单一数据源
 import { searchingAlgorithms } from '../../../data/algorithms'
 import ProgressMark from '../../common/ProgressMark.vue'
 
-// 当前选中的算法ID（语义 id，如 'linear-search'）
-const selectedAlgorithm = ref(null)
+const router = useRouter()
 
-// 滚动到详情区域
-const scrollToDetail = () => {
-  setTimeout(() => {
-    const detailElement = document.querySelector('.detail-container');
-    if (detailElement) {
-      detailElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, 100);
+// 点击卡片/查看详情 -> 统一详情页路由
+const openDetail = (id) => {
+  router.push(`/algorithms/searching/${id}`)
 }
 
 // 分类标签
@@ -61,13 +50,11 @@ const filteredAlgorithms = computed(() => {
     </p>
 
     <!-- 分类标签 -->
-
     <div class="category-tabs">
       <button
         v-for="category in categories"
         :key="category.id"
         :class="{ 'active': currentCategory === category.id }"
-        
         @click="currentCategory = category.id"
       >
         {{ category.name }}
@@ -76,7 +63,7 @@ const filteredAlgorithms = computed(() => {
 
     <!-- 算法卡片容器 -->
     <div class="algorithms-grid">
-      <div v-for="algorithm in filteredAlgorithms" :key="algorithm.id" :class="['algorithm-card', { 'selected': selectedAlgorithm === algorithm.id }]" @click="selectedAlgorithm = algorithm.id">
+      <div v-for="algorithm in filteredAlgorithms" :key="algorithm.id" class="algorithm-card" @click="openDetail(algorithm.id)">
         <div class="card-header">
           <h3>{{ algorithm.name }}</h3>
           <div class="tags-container">
@@ -86,29 +73,16 @@ const filteredAlgorithms = computed(() => {
         </div>
         <p class="card-description">{{ algorithm.description }}</p>
         <div class="card-footer">
-          <span class="complexity-display">{{ algorithm.complexity }}</span>
+          <span class="complexity">{{ algorithm.complexity }}</span>
           <ProgressMark :algorithm-id="algorithm.id" />
-          <button class="detail-btn" @click.stop="selectedAlgorithm = algorithm.id; scrollToDetail()">查看详情</button>
+          <button class="detail-btn" @click.stop="openDetail(algorithm.id)">查看详情</button>
         </div>
       </div>
     </div>
-
-    <!-- 线性查找详情 -->
-    <LinearSearchDetail v-if="selectedAlgorithm === 'linear-search'" @close="selectedAlgorithm = null" />
-    <!-- 二分查找详情 -->
-    <BinarySearchDetail v-if="selectedAlgorithm === 'binary-search'" @close="selectedAlgorithm = null" />
-    <!-- 插值查找详情 -->
-    <InterpolationSearchDetail v-if="selectedAlgorithm === 'interpolation-search'" @close="selectedAlgorithm = null" />
-    <!-- 跳跃查找详情 -->
-    <JumpSearchDetail v-if="selectedAlgorithm === 'jump-search'" @close="selectedAlgorithm = null" />
-    <!-- 指数查找详情 -->
-    <ExponentialSearchDetail v-if="selectedAlgorithm === 'exponential-search'" @close="selectedAlgorithm = null" />
-    <!-- 哈希查找详情 -->
-    <HashingSearchDetail v-if="selectedAlgorithm === 'hashing-search'" @close="selectedAlgorithm = null" />
   </div>
 </template>
 
 <style scoped>
-/* 引入公共样式文件（搜索页外观统一由 common-searching-page.css 提供） */
-@import './common-searching-page.css';
+/* 引入公共样式文件（与排序/图页统一外观） */
+@import '../sorting_algorithms/common-algorithm-page.css';
 </style>

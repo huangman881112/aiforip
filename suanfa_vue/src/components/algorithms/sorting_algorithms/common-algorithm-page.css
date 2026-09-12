@@ -1,4 +1,10 @@
-.algorithm-page-container {
+/* 分类页容器：排序/搜索/图/动态规划/贪心统一由本文件提供外观 */
+.algorithm-page-container,
+.sorting-page-container,
+.searching-page-container,
+.graph-page-container,
+.dp-page-container,
+.greedy-page-container {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
@@ -37,7 +43,7 @@
 .page-description {
   font-size: 16px;
   line-height: 1.6;
-  color: #666;
+  color: var(--text-2);
   margin-bottom: 24px;
 }
 
@@ -45,8 +51,8 @@
   padding: 8px 16px;
   border-radius: 20px;
   border: none;
-  background-color: #f0f0f0;
-  color: #666;
+  background-color: var(--surface-2);
+  color: var(--text-2);
   font-size: 14px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -64,32 +70,34 @@
 }
 
 .algorithm-card {
-  background-color: white;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--surface);
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .algorithm-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
 }
 
 .algorithm-card.selected {
-  background-color: #e6f7ff;
+  background-color: var(--tint-blue);
   border: 1px solid #1890ff;
 }
 
 .card-header {
   padding: 16px 20px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-1);
 }
 
 .card-header h3 {
   margin: 0 0 12px 0;
   font-size: 18px;
-  color: #333;
+  color: var(--text-1);
 }
 
 .tags-container {
@@ -106,23 +114,23 @@
 }
 
 .difficulty-tag {
-  background-color: #e6f7ff;
-  color: #1890ff;
+  background-color: var(--tint-blue);
+  color: var(--c-blue);
 }
 
 .category-tag {
-  background-color: #fff7e6;
-  color: #faad14;
+  background-color: var(--tint-amber);
+  color: var(--c-amber);
 }
 
 .stable-tag {
-  background-color: #e6ffed;
-  color: #52c41a;
+  background-color: var(--tint-green);
+  color: var(--c-green);
 }
 
 .unstable-tag {
-  background-color: #fff1f0;
-  color: #ff4d4f;
+  background-color: var(--tint-red);
+  color: var(--c-red);
 }
 
 .card-description {
@@ -130,22 +138,23 @@
   margin: 0;
   font-size: 14px;
   line-height: 1.6;
-  color: #666;
+  color: var(--text-2);
 }
 
 .card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: auto;
   padding: 16px 20px;
-  background-color: #fafafa;
-  border-top: 1px solid #f0f0f0;
+  background-color: var(--surface-muted);
+  border-top: 1px solid var(--border-1);
 }
 
 .complexity {
   font-size: 14px;
   font-weight: 500;
-  color: #999;
+  color: var(--text-3);
 }
 
 .detail-btn {

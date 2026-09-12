@@ -7,7 +7,6 @@
 
 <script setup>
 import { ref, nextTick, watch, onMounted } from 'vue'
-import AlgorithmComplexity from '../../common/AlgorithmComplexity.vue'
 
 // 定义emits
 const emit = defineEmits(['close'])
@@ -16,9 +15,6 @@ const emit = defineEmits(['close'])
 const closeDetail = () => {
   emit('close')
 }
-
-// 控制标签页切换
-const activeTab = ref('basic')
 
 // Edmonds-Karp算法可视化相关状态
 // 图结构控制
@@ -540,172 +536,11 @@ onMounted(() => {
   <button class="close-btn" @click="closeDetail">×</button>
     <div class="modal-header">
       <h2>埃德蒙兹-卡普算法(Edmonds-Karp)</h2>
-      <div class="tabs">
-        <button :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基础</button>
-        <button :class="{ active: activeTab === 'search' }" @click="activeTab = 'search'">查找</button>
-        <button :class="{ active: activeTab === 'advanced' }" @click="activeTab = 'advanced'">进阶</button>
-        <button :class="{ active: activeTab === 'learning' }" @click="activeTab = 'learning'">学习</button>
-      </div>
     </div>
 
     <div class="modal-content">
-      <div v-if="activeTab === 'basic'" class="basic-section">
-        <div class="markdown-content" style="text-align: left;">
-          <p>埃德蒙兹-卡普算法(Edmonds-Karp)是Ford-Fulkerson算法的一个特例，它使用广度优先搜索(BFS)来寻找增广路径，从而计算网络中的最大流。相比于原始的Ford-Fulkerson算法，Edmonds-Karp算法具有更稳定的时间复杂度。</p>
 
-          <AlgorithmComplexity algorithm-id="edmonds-karp" />
-
-          <div class="code-examples">
-            <h3>伪代码</h3>
-            <pre><code>function EdmondsKarp(G, s, t):
-  for each edge (u, v) in G:
-    (u, v).flow = 0
-    (u, v).capacity = capacity(u, v)
-  
-  while there exists an augmenting path from s to t in the residual network G_f:
-    find such a path P using BFS
-    c_f(P) = min{ c_f(u, v) | (u, v) in P }
-    for each edge (u, v) in P:
-      if (u, v) is a forward edge:
-        (u, v).flow += c_f(P)
-      else:
-        (v, u).flow -= c_f(P)
-  
-  return sum of flows out of s</code></pre>
-
-            <h3>Python 实现</h3>
-            <pre><code>from collections import deque
-
-def edmonds_karp(graph, source, sink):
-    # 初始化流
-    for node in graph:
-        for edge in graph[node]:
-            edge['flow'] = 0
-    
-    max_flow = 0
-    
-    while True:
-        # BFS寻找增广路径
-        parent = {}
-        queue = deque([source])
-        parent[source] = None
-        
-        while queue and sink not in parent:
-            current = queue.popleft()
-            for edge in graph[current]:
-                if edge['node'] not in parent and edge['capacity'] > edge['flow']:
-                    parent[edge['node']] = (current, edge)
-                    queue.append(edge['node'])
-        
-        # 没有找到增广路径
-        if sink not in parent:
-            break
-        
-        # 找到路径上的最小残量容量
-        path_flow = float('inf')
-        s = sink
-        while s != source:
-            prev_node, edge = parent[s]
-            path_flow = min(path_flow, edge['capacity'] - edge['flow'])
-            s = prev_node
-        
-        # 更新路径上的流
-        v = sink
-        while v != source:
-            u, edge = parent[v]
-            edge['flow'] += path_flow
-            v = u
-        
-        max_flow += path_flow
-    
-    return max_flow
-
-# 示例使用
-# graph = {
-#     'A': [{'node': 'B', 'capacity': 4}, {'node': 'C', 'capacity': 2}],
-#     'B': [{'node': 'C', 'capacity': 5}, {'node': 'D', 'capacity': 10}],
-#     'C': [{'node': 'E', 'capacity': 3}],
-#     'D': [{'node': 'E', 'capacity': 4}, {'node': 'F', 'capacity': 11}],
-#     'E': [{'node': 'F', 'capacity': 7}],
-#     'F': []
-# }
-# max_flow_value = edmonds_karp(graph, 'A', 'F')
-# print("最大流:", max_flow_value)</code></pre>
-
-            <h3>JavaScript 实现</h3>
-            <pre><code>function edmondsKarp(graph, source, sink) {
-    // 初始化流
-    const flowGraph = JSON.parse(JSON.stringify(graph));
-    for (const node in flowGraph) {
-        flowGraph[node].forEach(edge => {
-            edge.flow = 0;
-        });
-    }
-    
-    let maxFlow = 0;
-    
-    while (true) {
-        // BFS寻找增广路径
-        const parent = new Map();
-        const queue = [source];
-        parent.set(source, null);
-        
-        while (queue.length > 0 && !parent.has(sink)) {
-            const current = queue.shift();
-            if (flowGraph[current]) {
-                for (const edge of flowGraph[current]) {
-                    if (!parent.has(edge.node) && edge.capacity > edge.flow) {
-                        parent.set(edge.node, { from: current, edge });
-                        queue.push(edge.node);
-                    }
-                }
-            }
-        }
-        
-        // 没有找到增广路径
-        if (!parent.has(sink)) {
-            break;
-        }
-        
-        // 找到路径上的最小残量容量
-        let pathFlow = Infinity;
-        let v = sink;
-        while (v !== source) {
-            const { from, edge } = parent.get(v);
-            pathFlow = Math.min(pathFlow, edge.capacity - edge.flow);
-            v = from;
-        }
-        
-        // 更新路径上的流
-        v = sink;
-        while (v !== source) {
-            const { from, edge } = parent.get(v);
-            edge.flow += pathFlow;
-            v = from;
-        }
-        
-        maxFlow += pathFlow;
-    }
-    
-    return maxFlow;
-}
-
-// 示例使用
-// const graph = {
-//     'A': [{ node: 'B', capacity: 4 }, { node: 'C', capacity: 2 }],
-//     'B': [{ node: 'C', capacity: 5 }, { node: 'D', capacity: 10 }],
-//     'C': [{ node: 'E', capacity: 3 }],
-//     'D': [{ node: 'E', capacity: 4 }, { node: 'F', capacity: 11 }],
-//     'E': [{ node: 'F', capacity: 7 }],
-//     'F': []
-// };
-// const maxFlowValue = edmondsKarp(graph, 'A', 'F');
-// console.log("最大流:", maxFlowValue);</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'search'" class="search-section">
+      <div class="search-section">
         <h3>Edmonds-Karp算法可视化</h3>
         <p>Edmonds-Karp算法是Ford-Fulkerson算法的一个特例，它使用广度优先搜索来寻找增广路径，从而计算网络中的最大流。</p>
       <div class="visualization-container">
@@ -821,9 +656,9 @@ def edmonds_karp(graph, source, sink):
               </template>
               <!-- BFS信息显示 -->
               <g v-if="bfsStep > 0">
-                <text x="10" y="30" fill="#333" font-size="16" font-weight="bold">BFS步骤: {{ bfsStep }}</text>
-                <text x="10" y="55" fill="#333" font-size="14">当前节点: {{ currentBFSNode || '无' }}</text>
-                <text x="10" y="80" fill="#333" font-size="14">队列: {{ bfsQueue.join(', ') }}</text>
+                <text x="10" y="30" fill="#e9eff8" font-size="16" font-weight="bold">BFS步骤: {{ bfsStep }}</text>
+                <text x="10" y="55" fill="#e9eff8" font-size="14">当前节点: {{ currentBFSNode || '无' }}</text>
+                <text x="10" y="80" fill="#e9eff8" font-size="14">队列: {{ bfsQueue.join(', ') }}</text>
               </g>
             </svg>
           </div>
@@ -879,57 +714,6 @@ def edmonds_karp(graph, source, sink):
           </div>
         </div>
       </div>
-      </div>
-
-      <div v-if="activeTab === 'advanced'" class="advanced-section">
-        <div class="markdown-content" style="text-align: left;">
-          <h3>算法变种</h3>
-          <p>Edmonds-Karp算法有一些重要的变种和相关算法：</p>
-          <ol>
-            <li><strong>Dinic算法</strong>：使用层次图和阻塞流的概念，时间复杂度为O(V²E)，在实践中通常比Edmonds-Karp算法更快。</li>
-            <li><strong>Push-Relabel算法</strong>：不使用增广路径，而是通过推送和重标记操作来计算最大流，时间复杂度为O(V³)。</li>
-            <li><strong>Scaling算法</strong>：通过逐渐增加考虑的容量大小来加速最大流计算。</li>
-          </ol>
-
-          <h3>应用场景</h3>
-          <p>Edmonds-Karp算法和最大流问题在以下领域有广泛应用：</p>
-          <ul>
-            <li>网络流优化（如水资源分配、石油管道运输）</li>
-            <li>通信网络中的数据传输</li>
-            <li>交通流量规划</li>
-            <li>匹配问题（如二分图匹配）</li>
-            <li>电路设计中的电流分配</li>
-            <li>图像处理中的分割问题</li>
-            <li>供应链管理中的资源分配</li>
-          </ul>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'learning'" class="learning-section">
-        <div class="markdown-content" style="text-align: left;">
-          <h3>学习笔记</h3>
-          <p>Edmonds-Karp算法是Ford-Fulkerson算法的一个特例，它的核心改进是使用广度优先搜索(BFS)来寻找增广路径，这使得算法的时间复杂度更加稳定。</p>
-          <p>与原始的Ford-Fulkerson算法相比，Edmonds-Karp算法的优势在于：</p>
-          <ul>
-            <li>时间复杂度保证为O(V*E²)，不依赖于最大流的值</li>
-            <li>实现简单，易于理解</li>
-            <li>在许多实际场景中表现良好</li>
-          </ul>
-          <p>Edmonds-Karp算法的关键概念：</p>
-          <ol>
-            <li><strong>流网络</strong>：一个有向图，其中每条边都有一个容量限制，表示该边可以传输的最大流量。</li>
-            <li><strong>源节点和汇节点</strong>：流从源节点出发，最终到达汇节点。</li>
-            <li><strong>残量网络</strong>：表示网络中剩余容量的图，包括正向边和反向边。</li>
-            <li><strong>增广路径</strong>：残量网络中从源节点到汇节点的路径，表示可以增加流量的路径。</li>
-          </ol>
-          <p>实现Edmonds-Karp算法时，需要注意以下几点：</p>
-          <ul>
-            <li>正确构建和更新残量网络</li>
-            <li>使用BFS而不是DFS来寻找增广路径</li>
-            <li>处理反向边以允许流量的调整</li>
-            <li>正确计算路径上的最小残量容量</li>
-          </ul>
-        </div>
       </div>
     </div>
   </div>

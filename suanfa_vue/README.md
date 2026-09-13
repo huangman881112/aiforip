@@ -75,6 +75,18 @@ npm run preview
 > `src/data/algorithms.js`、`backend/.../seed/algorithms.json`、`backend/.../seed/algorithms-content.json`
 > （按 id 去重，可重复执行），避免三处各写一遍互相漂移。生成结果就是最终数据，日常改文案直接改文件即可。
 
+## 计算机语言
+
+顶部导航「计算机语言」下拉菜单提供 Java、Python、C++、C、JavaScript 五门语言的系统学习页（`/languages/:lang`，总入口 `/languages` 重定向到 Java）。每门语言的详情页包含四个板块：
+
+- **📖 语法基础**：变量与类型、控制流、面向对象/函数式特性、代码示例；
+- **🧱 数据结构**：语言内置容器速查表（底层实现 + 复杂度）、典型用法与选用原则；
+- **🏗️ 常用架构**：主流框架与工程分层（如 Spring 三层、Django/FastAPI、STL、Node 中间件洋葱模型）；
+- **💼 经典面试题**：每语言 7 道高频面试题，点击卡片折叠展开参考答案。
+
+全部文案集中在 `src/data/languages.js` 单一数据源，页面组件只有一个通用的
+`components/languages/LanguageDetail.vue`（路由参数驱动 + 板块标签页切换）；新增语言只需在数据源追加一项，导航菜单自动出现。注意：该文件内 Markdown 代码块使用 `~~~` 围栏（避免与 JS 模板字符串的反引号冲突），marked 按 CommonMark 渲染，效果与 ``` 完全一致。
+
 ## 目录结构
 
 ```
@@ -91,6 +103,7 @@ suanfa_vue/
     ├── assets/                   # 静态资源
     ├── data/
     │   ├── algorithms.js         # 算法元数据单一数据源（离线兵底 + 分类表）
+│   ├── languages.js          # 计算机语言模块单一数据源（语法/数据结构/架构/面试题）
 │   ├── dpProblems.js         # 动态规划题目求解器：产出逐步 frame 序列
 │   ├── greedyProblems.js     # 贪心题目求解器：产出逐步决策 frame 序列
     │   └── trainingProblems.js   # 算法训练题库（静态）

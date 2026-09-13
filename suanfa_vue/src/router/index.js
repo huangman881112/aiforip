@@ -17,6 +17,7 @@ const DPPage = () => import('../components/algorithms/dp_algorithms/DPPage.vue')
 const GreedyPage = () => import('../components/algorithms/greedy_algorithms/GreedyPage.vue')
 const SimpleBubbleSort = () => import('../components/algorithms/sorting_algorithms/SimpleBubbleSort.vue')
 const AlgorithmDetailPage = () => import('../components/algorithms/AlgorithmDetailPage.vue')
+const LanguageDetail = () => import('../components/languages/LanguageDetail.vue')
 const UserManagePage = () => import('../components/common/UserManagePage.vue')
 
 // 定义路由
@@ -113,6 +114,18 @@ const routes = [
     path: '/algorithms/:category/:id',
     name: 'AlgorithmDetail',
     component: AlgorithmDetailPage
+  },
+  {
+    // 计算机语言：总入口重定向到第一门语言
+    path: '/languages',
+    name: 'LanguageList',
+    redirect: '/languages/java'
+  },
+  {
+    // 语言详情页：语法 / 数据结构 / 常用架构 / 经典面试题，数据在 data/languages.js
+    path: '/languages/:lang',
+    name: 'LanguageDetail',
+    component: LanguageDetail
   }
 ]
 

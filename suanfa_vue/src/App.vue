@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from './stores/user.js'
 import { algorithmCategories } from './data/algorithms.js'
+import { languageMenu } from './data/languages.js'
 
 const userStore = useUserStore()
 const route = useRoute()
@@ -16,6 +17,10 @@ const algorithmMenu = [
 const algoMenuOpen = ref(false)
 const algoMenuItemRef = ref(null)
 
+// 计算机语言子菜单：清单来自 data/languages.js，新增语言时这里自动出现
+const langMenuOpen = ref(false)
+const langMenuItemRef = ref(null)
+
 // 用户（个人中心）子菜单：登录后点开可看到「修改密码」等入口
 const userMenuOpen = ref(false)
 const userMenuItemRef = ref(null)
@@ -24,6 +29,9 @@ const userMenuItemRef = ref(null)
 const isAlgorithmSection = computed(() =>
   algorithmMenu.some((item) => isActive(item.to))
 )
+
+// 当前是否处于计算机语言相关页面（一级菜单高亮）
+const isLanguageSection = computed(() => isActive('/languages'))
 
 // 当前是否处于个人中心相关页面（/account、/admin 都算管理员/个人中心子菜单高亮）
 const isAccountSection = computed(() => isActive('/account') || isActive('/admin'))
@@ -41,9 +49,20 @@ function closeAlgoMenu() {
   algoMenuOpen.value = false
 }
 
+function toggleLangMenu() {
+  langMenuOpen.value = !langMenuOpen.value
+  algoMenuOpen.value = false
+  userMenuOpen.value = false
+}
+
+function closeLangMenu() {
+  langMenuOpen.value = false
+}
+
 function toggleUserMenu() {
   userMenuOpen.value = !userMenuOpen.value
   algoMenuOpen.value = false
+  langMenuOpen.value = false
 }
 
 function closeUserMenu() {
@@ -54,6 +73,9 @@ function onDocumentClick(e) {
   if (algoMenuOpen.value && algoMenuItemRef.value && !algoMenuItemRef.value.contains(e.target)) {
     closeAlgoMenu()
   }
+  if (langMenuOpen.value && langMenuItemRef.value && !langMenuItemRef.value.contains(e.target)) {
+    closeLangMenu()
+  }
   if (userMenuOpen.value && userMenuItemRef.value && !userMenuItemRef.value.contains(e.target)) {
     closeUserMenu()
   }
@@ -62,6 +84,7 @@ function onDocumentClick(e) {
 function onKeydown(e) {
   if (e.key === 'Escape') {
     closeAlgoMenu()
+    closeLangMenu()
     closeUserMenu()
   }
 }
@@ -80,6 +103,7 @@ onBeforeUnmount(() => {
 // 路由切换后关闭下拉
 watch(() => route.fullPath, () => {
   closeAlgoMenu()
+  closeLangMenu()
   closeUserMenu()
 })
 </script>
@@ -109,6 +133,27 @@ watch(() => route.fullPath, () => {
                     :to="item.to"
                     :class="{ 'active-link': isActive(item.to) }"
                     @click="closeAlgoMenu"
+                  >{{ item.label }}</router-link>
+                </li>
+              </ul>
+            </li>
+            <li class="nav-dropdown" ref="langMenuItemRef">
+              <a
+                href="#"
+                class="nav-dropbtn"
+                :class="{ 'active-link': isLanguageSection }"
+                :aria-expanded="langMenuOpen ? 'true' : 'false'"
+                aria-haspopup="true"
+                @click.prevent="toggleLangMenu"
+              >
+                计算机语言<span class="caret" :class="{ open: langMenuOpen }">▾</span>
+              </a>
+              <ul class="dropdown-menu" v-show="langMenuOpen">
+                <li v-for="item in languageMenu" :key="item.to">
+                  <router-link
+                    :to="item.to"
+                    :class="{ 'active-link': isActive(item.to) }"
+                    @click="closeLangMenu"
                   >{{ item.label }}</router-link>
                 </li>
               </ul>
@@ -176,6 +221,7 @@ watch(() => route.fullPath, () => {
           <h4>快速链接</h4>
           <ul>
             <li><router-link to="/algorithms">算法总览</router-link></li>
+            <li><router-link to="/languages">计算机语言</router-link></li>
             <li><router-link to="/training">算法训练</router-link></li>
             <li><router-link to="/ai">AI 助教</router-link></li>
             <li><router-link to="/about">关于我们</router-link></li>

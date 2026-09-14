@@ -7,4 +7,5 @@ source_files: []
 depends_on: []
 related_to:
     - path: frontend/app_shell
+    - path: frontend/app_shell/languages_module
     - path: scripts

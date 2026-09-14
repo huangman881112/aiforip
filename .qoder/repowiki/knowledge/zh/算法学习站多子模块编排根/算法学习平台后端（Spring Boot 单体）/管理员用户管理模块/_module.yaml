@@ -8,4 +8,5 @@ scope:
     - backend/src/main/java/com/suanfa/dto/AdminUserDto.java
 source_files: []
 depends_on: []
-related_to: []
+related_to:
+    - path: backend/email_service

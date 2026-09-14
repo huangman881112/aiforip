@@ -4,11 +4,11 @@
 **本文引用的文件**
 - [AuthController.java](file://backend/src/main/java/com/suanfa/controller/AuthController.java)
 - [AuthService.java](file://backend/src/main/java/com/suanfa/service/AuthService.java)
-- [JwtService.java](file://backend/src/main/java/com/suanfa/security/JwtService.java)
-- [JwtAuthFilter.java](file://backend/src/main/java/com/suanfa/security/JwtAuthFilter.java)
 - [EmailCodeService.java](file://backend/src/main/java/com/suanfa/service/EmailCodeService.java)
 - [MailService.java](file://backend/src/main/java/com/suanfa/service/MailService.java)
 - [AdminGuard.java](file://backend/src/main/java/com/suanfa/service/AdminGuard.java)
+- [JwtService.java](file://backend/src/main/java/com/suanfa/security/JwtService.java)
+- [JwtAuthFilter.java](file://backend/src/main/java/com/suanfa/security/JwtAuthFilter.java)
 - [AuthRequest.java](file://backend/src/main/java/com/suanfa/dto/AuthRequest.java)
 - [ChangePasswordRequest.java](file://backend/src/main/java/com/suanfa/dto/ChangePasswordRequest.java)
 - [EmailCodeRequest.java](file://backend/src/main/java/com/suanfa/dto/EmailCodeRequest.java)
@@ -24,12 +24,12 @@
 
 ## 更新摘要
 **变更内容**
-- 新增邮箱验证码发送接口 `/api/auth/email-code`
-- 新增密码修改接口 `/api/auth/password`（需要邮箱验证码）
-- 增强用户模型支持邮箱绑定和角色管理
-- 添加管理员权限控制机制
-- 集成邮件服务用于验证码发送
-- 前端新增完整的密码修改界面
+- 新增邮箱验证码发送接口 `/api/auth/email-code`，支持安全的密码重置流程
+- 增强密码修改接口 `/api/auth/password`，需要邮箱验证码进行二次验证
+- 实现完整的邮箱验证码管理系统，包括生成、发送、验证和生命周期管理
+- 添加邮件服务集成，支持SMTP配置和开发模式回显验证码
+- 前端新增完整的密码修改界面，包含验证码倒计时和自动填充功能
+- 实现管理员权限控制机制，支持数据库角色和配置白名单双重机制
 
 ## 目录
 1. [简介](#简介)
@@ -66,6 +66,7 @@ I["EmailCodeService.java"]
 J["MailService.java"]
 K["AdminGuard.java"]
 L["UserRepository(外部)"]
+M["MailProperties"]
 end
 A --> C --> D --> E
 B --> D --> E
@@ -77,6 +78,7 @@ G --> H
 F --> K
 F --> L
 I --> J
+I --> M
 ```
 
 **图表来源**

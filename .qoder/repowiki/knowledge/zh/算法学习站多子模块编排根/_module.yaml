@@ -1,6 +1,6 @@
 schema_version: 1
 module_path: ""
-title: 小白学算法站点根工程
+title: 算法学习站多子模块编排根
 scope:
     - architecture-analysis.md
     - project_plan.md

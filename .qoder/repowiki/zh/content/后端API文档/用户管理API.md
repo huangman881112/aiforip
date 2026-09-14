@@ -9,6 +9,7 @@
 - [CommentController.java](file://backend/src/main/java/com/suanfa/controller/CommentController.java)
 - [TrainingController.java](file://backend/src/main/java/com/suanfa/controller/TrainingController.java)
 - [ActivityController.java](file://backend/src/main/java/com/suanfa/controller/ActivityController.java)
+- [EmailCodeService.java](file://backend/src/main/java/com/suanfa/service/EmailCodeService.java)
 - [JwtAuthFilter.java](file://backend/src/main/java/com/suanfa/security/JwtAuthFilter.java)
 - [AdminGuard.java](file://backend/src/main/java/com/suanfa/service/AdminGuard.java)
 - [UserAdminService.java](file://backend/src/main/java/com/suanfa/service/UserAdminService.java)
@@ -20,6 +21,8 @@
 - [AuthRequest.java](file://backend/src/main/java/com/suanfa/dto/AuthRequest.java)
 - [UserResponse.java](file://backend/src/main/java/com/suanfa/dto/UserResponse.java)
 - [AdminUserDto.java](file://backend/src/main/java/com/suanfa/dto/AdminUserDto.java)
+- [ChangePasswordRequest.java](file://backend/src/main/java/com/suanfa/dto/ChangePasswordRequest.java)
+- [EmailCodeRequest.java](file://backend/src/main/java/com/suanfa/dto/EmailCodeRequest.java)
 - [AiProperties.java](file://backend/src/main/java/com/suanfa/config/AiProperties.java)
 </cite>
 
@@ -30,6 +33,8 @@
 - 添加管理员白名单机制和双重身份验证
 - 提供用户数据级联删除功能
 - 增强权限控制和安全性机制
+- **新增邮箱验证码安全机制**：为密码修改提供基于邮箱验证码的安全流程
+- **增强密码修改功能**：要求邮箱验证码验证，防止未授权密码修改
 
 ## 目录
 1. [简介](#简介)
@@ -45,10 +50,10 @@
 11. [附录：前端集成指南](#附录前端集成指南)
 
 ## 简介
-本文档面向前端开发者，系统化梳理用户管理相关API，覆盖认证、学习笔记、学习进度、评论系统、训练任务、活动记录等能力。**最新更新**包含完整的管理员用户管理系统，支持用户创建、编辑、删除、密码重置等操作，并提供基于角色的访问控制（RBAC）和白名单机制。文档包含HTTP方法、URL模式、请求参数、响应格式、错误码、示例以及权限控制、隐私保护、数据同步与离线支持等实现建议。
+本文档面向前端开发者，系统化梳理用户管理相关API，覆盖认证、学习笔记、学习进度、评论系统、训练任务、活动记录等能力。**最新更新**包含完整的管理员用户管理系统，支持用户创建、编辑、删除、密码重置等操作，并提供基于角色的访问控制（RBAC）和白名单机制。**重要增强**：新增了基于邮箱验证码的安全密码修改流程，确保密码修改操作的合法性和安全性。文档包含HTTP方法、URL模式、请求参数、响应格式、错误码、示例以及权限控制、隐私保护、数据同步与离线支持等实现建议。
 
 ## 项目结构
-后端采用Spring MVC控制器分层组织，围绕"用户"维度提供资源型REST API；安全层通过过滤器从httpOnly Cookie中解析JWT并注入当前用户ID；新增的管理员模块提供完整的用户管理能力。
+后端采用Spring MVC控制器分层组织，围绕"用户"维度提供资源型REST API；安全层通过过滤器从httpOnly Cookie中解析JWT并注入当前用户ID；新增的管理员模块提供完整的用户管理能力；**新增的邮箱验证码服务**提供安全的密码修改流程。
 
 ```mermaid
 graph TB
@@ -64,10 +69,12 @@ end
 subgraph "安全与权限"
 S["JwtAuthFilter"]
 H["AdminGuard"]
+I["EmailCodeService"]
 end
 subgraph "服务层"
-I["UserAdminService"]
-J["AuthService"]
+J["UserAdminService"]
+K["AuthService"]
+L["MailService"]
 end
 subgraph "数据模型"
 U["User"]
@@ -77,14 +84,16 @@ M["Comment"]
 T["Training"]
 end
 A --> S
+A --> I
 B --> H
 C --> S
 D --> S
 E --> S
 F --> S
 G --> S
-B --> I
-I --> U
+B --> J
+I --> L
+J --> U
 B --> N
 C --> P
 D --> M
@@ -95,17 +104,27 @@ E --> T
 - [UserAdminController.java:36-48](file://backend/src/main/java/com/suanfa/controller/UserAdminController.java#L36-L48)
 - [AdminGuard.java:23-32](file://backend/src/main/java/com/suanfa/service/AdminGuard.java#L23-L32)
 - [UserAdminService.java:33-51](file://backend/src/main/java/com/suanfa/service/UserAdminService.java#L33-L51)
+- [EmailCodeService.java:25-46](file://backend/src/main/java/com/suanfa/service/EmailCodeService.java#L25-L46)
 
 ## 核心组件
 - **认证与会话**
   - 注册、登录、登出、获取当前用户信息
   - JWT以httpOnly Cookie形式下发，跨域默认SameSite=Lax
+- **邮箱验证码服务** ⭐ **新增**
+  - 发送邮箱验证码（带重发冷却和时间限制）
+  - 验证码校验（一次性使用，防重放攻击）
+  - 开发模式支持（未配置SMTP时返回验证码）
+  - 验证码存储（内存缓存，重启后失效）
 - **管理员用户管理** ⭐ **新增**
   - 用户列表查询（支持关键词搜索和学习数据统计）
   - 用户创建（用户名、密码、邮箱、角色）
   - 用户编辑（用户名、邮箱、角色修改）
   - 密码重置（无需原密码和邮箱验证码）
   - 用户删除（级联清理所有关联数据）
+- **增强的密码修改** ⭐ **新增**
+  - 需要邮箱验证码验证
+  - 原密码验证防止会话劫持
+  - 成功后自动绑定邮箱到账号
 - **学习笔记**
   - 按用户+算法维度读写删除笔记
 - **学习进度**
@@ -121,6 +140,7 @@ E --> T
 - [UserAdminController.java:21-35](file://backend/src/main/java/com/suanfa/controller/UserAdminController.java#L21-L35)
 - [UserAdminService.java:21-32](file://backend/src/main/java/com/suanfa/service/UserAdminService.java#L21-L32)
 - [AuthController.java:28-71](file://backend/src/main/java/com/suanfa/controller/AuthController.java#L28-L71)
+- [EmailCodeService.java:15-24](file://backend/src/main/java/com/suanfa/service/EmailCodeService.java#L15-L24)
 
 ## 架构总览
 认证流程与安全机制：
@@ -128,18 +148,26 @@ E --> T
 - 后续请求自动携带Cookie，过滤器解析JWT并将userId注入请求属性
 - 受保护接口通过参数解析当前用户ID并进行鉴权
 - **新增** 管理员权限通过双重机制验证：数据库角色字段 + 配置白名单
+- **新增** 密码修改需要邮箱验证码二次验证，确保操作合法性
 
 ```mermaid
 sequenceDiagram
 participant FE as "前端"
 participant AUTH as "认证控制器"
+participant EMAIL as "邮箱验证码服务"
 participant ADMIN as "管理员控制器"
 participant SEC as "安全过滤器"
 participant GUARD as "管理员守卫"
 participant SVC as "服务/仓库"
-FE->>AUTH : POST /api/auth/login {username,password}
-AUTH->>SVC : 校验并生成用户会话
-AUTH-->>FE : 200 OK + httpOnly Cookie(token=JWT)
+FE->>AUTH : POST /api/auth/email-code {email}
+AUTH->>EMAIL : send(userId, purpose, email)
+EMAIL-->>AUTH : SendResult{sent, devCode?, cooldown}
+AUTH-->>FE : 200 OK {sent, maskedEmail, expiresInSeconds}
+FE->>AUTH : PUT /api/auth/password {email, code, oldPassword, newPassword}
+AUTH->>EMAIL : verify(userId, purpose, email, code)
+EMAIL-->>AUTH : true (验证码已消费)
+AUTH->>SVC : applyPasswordChange(userId, newPassword, email)
+AUTH-->>FE : 200 OK {updated user info}
 FE->>SEC : GET /api/admin/users (携带Cookie)
 SEC->>SEC : 解析Cookie中的JWT并提取userId
 SEC-->>ADMIN : 放行(注入userId到请求属性)
@@ -153,6 +181,8 @@ ADMIN-->>FE : 返回结果或401/403
 **图表来源**
 - [UserAdminController.java:111-123](file://backend/src/main/java/com/suanfa/controller/UserAdminController.java#L111-L123)
 - [AdminGuard.java:52-65](file://backend/src/main/java/com/suanfa/service/AdminGuard.java#L52-L65)
+- [AuthController.java:93-142](file://backend/src/main/java/com/suanfa/controller/AuthController.java#L93-L142)
+- [EmailCodeService.java:63-141](file://backend/src/main/java/com/suanfa/service/EmailCodeService.java#L63-L141)
 
 ## 详细接口说明
 
@@ -183,6 +213,79 @@ ADMIN-->>FE : 返回结果或401/403
 **章节来源**
 - [AuthController.java:28-71](file://backend/src/main/java/com/suanfa/controller/AuthController.java#L28-L71)
 - [UserResponse.java:3-10](file://backend/src/main/java/com/suanfa/dto/UserResponse.java#L3-L10)
+
+### 邮箱验证码服务 ⭐ **新增**
+
+#### 发送邮箱验证码
+- **方法**: POST
+- **URL**: /api/auth/email-code
+- **权限**: 需要登录
+- **请求体**:
+  ```json
+  {
+    "email": "user@example.com"
+  }
+  ```
+- **必填字段**: email（必须是有效的邮箱格式）
+- **成功响应**: 200 OK，返回验证码发送结果
+  ```json
+  {
+    "sent": true,
+    "mailConfigured": true,
+    "maskedEmail": "u***@example.com",
+    "expiresInSeconds": 600,
+    "cooldownSeconds": 60,
+    "devCode": "123456" // 仅在开发模式下出现
+  }
+  ```
+- **响应字段说明**:
+  - `sent`: 是否成功发送
+  - `mailConfigured`: 是否配置了邮件服务
+  - `maskedEmail`: 脱敏后的邮箱地址
+  - `expiresInSeconds`: 验证码有效期（秒）
+  - `cooldownSeconds`: 重发冷却时间（秒）
+  - `devCode`: 开发模式下的验证码明文（仅本地开发）
+- **错误响应**:
+  - 401 Unauthorized: 未登录
+  - 400 Bad Request: 邮箱格式不正确
+  - 429 Too Many Requests: 发送过于频繁
+  - 502 Bad Gateway: 邮件服务配置错误但已启用
+
+#### 修改密码（需要邮箱验证码）
+- **方法**: PUT
+- **URL**: /api/auth/password
+- **权限**: 需要登录 + 邮箱验证码
+- **请求体**:
+  ```json
+  {
+    "email": "user@example.com",
+    "code": "123456",
+    "oldPassword": "current_password",
+    "newPassword": "new_secure_password"
+  }
+  ```
+- **必填字段**: email, code, oldPassword, newPassword
+- **字段说明**:
+  - `email`: 接收验证码的邮箱地址
+  - `code`: 邮箱验证码（6位数字）
+  - `oldPassword`: 当前登录密码（防止会话劫持）
+  - `newPassword`: 新密码（至少6位）
+- **成功响应**: 200 OK，返回更新后的用户信息（包含新绑定的邮箱）
+- **安全特性**:
+  - 验证码一次性使用，验证后立即失效
+  - 验证码有尝试次数限制（默认3次）
+  - 验证码有有效期限制（默认10分钟）
+  - 需要原密码验证，防止已登录会话被恶意利用
+- **错误响应**:
+  - 401 Unauthorized: 未登录
+  - 400 Bad Request: 参数验证失败、验证码错误、验证码过期
+  - 429 Too Many Requests: 验证码尝试次数过多
+
+**章节来源**
+- [AuthController.java:87-142](file://backend/src/main/java/com/suanfa/controller/AuthController.java#L87-L142)
+- [EmailCodeService.java:63-141](file://backend/src/main/java/com/suanfa/service/EmailCodeService.java#L63-L141)
+- [ChangePasswordRequest.java:3-10](file://backend/src/main/java/com/suanfa/dto/ChangePasswordRequest.java#L3-L10)
+- [EmailCodeRequest.java:3-5](file://backend/src/main/java/com/suanfa/dto/EmailCodeRequest.java#L3-L5)
 
 ### 管理员用户管理接口 ⭐ **新增**
 
@@ -461,15 +564,19 @@ K --> |否| L[非管理员]
 - **最后管理员保护**: 确保系统中至少保留一个管理员账号
 - **白名单保护**: 白名单用户不可被改名或删除
 - **级联删除**: 删除用户时自动清理所有关联数据
+- **邮箱验证码保护**: 密码修改需要邮箱验证码验证
+- **原密码验证**: 防止已登录会话被恶意利用
 
 **章节来源**
 - [UserAdminService.java:181-199](file://backend/src/main/java/com/suanfa/service/UserAdminService.java#L181-L199)
 - [AdminGuard.java:12-22](file://backend/src/main/java/com/suanfa/service/AdminGuard.java#L12-L22)
+- [EmailCodeService.java:112-141](file://backend/src/main/java/com/suanfa/service/EmailCodeService.java#L112-L141)
 
 ## 依赖关系分析
 - 控制器依赖仓库与服务进行数据存取与业务处理
 - 安全过滤器负责从Cookie解析JWT并注入当前用户ID
 - **新增** 管理员守卫服务统一处理权限验证逻辑
+- **新增** 邮箱验证码服务提供安全的密码修改流程
 - 实体与DTO定义数据契约，确保前后端一致
 
 ```mermaid
@@ -478,6 +585,7 @@ class UserAdminController
 class AdminGuard
 class UserAdminService
 class AuthController
+class EmailCodeService
 class NoteController
 class ProgressController
 class CommentController
@@ -491,9 +599,11 @@ class Comment
 class Training
 UserAdminController --> AdminGuard : "权限验证"
 UserAdminController --> UserAdminService : "业务处理"
+AuthController --> EmailCodeService : "验证码服务"
+AuthController --> JwtAuthFilter : "依赖"
+EmailCodeService --> MailService : "发送邮件"
 AdminGuard --> User : "角色检查"
 UserAdminService --> User : "数据操作"
-AuthController --> JwtAuthFilter : "依赖"
 NoteController --> JwtAuthFilter : "依赖"
 ProgressController --> JwtAuthFilter : "依赖"
 CommentController --> JwtAuthFilter : "依赖"
@@ -510,6 +620,7 @@ AuthController --> User : "操作"
 - [UserAdminController.java:36-48](file://backend/src/main/java/com/suanfa/controller/UserAdminController.java#L36-L48)
 - [AdminGuard.java:23-32](file://backend/src/main/java/com/suanfa/service/AdminGuard.java#L23-L32)
 - [UserAdminService.java:33-51](file://backend/src/main/java/com/suanfa/service/UserAdminService.java#L33-L51)
+- [EmailCodeService.java:25-46](file://backend/src/main/java/com/suanfa/service/EmailCodeService.java#L25-L46)
 
 ## 性能与扩展性
 - **批量读取优化**
@@ -518,14 +629,18 @@ AuthController --> User : "操作"
 - **缓存策略**
   - 评论列表可考虑短期缓存（按算法ID），减少重复查询
   - 管理员权限检查结果可缓存，减少数据库查询
+  - **新增** 邮箱验证码使用内存缓存（ConcurrentHashMap），重启后自动失效，提升安全性
 - **限流与防刷**
   - 评论与登录接口可结合令牌桶或滑动窗口进行限流，防止滥用
   - 管理员操作接口可增加操作频率限制
+  - **新增** 邮箱验证码发送有冷却时间限制，防止短信轰炸
+  - **新增** 验证码验证有尝试次数限制，防止暴力破解
 - **分页与排序**
   - 当数据量增长时，为列表接口增加分页参数与排序字段，避免一次性加载过多数据
 - **异步化**
   - 活动记录可由事件驱动异步聚合，降低写路径延迟
   - 用户删除操作可异步处理大量数据清理
+  - **新增** 邮件发送可异步处理，避免阻塞主线程
 
 ## 故障排查指南
 - **401 未登录/无权访问**
@@ -540,6 +655,8 @@ AuthController --> User : "操作"
   - 检查状态枚举值是否合法
   - 用户名格式不正确（2-32位字母、数字、下划线、点、横线或中文）
   - 密码长度不足（至少4位）
+  - **新增** 邮箱格式不正确
+  - **新增** 验证码为空或格式错误
 - **404 资源不存在**
   - 算法ID或题目ID无效
   - 笔记尚未创建（前端应回退到默认内容）
@@ -547,6 +664,11 @@ AuthController --> User : "操作"
 - **409 冲突**
   - 注册时用户名已存在
   - 邮箱已被其他账号绑定
+- **429 请求过于频繁**
+  - **新增** 邮箱验证码发送过于频繁，等待冷却时间
+  - **新增** 验证码尝试次数过多，需要重新获取
+- **502 网关错误**
+  - **新增** 邮件服务配置错误但已启用
 - **管理员操作限制**
   - 不能删除当前登录的管理员账号
   - 不能删除白名单用户
@@ -555,9 +677,10 @@ AuthController --> User : "操作"
 **章节来源**
 - [UserAdminController.java:111-127](file://backend/src/main/java/com/suanfa/controller/UserAdminController.java#L111-L127)
 - [UserAdminService.java:201-244](file://backend/src/main/java/com/suanfa/service/UserAdminService.java#L201-L244)
+- [EmailCodeService.java:63-141](file://backend/src/main/java/com/suanfa/service/EmailCodeService.java#L63-L141)
 
 ## 结论
-该用户管理API以"用户"为中心，提供认证、笔记、进度、评论、训练、活动六大能力。**最新更新**增加了完整的管理员用户管理系统，支持用户CRUD操作、角色权限控制和级联数据清理。通过JWT与httpOnly Cookie实现安全的会话管理，并通过双重管理员身份验证机制确保系统安全性。接口设计简洁明确，便于前端快速集成。建议在生产环境补充限流、缓存、分页与监控告警，进一步提升稳定性与可扩展性。
+该用户管理API以"用户"为中心，提供认证、笔记、进度、评论、训练、活动六大能力。**最新更新**增加了完整的管理员用户管理系统，支持用户CRUD操作、角色权限控制和级联数据清理。**重要增强**：新增了基于邮箱验证码的安全密码修改流程，确保密码修改操作的合法性和安全性。通过JWT与httpOnly Cookie实现安全的会话管理，并通过双重管理员身份验证机制确保系统安全性。邮箱验证码服务提供了完善的验证码管理、限流保护和开发模式支持。接口设计简洁明确，便于前端快速集成。建议在生产环境补充限流、缓存、分页与监控告警，进一步提升稳定性与可扩展性。
 
 ## 附录：前端集成指南
 
@@ -571,10 +694,38 @@ AuthController --> User : "操作"
   - 使用 adminUpdateUser() 编辑用户信息，支持部分字段更新
   - 使用 adminResetUserPassword() 重置用户密码
   - 使用 adminDeleteUser() 删除用户，会级联删除所有关联数据
-- **错误处理**
-  - 401错误：提示用户重新登录
-  - 403错误：提示无管理员权限
-  - 400错误：显示具体的参数验证错误信息
+
+### 邮箱验证码功能集成 ⭐ **新增**
+
+#### 发送验证码
+- **API调用**: POST /api/auth/email-code
+- **请求参数**: { email: "用户邮箱" }
+- **响应处理**:
+  - 开发模式：后端返回 devCode 字段，可直接填入验证码输入框
+  - 生产模式：提示用户查收邮件，显示倒计时和冷却时间
+- **用户体验**:
+  - 显示脱敏邮箱地址（如 u***@example.com）
+  - 显示验证码有效期和重发冷却时间
+  - 自动启动倒计时，防止重复发送
+
+#### 修改密码流程
+- **步骤1**: 获取邮箱验证码
+- **步骤2**: 用户输入验证码
+- **步骤3**: 提交密码修改请求
+- **请求参数**: 
+  ```json
+  {
+    "email": "user@example.com",
+    "code": "123456",
+    "oldPassword": "current_password",
+    "newPassword": "new_secure_password"
+  }
+  ```
+- **错误处理**:
+  - 验证码错误：清空验证码输入框，提示重新获取
+  - 验证码过期：提示重新获取验证码
+  - 原密码错误：保留验证码，提示重新输入原密码
+  - 网络错误：保持验证码，允许重试
 
 ### 数据持久化
 - 登录后将token保存在浏览器Cookie中（服务端已设置httpOnly），后续请求自动携带
@@ -585,17 +736,20 @@ AuthController --> User : "操作"
 - 对读多写少的数据（如笔记、进度、训练记录）可在IndexedDB或localStorage中缓存
 - 网络恢复后合并本地变更，优先使用服务器最新数据（基于updatedAt时间戳）
 - 管理员操作需要网络连接，无法离线执行
+- **新增** 邮箱验证码功能需要网络连接，无法离线使用
 
 ### 冲突解决
 - 乐观锁思想：提交前记录本地版本号或时间戳，若服务端返回409/404则提示用户重新拉取
 - 对于并发更新（如进度、训练状态），建议先GET再PUT，或使用幂等更新接口
 - 用户管理操作涉及敏感数据，建议实时同步，避免本地缓存
+- **新增** 验证码一次性使用，避免本地缓存导致的重复使用问题
 
 ### 权限与隐私
 - 所有写操作必须携带有效token；服务端会校验当前用户与资源归属
 - 管理员接口需要额外权限检查，前端应根据admin字段隐藏或禁用相关功能
 - 敏感字段（如密码哈希）不会返回给前端
 - 用户删除操作需要二次确认，防止误操作
+- **新增** 邮箱验证码功能保护用户邮箱隐私，响应中只显示脱敏邮箱
 
 ### 典型工作流
 - **管理员工作流程**
@@ -605,7 +759,20 @@ AuthController --> User : "操作"
 - **普通用户工作流程**
   - 登录 -> 获取当前用户信息 -> 使用个人功能（笔记、进度、评论等）
   - 定期同步数据到服务器，保证多设备一致性
+  - **新增** 修改密码流程：获取验证码 -> 输入验证码 -> 提交密码修改
+
+### 前端组件集成示例
+- **密码修改页面**: ChangePasswordPage.vue
+  - 集成邮箱验证码发送和验证
+  - 支持开发模式自动填充验证码
+  - 提供友好的用户界面和错误提示
+  - 实现表单验证和提交状态管理
+- **API客户端**: client.js
+  - 提供 sendEmailCode() 和 changePassword() 方法
+  - 统一的错误处理和响应格式化
+  - 支持开发模式和生产模式的差异处理
 
 **章节来源**
-- [client.js:154-181](file://suanfa_vue/src/api/client.js#L154-L181)
-- [UserManagePage.vue:1-800](file://suanfa_vue/src/components/common/UserManagePage.vue#L1-L800)
+- [client.js:133-148](file://suanfa_vue/src/api/client.js#L133-L148)
+- [ChangePasswordPage.vue:1-358](file://suanfa_vue/src/components/common/ChangePasswordPage.vue#L1-L358)
+- [EmailCodeService.java:15-24](file://backend/src/main/java/com/suanfa/service/EmailCodeService.java#L15-L24)

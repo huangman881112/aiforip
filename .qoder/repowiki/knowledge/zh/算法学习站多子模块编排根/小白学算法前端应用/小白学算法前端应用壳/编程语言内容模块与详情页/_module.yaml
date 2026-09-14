@@ -1,0 +1,10 @@
+schema_version: 1
+module_path: frontend/app_shell/languages_module
+title: 编程语言内容模块与详情页
+scope:
+    - suanfa_vue/src/data/languages.js
+    - suanfa_vue/src/components/languages/
+source_files: []
+depends_on: []
+related_to:
+    - path: backend

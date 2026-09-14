@@ -7,6 +7,7 @@ const About = () => import('../components/common/About.vue')
 const Login = () => import('../components/common/Login.vue')
 const ProgressPage = () => import('../components/common/ProgressPage.vue')
 const ChangePasswordPage = () => import('../components/common/ChangePasswordPage.vue')
+const ChangeEmailPage = () => import('../components/common/ChangeEmailPage.vue')
 const CalendarPage = () => import('../components/common/CalendarPage.vue')
 const TrainingPage = () => import('../components/common/TrainingPage.vue')
 const AiChatPage = () => import('../components/common/AiChatPage.vue')
@@ -16,9 +17,14 @@ const GraphPage = () => import('../components/algorithms/graph_algorithms/GraphP
 const DPPage = () => import('../components/algorithms/dp_algorithms/DPPage.vue')
 const GreedyPage = () => import('../components/algorithms/greedy_algorithms/GreedyPage.vue')
 const SimpleBubbleSort = () => import('../components/algorithms/sorting_algorithms/SimpleBubbleSort.vue')
+const AlgorithmListPage = () => import('../components/algorithms/AlgorithmListPage.vue')
 const AlgorithmDetailPage = () => import('../components/algorithms/AlgorithmDetailPage.vue')
+const LanguageListPage = () => import('../components/languages/LanguageListPage.vue')
 const LanguageDetail = () => import('../components/languages/LanguageDetail.vue')
 const UserManagePage = () => import('../components/common/UserManagePage.vue')
+const MembershipPage = () => import('../components/common/MembershipPage.vue')
+const AdminOrdersPage = () => import('../components/common/AdminOrdersPage.vue')
+const ProfilePage = () => import('../components/common/ProfilePage.vue')
 
 // 定义路由
 const routes = [
@@ -52,10 +58,37 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    // 个人中心→修改邮箱：新邮箱验证码 + 当前密码双重确认后换绑，需登录
+    path: '/account/email',
+    name: 'ChangeEmail',
+    component: ChangeEmailPage,
+    meta: { requiresAuth: true }
+  },
+  {
     // 用户管理（仅管理员）：requiresAdmin 在路由守卫里按 userStore.isAdmin 拦截，后端接口同样会 403
     path: '/admin/users',
     name: 'UserManage',
     component: UserManagePage,
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    // 个人中心 → 个人信息（名称 / 性别 / 年龄 / 城市 / 职业 / 学习目的），需登录
+    path: '/account/profile',
+    name: 'Profile',
+    component: ProfilePage,
+    meta: { requiresAuth: true }
+  },
+  {
+    // 会员中心（公开：未登录也能看价格表，下单时再引导登录）
+    path: '/membership',
+    name: 'Membership',
+    component: MembershipPage
+  },
+  {
+    // 订单管理（仅管理员）：全站订单 / 营收统计 / 手工确认支付与退款
+    path: '/admin/orders',
+    name: 'AdminOrders',
+    component: AdminOrdersPage,
     meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
@@ -75,9 +108,11 @@ const routes = [
     component: AiChatPage
   },
   {
+    // 算法总览页：每个分类一张卡片（组成 / 代表算法 / 应用），「算法训练」收在末尾；
+    // 顶部导航「算法」直接链到本页，与 /languages 同一套模式（不再做下拉、不再 redirect 到 sorting）
     path: '/algorithms',
     name: 'AlgorithmList',
-    redirect: '/algorithms/sorting'
+    component: AlgorithmListPage
   },
   {
     path: '/algorithms/sorting',
@@ -116,13 +151,13 @@ const routes = [
     component: AlgorithmDetailPage
   },
   {
-    // 计算机语言：总入口重定向到第一门语言
+    // 计算机语言总览页：每门语言的特性 / 实现与编译原理 / 使用场景，「查看详情」进子页
     path: '/languages',
     name: 'LanguageList',
-    redirect: '/languages/java'
+    component: LanguageListPage
   },
   {
-    // 语言详情页：语法 / 数据结构 / 常用架构 / 经典面试题，数据在 data/languages.js
+    // 语言详情页：语言概览 / 语法 / 数据结构 / 常用架构 / 经典面试题，数据在 data/languages.js
     path: '/languages/:lang',
     name: 'LanguageDetail',
     component: LanguageDetail

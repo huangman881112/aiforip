@@ -26,9 +26,18 @@ public class AiRateLimiter {
 
     /** 允许返回 true；否则 false 并给出建议等待秒数。 */
     public boolean tryAcquire(Long userId) {
+        return tryAcquire(userId, 1);
+    }
+
+    /**
+     * 带倍数的限流（会员权益：AI 助教每分钟提问上限 × multiplier）。
+     * multiplier <= 1 时等同普通调用；窗口仍按用户维度，倍数只提高阈值。
+     */
+    public boolean tryAcquire(Long userId, int multiplier) {
         if (limitPerMinute <= 0) {
             return true; // 关闭限流
         }
+        int effective = Math.max(1, multiplier) * limitPerMinute;
         long key = userId == null ? -1L : userId;
         long now = System.nanoTime();
         Deque<Long> q = hits.computeIfAbsent(key, k -> new ArrayDeque<>());
@@ -36,7 +45,7 @@ public class AiRateLimiter {
             while (!q.isEmpty() && now - q.peekFirst() > WINDOW_NANOS) {
                 q.pollFirst();
             }
-            if (q.size() >= limitPerMinute) {
+            if (q.size() >= effective) {
                 return false;
             }
             q.addLast(now);

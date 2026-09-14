@@ -3,7 +3,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 // 单一数据源
-import { searchingAlgorithms } from '../../../data/algorithms'
+import { searchingAlgorithms, algorithmOverviewPath } from '../../../data/algorithms'
 import ProgressMark from '../../common/ProgressMark.vue'
 
 const router = useRouter()
@@ -44,6 +44,11 @@ const filteredAlgorithms = computed(() => {
 
 <template>
   <div class="searching-page-container">
+    <nav class="algo-crumb" aria-label="面包屑">
+      <router-link :to="algorithmOverviewPath">← 算法总览</router-link>
+      <span class="crumb-sep">/</span>
+      <span class="crumb-current">搜索算法</span>
+    </nav>
     <h1>搜索算法</h1>
     <p class="page-description">
       搜索算法是计算机科学中用于查找数据结构中特定元素的算法。以下是常见的搜索算法分类和实现。

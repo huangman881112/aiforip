@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import {
+  changeEmail as apiChangeEmail,
   changePassword as apiChangePassword,
   fetchCurrentUser,
   login as apiLogin,
@@ -17,6 +18,10 @@ export const useUserStore = defineStore('user', {
     isLoggedIn: (s) => s.user !== null,
     /** 是否管理员（后端 AdminGuard 判定：users.role='admin' 或 suanfa.ai.admin-usernames 白名单） */
     isAdmin: (s) => !!s.user?.admin,
+    /** 是否有效会员（后端根据 users.membership_expire_at 判定，支付成功后自动顺延） */
+    isMember: (s) => !!s.user?.membershipActive,
+    /** 顶栏展示名称：个人中心设置的名称优先，未设置回退用户名 */
+    displayName: (s) => s.user?.displayName || s.user?.username || '',
   },
   actions: {
     async init() {
@@ -41,8 +46,8 @@ export const useUserStore = defineStore('user', {
     async login(username, password) {
       this.user = await apiLogin(username, password)
     },
-    async register(username, password) {
-      this.user = await apiRegister(username, password)
+    async register(username, password, email, code) {
+      this.user = await apiRegister(username, password, email, code)
     },
     async logout() {
       await apiLogout().catch(() => {})
@@ -51,6 +56,11 @@ export const useUserStore = defineStore('user', {
     /** 改密成功后刷新本地用户信息（新绑定邮箱等） */
     async changePassword(payload) {
       this.user = await apiChangePassword(payload)
+      return this.user
+    },
+    /** 换绑邮箱成功后刷新本地用户信息（顶栏 / 个人中心展示的邮箱随之更新） */
+    async changeEmail(payload) {
+      this.user = await apiChangeEmail(payload)
       return this.user
     },
   },

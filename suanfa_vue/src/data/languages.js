@@ -10,11 +10,147 @@ export const languages = [
   // ==================== Java ====================
   {
     id: 'java',
+    icon: '☕',
     name: 'Java',
     accent: 'orange',
     tagline: '一次编写，到处运行',
     intro:
       'Java 是强类型的面向对象语言，凭借 JVM 的跨平台能力、完善的生态（Spring 全家桶）和二十余年的企业级沉淀，长期占据服务端开发的主导地位。学习主线：**语法基础 → 集合框架 → JVM 与并发 → Spring 生态**。',
+    // 语言概览：总览页与顶部菜单展示的「特性 / 实现与编译原理 / 使用场景」
+    overview: {
+      meta: [
+        { label: '诞生', value: '1995 · Sun（现 Oracle）' },
+        { label: '类型系统', value: '静态强类型（泛型擦除）' },
+        { label: '范式', value: '面向对象 + 泛型 + 函数式' },
+        { label: '执行方式', value: '字节码 + JVM（解释 / JIT）' },
+      ],
+      features: [
+        {
+          title: '跨平台（WORA）',
+          desc: '一次编译成与平台无关的字节码，任何装有 JVM 的机器都能运行，屏蔽 OS 与 CPU 差异',
+        },
+        {
+          title: '自动内存管理',
+          desc: 'GC 负责回收（Serial / Parallel / G1 / ZGC / Shenandoah），开发者不需要手动 free',
+        },
+        {
+          title: '强类型 + 泛型 + 注解',
+          desc: '编译期捕获类型错误、重构安全；注解驱动框架（Spring 的 IOC/AOP 全靠它）',
+        },
+        {
+          title: '生态与工程规范',
+          desc: 'Spring Boot/Cloud、MyBatis、Maven/Gradle，标准库覆盖并发、IO、网络、加密',
+        },
+        {
+          title: '成熟并发模型',
+          desc: 'JMM 内存模型、synchronized/Lock、JUC 工具、线程池；JDK 21 虚拟线程大幅降低高并发成本',
+        },
+        {
+          title: '稳定演进',
+          desc: '每半年发版 + LTS 长期支持（8 / 11 / 17 / 21），向后兼容极好',
+        },
+      ],
+      compile: {
+        summary:
+          'javac 把 .java 编译成 .class 字节码；JVM 先解释执行，热点方法再由 C1/C2 做 JIT 编译成本机机器码',
+        pipeline: [
+          { stage: '词法 / 语法分析', desc: 'javac 把源码切成 Token，构建抽象语法树 AST' },
+          {
+            stage: '语义分析',
+            desc: '符号表填充、类型检查、常量折叠、泛型擦除；注解处理器（Lombok / APT）在此阶段改写代码',
+          },
+          { stage: '字节码生成', desc: 'AST 转成基于操作数栈的 JVM 指令，写入含常量池的 .class 文件' },
+          {
+            stage: '类加载',
+            desc: 'ClassLoader 双亲委派：加载 → 验证 → 准备（静态字段赋零值）→ 解析 → 初始化（执行 clinit）',
+          },
+          { stage: '解释执行', desc: '解释器逐条翻译字节码，启动快，无需等待编译' },
+          {
+            stage: 'JIT 分层编译',
+            desc: '方法调用 / 回边计数超阈值 → C1 快速优化、C2 激进优化（内联、逃逸分析、锁消除）',
+          },
+          { stage: '去优化回退', desc: '激进优化的假设失效（如加载了新子类）时退回解释器重新收集信息' },
+        ],
+        detail: `## 实现与编译原理
+
+Java 的执行模型是「**前端编译 + 后端解释 + JIT**」的组合，这正是它既能跨平台又能高性能的原因。
+
+~~~text
+.java 源码
+   │ javac（前端编译器）
+   ▼
+.class 字节码（平台无关，含常量池）
+   │ ClassLoader 双亲委派
+   ▼
+JVM 运行时数据区（堆 / 方法区 / 虚拟机栈 / 本地方法栈 / 程序计数器）
+   │ 执行引擎
+   ├─ 解释器：逐条翻译字节码 → 启动快
+   └─ JIT：热点代码编译成本机机器码 → 运行快
+~~~
+
+### 1. 前端编译（javac）
+
+- **词法分析**：把字符流切成 Token（关键字、标识符、字面量、符号）
+- **语法分析**：按 JLS 文法构建 **AST（抽象语法树）**
+- **语义分析**：填充符号表、类型检查与推断、常量折叠、受检异常检查；注解处理器（APT，Lombok / MapStruct 就靠它）在这一阶段生成或改写代码
+- **字节码生成**：AST 转成 JVM 指令写入 .class。JVM 是**基于栈**的指令集（iadd、invokevirtual 等），而不是基于寄存器，因此字节码紧凑、易移植
+
+> 关键设计：**泛型擦除**——编译后 List&lt;String&gt; 与 List&lt;Integer&gt; 是同一个 List，类型参数只在编译期检查。这也是运行时无法区分参数化类型、却仍能通过反射拿到泛型签名的原因。
+
+### 2. 类加载机制
+
+加载过程：**加载 → 验证 → 准备 → 解析 → 初始化**
+
+- **双亲委派**：加载请求先交给父加载器，保证 java.lang.* 等核心类不被篡改，也避免重复加载
+- **准备**：为静态字段分配内存并赋零值；**初始化**：执行 clinit（静态块与静态字段赋值），由 JVM 保证线程安全——这就是「静态内部类单例」的原理
+- 打破双亲委派的场景：SPI（JDBC Driver）、OSGi、Tomcat 每个 webapp 独立加载器
+
+### 3. 运行时数据区与内存模型
+
+- **堆**：对象实例，GC 主战场（新生代 Eden/S0/S1 + 老年代）
+- **方法区 / 元空间（Metaspace）**：类元信息、运行时常量池；JDK 8 后移到本地内存
+- **虚拟机栈**：每个方法一个栈帧（局部变量表、操作数栈、动态链接、返回地址）
+- **JMM**：定义主内存与工作内存之间的可见性与有序性规则。volatile 保证可见性并禁止重排序，synchronized / final 提供 happens-before 语义
+
+### 4. 执行引擎：解释 + JIT
+
+- **分层编译（Tiered Compilation）**：Level 0 解释 → L1-L3 C1（带 profiling）→ L4 C2
+- C2 的激进优化依赖**运行时类型反馈**：方法内联（最重要）、逃逸分析（标量替换、栈上分配、**锁消除**）、循环展开、分支预测
+- **去优化（deoptimization）**：假设失效时丢弃机器码回到解释执行，例如单态内联缓存遇到了新的实现类
+
+### 5. 垃圾回收
+
+- 用**可达性分析**（GC Roots：栈引用、静态字段、常量、JNI）判定存活，引用计数在 Java 中不适用（无法处理循环引用）
+- 分代假说：新生代用复制算法（Minor GC 频繁但快），老年代用标记-整理 / 标记-清除
+- 收集器演进：Parallel → CMS（已移除）→ **G1**（Region 分区 + 可预测停顿，JDK 9 后默认）→ **ZGC / Shenandoah**（着色指针 + 读屏障，停顿 < 1ms，支持 TB 级堆）
+
+### 6. AOT 与云原生
+
+- **GraalVM Native Image**：提前把字节码编译成独立可执行文件，启动毫秒级、内存占用小，非常适合 Serverless 与容器；代价是反射、动态代理需显式配置，峰值吞吐略低于 JIT
+- **CDS / AppCDS**：共享类元数据归档，缩短启动时间
+- **虚拟线程（JDK 21）**：由 JVM 调度的轻量线程，百万级并发下用同步写法获得接近异步框架的吞吐
+`,
+      },
+      useCases: [
+        {
+          title: '企业级后端服务',
+          desc: 'Spring Boot / Spring Cloud 微服务、REST API、分布式事务，是互联网与金融行业的主力',
+        },
+        {
+          title: '大数据与流处理',
+          desc: 'Hadoop、Spark、Flink、Kafka、Elasticsearch 全部构建在 JVM 之上',
+        },
+        { title: 'Android 应用', desc: '与 Kotlin 共存，Android SDK 的大量 API 仍以 Java 为主' },
+        {
+          title: '中间件与金融系统',
+          desc: '消息队列、RPC 框架（Dubbo）、交易撮合系统，看重稳定性与可维护性',
+        },
+        {
+          title: '大型团队长期协作',
+          desc: '强类型 + 成熟工具链（IDEA、Maven）适合百人以上、生命周期十年起的项目',
+        },
+      ],
+    },
     sections: {
       syntax: `## 语法基础
 
@@ -282,11 +418,162 @@ JDK 6 后 synchronized 引入**锁升级**（偏向锁 → 轻量级锁 → 重�
   // ==================== Python ====================
   {
     id: 'python',
+    icon: '🐍',
     name: 'Python',
     accent: 'blue',
     tagline: '人生苦短，我用 Python',
     intro:
       'Python 以简洁优雅的语法著称，覆盖 Web 后端、数据科学、人工智能、自动化脚本等场景。学习主线：**语法基础 → 标准库与数据结构 → 装饰器/生成器等高级特性 → Web/数据框架**。',
+    // 语言概览：总览页与顶部菜单展示的「特性 / 实现与编译原理 / 使用场景」
+    overview: {
+      meta: [
+        { label: '诞生', value: '1991 · Guido van Rossum' },
+        { label: '类型系统', value: '动态强类型（可选类型标注）' },
+        { label: '范式', value: '面向对象 / 函数式 / 过程式' },
+        { label: '执行方式', value: '字节码 + CPython 解释器' },
+      ],
+      features: [
+        {
+          title: '语法极简、可读性强',
+          desc: '缩进即作用域，代码接近伪代码，上手最快的主流语言',
+        },
+        {
+          title: '动态类型 + 鸭子类型',
+          desc: '变量无类型、对象有类型；配合类型标注与 mypy 可获得静态检查收益',
+        },
+        {
+          title: '一切皆对象',
+          desc: '函数、类、模块都是对象，可赋值可传参，天然支持高阶函数、装饰器、闭包',
+        },
+        {
+          title: '生态庞大',
+          desc: '标准库「自带电池」+ PyPI 数十万包，数据科学与 AI 领域几乎无可替代（NumPy / Pandas / PyTorch）',
+        },
+        {
+          title: '丰富的语言糖',
+          desc: '列表推导式、生成器、上下文管理器、魔术方法、解包赋值，写起来非常「顺手」',
+        },
+        {
+          title: '可嵌入可扩展',
+          desc: '热点用 C/C++ 写扩展（CPython API、Cython、pybind11）弥补性能短板',
+        },
+        {
+          title: 'GIL 限制',
+          desc: '同进程内多线程无法真正并行执行字节码，CPU 密集需多进程或 C 扩展（3.13 起提供 free-threading 实验版）',
+        },
+      ],
+      compile: {
+        summary:
+          'CPython 先把源码编译成字节码（缓存为 __pycache__ 下的 .pyc），再由求值循环逐条解释执行；PyPy 则用 tracing JIT 加速',
+        pipeline: [
+          { stage: '词法分析', desc: 'tokenizer 按缩进生成 INDENT / DEDENT 标记，这是 Python 代码块的基础' },
+          {
+            stage: '语法分析',
+            desc: '构建 AST；3.9 起改用 PEG 解析器，才能表达 match/case 这类复杂文法',
+          },
+          {
+            stage: '字节码编译',
+            desc: 'compile() 把 AST 转成 code object，首次导入时序列化到 __pycache__ 的 .pyc',
+          },
+          {
+            stage: '解释执行',
+            desc: 'CPython 求值循环逐条执行栈式字节码；3.11+ 自适应特化解释器按实际类型替换为专用指令',
+          },
+          {
+            stage: '内存回收',
+            desc: '引用计数为主（即时释放），分代 GC 为辅（处理循环引用）；GIL 保证计数操作原子',
+          },
+          { stage: '对象分配', desc: 'pymalloc 为 512 字节以下的小对象提供 arena/pool/block 分级分配' },
+          {
+            stage: '其他实现',
+            desc: 'PyPy（JIT，通常快 4-10 倍）、Cython / mypyc（编译为 C）、Nuitka（AOT）、Jython / IronPython',
+          },
+        ],
+        detail: `## 实现与编译原理
+
+Python 是「**编译成字节码 + 解释执行**」的语言：它不是纯解释型（源码会先编译），也不是编译型（字节码由解释器在运行时执行）。
+
+~~~text
+.py 源码 → tokenizer（缩进转 INDENT/DEDENT）→ AST → 字节码 code object
+                                                      │ 缓存 __pycache__/*.pyc
+                                                      ▼
+                                       CPython 求值循环（解释执行）
+                                                      │
+                                    引用计数 + 分代 GC 负责内存回收
+~~~
+
+### 1. 从源码到字节码
+
+- **词法分析**：Python 用缩进表达代码块，tokenizer 会插入 INDENT / DEDENT 标记
+- **语法分析**：3.9 起换成 **PEG 解析器**，可直接表达左递归文法，match/case 等语法因此成为可能
+- **编译**：compile(source, filename, mode) 返回 code object，字节码可以用 dis 模块反汇编查看
+
+~~~python
+import dis
+
+def f(a, b):
+    return a + b
+
+dis.dis(f)
+# LOAD_FAST a / LOAD_FAST b / BINARY_OP + / RETURN_VALUE
+~~~
+
+### 2. .pyc 缓存与导入机制
+
+- 首次导入模块时把字节码写入 __pycache__ 下对应版本的 .pyc，头部记录源码的 mtime / size；未变化则跳过编译——**只省编译时间，不省解释时间**
+- 导入流程：在 sys.path 中查找 → 找到 loader → 执行模块顶层代码 → 存入 sys.modules。因此模块天然单例，循环导入会拿到「半初始化」的对象
+
+### 3. 解释执行与 GIL
+
+- CPython 的核心是求值循环 _PyEval_EvalFrameDefault：取一条字节码 → switch 分派 → 压 / 弹操作数栈
+- **GIL（全局解释器锁）**：保护引用计数不被多线程破坏，导致「同一进程同一时刻只有一个线程在执行 Python 字节码」
+- 应对方式：CPU 密集用 multiprocessing（多进程）或把热点写成 C 扩展（NumPy 在计算时会释放 GIL）；IO 密集用 asyncio 或多线程（阻塞时释放 GIL）
+- **PEP 703（3.13+）**：free-threaded 构建移除 GIL，改用偏向引用计数 + 细粒度锁，多核可扩展，但单线程略有开销
+
+### 4. 性能演进
+
+- 3.11 的**自适应特化解释器**：为 LOAD_ATTR、BINARY_OP 等指令按观测到的类型生成专用变体（inline cache），整体提速明显
+- 3.12 / 3.13 引入 **copy-and-patch JIT**，为持续加速铺路
+- **PyPy** 用 tracing JIT 把热点循环编译成机器码，纯 Python 计算通常快 4-10 倍，代价是 C 扩展兼容性与更高内存占用
+
+### 5. 内存管理
+
+- **引用计数**为主：每个对象头维护 ob_refcnt，归零立即释放（析构时机确定，with 语句因此可靠）
+- **分代 GC** 为辅：跟踪容器对象，检测并回收循环引用；分三代，存活越久晋升越高、扫描越少
+- **pymalloc** 为小对象（≤512B）提供 arena / pool / block 分级分配，减少系统调用
+- 降低内存占用的手段：weakref、__slots__、生成器代替列表、array / numpy 代替 list
+
+### 6. 类型标注与工具链
+
+- 标注（def f(x: int) -> str）运行时**不强制**，只供 mypy / pyright / IDE 做静态检查，等于「动态语言 + 可选静态类型」
+- 环境与打包：venv / uv / poetry 管理依赖，build + twine 发布
+- 性能剖析：cProfile（函数级）、line_profiler（行级）、tracemalloc（内存）、py-spy（无需改代码的采样分析）
+`,
+      },
+      useCases: [
+        {
+          title: '人工智能与机器学习',
+          desc: 'PyTorch / TensorFlow / scikit-learn / HuggingFace 的事实标准接口语言',
+        },
+        {
+          title: '数据分析与可视化',
+          desc: 'Pandas、NumPy、Matplotlib、Jupyter Notebook 交互式分析',
+        },
+        {
+          title: '自动化脚本与运维',
+          desc: '批处理、定时任务、爬虫、CI/CD、服务器运维（Ansible）',
+        },
+        {
+          title: 'Web 后端与 API',
+          desc: 'Django / Flask / FastAPI，中小型服务、内部系统与快速原型',
+        },
+        {
+          title: '教学与科研',
+          desc: '语法接近伪代码，算法入门、科学计算、论文复现首选',
+        },
+        { title: '量化金融', desc: '策略回测、因子挖掘、风控建模' },
+      ],
+    },
     sections: {
       syntax: `## 语法基础
 
@@ -617,11 +904,148 @@ a[1].append(99)
   // ==================== C++ ====================
   {
     id: 'cpp',
+    icon: '🚀',
     name: 'C++',
     accent: 'blue',
     tagline: '不牺牲性能的抽象',
     intro:
       'C++ 在 C 的基础上引入面向对象、模板与 RAII，既能写底层高性能代码，又能做大规模工程抽象。学习主线：**语法与内存模型 → 类与 RAII → STL → 智能指针/移动语义/模板**。',
+    // 语言概览：总览页与顶部菜单展示的「特性 / 实现与编译原理 / 使用场景」
+    overview: {
+      meta: [
+        { label: '诞生', value: '1985 · Bjarne Stroustrup' },
+        { label: '类型系统', value: '静态强类型（模板泛型）' },
+        { label: '范式', value: '过程 / 对象 / 泛型 / 函数式' },
+        { label: '执行方式', value: '直接编译为本机机器码' },
+      ],
+      features: [
+        {
+          title: '零开销抽象',
+          desc: '「不用不付费，用了不比手写 C 慢」——类与模板在编译期消解为等价底层代码',
+        },
+        {
+          title: 'RAII + 手动内存管理',
+          desc: '无 GC，用构造/析构管理资源；智能指针（unique / shared / weak）表达所有权',
+        },
+        {
+          title: '模板元编程',
+          desc: '模板在编译期图灵完备，可做编译期计算与代码生成，STL 容器与算法全靠它',
+        },
+        {
+          title: '极致性能',
+          desc: '贴近硬件、无虚拟机、可控内联与内存布局，性能敏感领域的首选',
+        },
+        {
+          title: '标准持续演进',
+          desc: 'C++11（移动语义、lambda、auto）→ 17（结构化绑定、optional）→ 20（concepts、协程、Ranges、Modules）→ 23',
+        },
+        {
+          title: '多范式自由',
+          desc: '面向对象、泛型、函数式风格可混用；Core Guidelines 推荐使用现代写法',
+        },
+        {
+          title: '复杂度与陷阱',
+          desc: '语法庞大、未定义行为（UB）多、无统一包管理与稳定 ABI，学习曲线降岭',
+        },
+      ],
+      compile: {
+        summary:
+          '四阶段离线编译：预处理 → 编译成汇编 → 汇编成目标文件 .o → 链接生成可执行文件；模板与内联在编译期展开，运行时无虚拟机',
+        pipeline: [
+          { stage: '预处理', desc: '展开 #include、宏替换、条件编译，产出纯翻译单元 .i' },
+          {
+            stage: '编译（cc1 / clang）',
+            desc: '词法/语法分析建 AST，模板两阶段查找与实例化，中端优化（LLVM IR / GIMPLE）产出汇编 .s',
+          },
+          {
+            stage: '汇编（as）',
+            desc: '把 .s 翻译成机器码，生成 .o（ELF / COFF / Mach-O），含符号表与重定位信息',
+          },
+          {
+            stage: '链接（ld）',
+            desc: '符号解析 + 重定位；静态库 .a 代码拷入可执行文件，动态库 .so 只记录依赖',
+          },
+          {
+            stage: '加载运行',
+            desc: 'OS 映射 text/rodata/data/bss 段 → crt0 启动代码 → 全局对象构造 → main',
+          },
+          {
+            stage: '编译期计算',
+            desc: 'constexpr / consteval 把计算搬到编译期，模板实例化在编译期生成具体代码',
+          },
+        ],
+        detail: `## 实现与编译原理
+
+C++ 是**纯编译型**语言：源码经编译器直接变成本机机器码，运行时没有解释器或虚拟机。性能上限高，代价是编译期做了大量工作，且与平台/编译器强相关。
+
+~~~text
+main.cpp
+  │ ① 预处理（g++ -E）：#include 展开、宏替换、条件编译 → main.i
+  │ ② 编译  （g++ -S）：词法/语法分析 → AST → 中端 IR → 优化 → main.s
+  │ ③ 汇编  （g++ -c）：as 生成机器码 → main.o（ELF/COFF/Mach-O + 符号表）
+  │ ④ 链接  （g++   ）：ld 解析符号 + 重定位 → a.out
+  ▼
+操作系统加载：映射 text/rodata/data/bss → crt0 → 全局构造 → main()
+~~~
+
+### 1. 翻译单元与预处理
+
+- 预处理器只做**文本替换**：#include 把头文件内容原样拷进来，#define 是宏展开。所以头文件必须有 include guard 或 #pragma once，宏也常被 inline 函数与 constexpr 取代
+- 一个 .cpp 及其包含的头文件构成一个**翻译单元**，独立编译——这也是 C++ 编译慢的根源（头文件被反复解析），C++20 Modules 就是为了解决它
+
+### 2. 编译中端：模板与优化
+
+- **两阶段名字查找**：模板定义时检查非依赖名，实例化时检查依赖名。所以模板实现通常必须写在头文件里，否则链接期找不到符号
+- **实例化**：vector&lt;int&gt; 与 vector&lt;double&gt; 各生成一份代码（代码膨胀）；C++17 的 if constexpr、C++20 的 concepts 让模板可控得多
+- **优化**：内联展开、常量传播、死代码消除、循环不变量外提、向量化（SIMD）、LTO（跨翻译单元全局优化）
+- -O2 与 -O3 的区别主要在自动向量化与循环展开；所有优化都建立在「程序无 UB」的假设上，**未定义行为会让优化器做出反直觉的删除**
+
+### 3. 目标文件与链接
+
+- .o 里是机器码 + 符号表（已定义 / 未定义符号）+ 重定位表
+- **链接错误**的典型来源：重复定义（ODR 违反）、声明未实现、模板实现放在 .cpp、静态成员未定义
+- 静态链接（.a）体积大但部署简单；动态链接（.so / .dll）体积小、可热更新，但有版本与 ABI 兼容问题
+- **ODR（单一定义规则）**：同一实体在整个程序中只能有一个定义；inline 函数、模板、类定义是例外（允许多处相同定义）
+
+### 4. 运行时模型
+
+- **没有 GC**：对象生命周期由作用域决定，栈对象离开作用域自动析构（RAII）；堆对象需手动 delete 或交给智能指针
+- **内存模型（C++11）**：定义多线程下的可见性与顺序，std::atomic + memory_order 提供跨平台无锁编程基础
+- **异常**：抛出时栈展开（stack unwinding）依次调用析构函数，因此**析构函数绝不能抛异常**（需 noexcept）
+- **启动开销**：全局 / 静态对象在 main 前构造，跨翻译单元顺序未定义（SIOF），推荐 Meyers Singleton（函数内 static）
+
+### 5. 构建与工具链
+
+- **CMake** 是事实标准；包管理用 vcpkg / Conan
+- 诊断工具：AddressSanitizer / UBSan / ThreadSanitizer、Valgrind、perf、gdb / lldb
+- 代码规范：clang-format 统一风格，clang-tidy 静态检查，Core Guidelines 避坐陷阱
+- 现代演进：C++20 Modules 告别头文件重复解析，Coroutines 提供无栈协程，Ranges 让算法链式书写
+`,
+      },
+      useCases: [
+        {
+          title: '游戏开发',
+          desc: 'Unreal Engine 与各类 3A 引擎、客户端，追求帧率与内存可控',
+        },
+        {
+          title: '高频交易',
+          desc: '微秒级延迟要求的撮合引擎、行情系统、策略执行层',
+        },
+        {
+          title: '系统软件与基础设施',
+          desc: '数据库（MySQL / MongoDB）、浏览器（Chromium）、搜索引擎、编译器与虚拟机',
+        },
+        {
+          title: '嵌入式与 IoT',
+          desc: '资源受限设备，需要精细控制内存与性能，又想比 C 更强的抽象',
+        },
+        {
+          title: '高性能计算与图形',
+          desc: '科学计算、音视频编解码（FFmpeg）、CUDA 并行计算、渲染引擎',
+        },
+        { title: '桌面应用', desc: 'Qt 框架下的跨平台客户端、专业工具与 IDE' },
+      ],
+    },
     sections: {
       syntax: `## 语法基础
 
@@ -910,11 +1334,158 @@ public:
   // ==================== C ====================
   {
     id: 'c',
+    icon: '🔩',
     name: 'C 语言',
     accent: 'purple',
     tagline: '一切系统软件的地基',
     intro:
       'C 语言贴近硬件、运行高效，操作系统内核、驱动、嵌入式、数据库等都由它写成。学习主线：**语法与指针 → 内存管理 → 手写数据结构 → 模块化工程与系统编程**。',
+    // 语言概览：总览页与顶部菜单展示的「特性 / 实现与编译原理 / 使用场景」
+    overview: {
+      meta: [
+        { label: '诞生', value: '1972 · Dennis Ritchie（贝尔实验室）' },
+        { label: '类型系统', value: '静态弱类型（大量隐式转换）' },
+        { label: '范式', value: '过程式（结构化编程）' },
+        { label: '执行方式', value: '直接编译为本机机器码' },
+      ],
+      features: [
+        {
+          title: '贴近硬件',
+          desc: '指针、位运算、可直接操作地址与寄存器，常被称为「可移植的汇编」',
+        },
+        {
+          title: '极小运行时',
+          desc: '无 GC、无虚拟机、无异常、无反射，启动几乎零开销，能在裸机与内核里跑',
+        },
+        {
+          title: '手动内存管理',
+          desc: 'malloc / free 完全由程序员掌控，灵活但易内存泄漏、悬垂指针、越界',
+        },
+        {
+          title: '极致可移植',
+          desc: 'ANSI C 标准（C89 / C99 / C11 / C17 / C23）+ 各平台编译器，几乎所有系统都有 C 编译器',
+        },
+        {
+          title: '过程式 + 结构体',
+          desc: '没有类，用 struct + 函数指针模拟面向对象，用头文件做接口声明与实现分离',
+        },
+        {
+          title: '性能与体积',
+          desc: '编译产物紧凑、执行效率高，长期是其他语言的性能参照基准',
+        },
+        {
+          title: '需要自律',
+          desc: '未定义行为多（越界、有符号溢出、野指针），依赖 -Wall 与 ASan / Valgrind 兜底',
+        },
+      ],
+      compile: {
+        summary:
+          '预处理 → 编译 → 汇编 → 链接 四阶段直接生成机器码；libc 提供 printf / malloc 等运行时支持，系统调用通过中断陷入内核',
+        pipeline: [
+          { stage: '预处理（gcc -E）', desc: '展开 #include、宏替换、条件编译，产出 .i' },
+          { stage: '编译（gcc -S）', desc: '词法/语法分析建 AST，类型检查与优化，产出汇编 .s' },
+          { stage: '汇编（gcc -c）', desc: 'as 把汇编翻译成机器码，产出目标文件 .o' },
+          {
+            stage: '链接（ld）',
+            desc: '解析外部符号（如 printf → libc），重定位地址，生成可执行文件',
+          },
+          {
+            stage: '启动（crt0）',
+            desc: '加载器建立栈、初始化 libc，调用 main；返回后 exit 触发 atexit 与流刷新',
+          },
+          {
+            stage: '运行（系统调用）',
+            desc: 'read / write / mmap 通过 syscall 指令或 int 0x80 陷入内核，发生用户态↔内核态切换',
+          },
+        ],
+        detail: `## 实现与编译原理
+
+C 是**编译型**语言，编译产物是直接跑在 CPU 上的机器码。语言本身几乎不提供运行时（无 GC、无异常、无反射），这正是它能用来写操作系统内核的前提。
+
+~~~text
+hello.c
+  │ gcc -E hello.c > hello.i   预处理：#include 展开、宏替换、条件编译
+  │ gcc -S hello.i -o hello.s  编译：词法/语法分析 → AST → 优化 → 汇编
+  │ gcc -c hello.s -o hello.o  汇编：as 生成机器码与符号表
+  │ gcc hello.o -o hello       链接：ld 解析 printf 等外部符号 + 重定位
+  ▼
+可执行文件（ELF / PE / Mach-O）→ OS 加载 → crt0 初始化 libc → main()
+~~~
+
+### 1. 预处理：只是文本处理
+
+- #include &lt;stdio.h&gt; 就是把头文件**原样拷贝**进来；头文件只放声明，定义放 .c，否则重复定义链接错误
+- 宏 #define 是纯文本替换：必须加括号（#define SQ(x) ((x)*(x))），否则运算优先级出错；多行宏用反斜杠续行
+- 条件编译 #ifdef 用来做平台适配与调试开关，这是 C 可移植性的关键手段
+
+### 2. 编译：从 AST 到机器码
+
+- 词法/语法分析生成 AST；C 的文法有著名的「typedef-name 问题」（需要符号表辅助解析，x * y 可能是乘法也可能是声明）
+- 中端优化：常量折叠、公共子表达式消除、寄存器分配（图着色）、循环优化；-O0 / -O2 / -O3 / -Os 控制策略
+- 类型系统只在编译期做**检查与隐式转换**（整型提升、有符号/无符号转换），运行时无任何类型信息——所以类型错误不会报错，只会得到错误结果或 UB
+
+### 3. 链接与符号
+
+- 每个 .o 都有符号表：T（已定义全局）、U（未定义待解析）、t/d/b（局部）；用 nm hello.o 可查看
+- 链接器做两件事：**符号解析**（把 U 与某个 T 对上，找不到就是 undefined reference，多个就是 duplicate symbol）和**重定位**（把代码里的占位地址改成最终地址）
+- 静态库 .a 是 .o 的归档，按需拷入；动态库 .so 运行时由 ld.so 加载，用 GOT / PLT 做延迟绑定
+- static 修饰的全局变量与函数只在当前翻译单元可见（内部链接），是 C 里实现「私有」的手段
+
+### 4. 运行时：libc 与系统调用
+
+- C 标准只定义语言与标准库接口；printf、malloc 由 **libc**（glibc / musl / MSVCRT）实现
+- 内存分配：malloc 底层用 brk（小内存，移动堆顶）或 mmap（大块内存）向内核申请；free 归还到分配器的空闲链表，不一定真还给内核
+- 输入输出：FILE* 是带缓冲的流（stdout 行缓冲、文件全缓冲），fflush 或程序退出时才真正写盘——这就是「printf 没换行看不到输出」的原因
+- 系统调用通过 syscall 指令（x86-64）或 int 0x80（x86）陷入内核，开销远大于普通函数调用
+
+### 5. 程序内存布局
+
+~~~text
+高地址  ┌──────────────┐
+        │  栈 stack    │  局部变量、函数栈帧（向下生长）
+        │      ↓       │
+        │  （空洞）     │
+        │      ↑       │
+        │  堆 heap     │  malloc / calloc / realloc（向上生长）
+        ├──────────────┤
+        │  .bss        │  未初始化全局 / 静态变量（清零，不占文件体积）
+        ├──────────────┤
+        │  .data       │  已初始化全局 / 静态变量
+        ├──────────────┤
+        │  .rodata     │  字符串字面量、const 数据（只读）
+        ├──────────────┤
+低地址  │  .text       │  机器指令（只读 + 可执行）
+        └──────────────┘
+~~~
+
+### 6. 未定义行为与调试
+
+- 常见 UB：数组越界、解引用野指针、使用未初始化变量、有符号整数溢出、修改字符串字面量、重复 free、函数无返回值
+- UB 的后果不是「崩溃」而是「什么都可能发生」，优化器会基于「无 UB」假设删除看似必要的代码
+- 工具链：-Wall -Wextra -Werror 编译期告警、**ASan / UBSan**（-fsanitize=address,undefined）、Valgrind（内存泄漏）、gdb（断点调试）
+`,
+      },
+      useCases: [
+        { title: '操作系统与内核', desc: 'Linux / Windows 内核主体、FreeBSD、各类 RTOS' },
+        {
+          title: '嵌入式与单片机',
+          desc: '裸机开发、STM32 / 51 固件、FreeRTOS，很多平台只能用 C',
+        },
+        { title: '驱动开发', desc: 'Linux 内核模块、Windows 驱动、硬件抽象层（HAL）' },
+        {
+          title: '基础软件',
+          desc: 'Redis、SQLite、Nginx、Git、curl，均以体积小、性能高著称',
+        },
+        {
+          title: '语言运行时与解释器',
+          desc: 'CPython、Lua、JVM 底层、PHP 解释器都是用 C 写的',
+        },
+        {
+          title: '跨语言 FFI 与高性能库',
+          desc: 'C ABI 是事实上的通用接口，几乎所有语言都能调用 C 库',
+        },
+      ],
+    },
     sections: {
       syntax: `## 语法基础
 
@@ -1227,11 +1798,169 @@ void *my_memcpy(void *dst, const void *src, size_t n) {
   // ==================== JavaScript ====================
   {
     id: 'js',
+    icon: '⚡',
     name: 'JavaScript',
     accent: 'amber',
     tagline: '世界上使用最广泛的语言',
     intro:
       'JavaScript 是浏览器唯一原生脚本语言，借助 Node.js 又打通了服务端。学习主线：**语法与 ES6+ → 异步与事件循环 → 原型与闭包 → 前端框架 / Node 后端架构**。',
+    // 语言概览：总览页与顶部菜单展示的「特性 / 实现与编译原理 / 使用场景」
+    overview: {
+      meta: [
+        { label: '诞生', value: '1995 · Brendan Eich（Netscape）' },
+        { label: '类型系统', value: '动态弱类型（原型链）' },
+        { label: '范式', value: '原型对象 / 函数式 / 事件驱动' },
+        { label: '执行方式', value: '引擎 JIT（V8 / JSC / SpiderMonkey）' },
+      ],
+      features: [
+        {
+          title: '浏览器唯一原生语言',
+          desc: '所有浏览器内置 JS 引擎，DOM / BOM / Fetch 由宿主环境提供',
+        },
+        {
+          title: '单线程 + 事件循环',
+          desc: '非阻塞异步模型，Promise / async-await 让异步代码接近同步写法',
+        },
+        {
+          title: '原型继承',
+          desc: '对象通过原型链查找属性（class 只是语法糖），动态且灵活',
+        },
+        {
+          title: '闭包与一等函数',
+          desc: '函数可捕获外层作用域变量，是模块化、柯里化、事件回调的基础',
+        },
+        {
+          title: '动态弱类型',
+          desc: '灵活但易错（字符串拼接与隐式转换陷阱），工程上用 TypeScript / JSDoc 补类型',
+        },
+        {
+          title: '跨端能力',
+          desc: 'Node.js / Deno / Bun 服务端，React Native / 小程序移动端，Electron 桌面端',
+        },
+        {
+          title: '标准与生态演进',
+          desc: 'ECMAScript 年度发布（ES6+），npm 包量最大；Vite / webpack / esbuild / Babel 构成现代工具链',
+        },
+      ],
+      compile: {
+        summary:
+          'V8 先把源码解析为 AST，Ignition 生成紧凑字节码解释执行并收集类型反馈，热点函数交给 TurboFan 做 JIT 优化编译',
+        pipeline: [
+          { stage: '源码获取', desc: '浏览器 / Node 拿到 JS 文本；ESM 还需先解析 import 依赖图' },
+          {
+            stage: '解析（Parser）',
+            desc: '预解析（lazy parsing）跳过函数体，主解析生成 AST',
+          },
+          { stage: '字节码生成（Ignition）', desc: 'AST → 紧凑字节码，节省内存、加快启动' },
+          {
+            stage: '解释执行 + 类型反馈',
+            desc: '逐条执行字节码，Inline Cache 记录属性访问的实际类型与隐藏类（Shape）',
+          },
+          {
+            stage: 'JIT 优化（TurboFan）',
+            desc: '热点函数结合类型反馈生成特化机器码（内联、逃逸分析、去虚化）',
+          },
+          {
+            stage: '去优化（Deopt）',
+            desc: '类型假设失效（隐藏类改变）时丢弃机器码回退字节码，因此应保持对象结构稳定',
+          },
+          {
+            stage: '事件循环',
+            desc: '调用栈清空后依次处理微任务（Promise）与宏任务（setTimeout / IO 回调），实现单线程非阻塞',
+          },
+        ],
+        detail: `## 实现与编译原理
+
+JavaScript 是「**解释 + JIT**」的动态语言：引擎在运行时才知道变量类型，因此必须一边执行一边收集类型信息，再把热点代码编译成机器码。
+
+~~~text
+JS 源码
+  │ Parser（预解析 lazy parse + 主解析）
+  ▼
+AST
+  │ Ignition（解释器）
+  ▼
+字节码 ──执行──► Inline Cache 收集类型反馈 / 隐藏类 Shape
+  │ 函数变「热」
+  ▼
+TurboFan（优化编译器）→ 特化机器码 ──假设失效──► Deopt 回退字节码
+~~~
+
+### 1. 解析与 AST
+
+- **预解析（lazy parsing）**：只检查函数体语法、记录变量声明，不建 AST——大幅提升启动速度
+- 遇到调用才做完整解析；这也是 script 标签阻塞渲染、defer / module 延迟执行的原因
+- 严格模式（use strict）与 ES Module 默认严格：禁用 with、禁止未声明赋值、this 不自动装箱
+
+### 2. 字节码与 Ignition
+
+- V8 早期（Full-codegen）直接把 AST 编译成机器码，内存占用高；2016 年改为 **Ignition 字节码**，体积更小、启动更快
+- Safari 的 JavaScriptCore（LLInt → Baseline → DFG → FTL）、Firefox 的 SpiderMonkey（Warp）思路类似
+
+### 3. 隐藏类（Shape）与 Inline Cache
+
+- 对象的属性布局被抽象为**隐藏类**：按同样顺序添加属性的对象共享同一 Shape，属性访问可编译成「固定偏移量读取」
+- **IC（内联缓存）**：把「属性名 → 偏移量」的查找结果缓存起来；单态（monomorphic）最快，多态次之，超形态（megamorphic）退化为字典查找
+- 实践建议：在构造函数里一次性初始化全部属性、避免 delete、避免同一函数处理结构差异极大的对象
+
+### 4. JIT 优化与去优化
+
+- TurboFan 基于类型反馈做**推测性优化**：内联小函数、逃逸分析（标量替换、避免堆分配）、消除边界检查、常量折叠
+- 假设失效即 **deoptimization**：例如一直被当作 SMI（小整数）的变量突然出现字符串，或隐藏类变了
+- 数字统一用 64 位 double（IEEE 754）表示，V8 用 **SMI tagging** 把小整数打包进指针以加速运算；0.1 + 0.2 !== 0.3 是浮点精度问题，金额运算请用整数分、BigInt 或 decimal 库
+
+### 5. 事件循环与并发
+
+~~~text
+调用栈（单线程）→ 清空后
+  1) 微任务队列：Promise.then / queueMicrotask / MutationObserver（全部清空）
+  2) 宏任务队列：setTimeout / setInterval / I/O / UI 事件（取一个执行）
+  3) 循环往复；Node 还有 nextTick 队列（优先级最高）与 libuv 线程池
+~~~
+
+- 单线程意味着**长任务会阻塞渲染**：拆分为 setTimeout / requestIdleCallback、Web Worker，或改成流式处理
+- Node.js 的 I/O 由 **libuv**（线程池 + epoll / kqueue / IOCP）承担，回调再回到主线程执行
+
+### 6. 模块与打包
+
+- 历史上三套模块方案：CommonJS（require，同步加载，Node 默认）、AMD（已淘汰）、**ESM**（import / export，静态可分析、支持 Tree Shaking 与顶层 await）
+- 浏览器不能直接跑 npm 包与 TS，因此需要构建：**Babel / SWC**（语法降级）→ **打包器**（Vite / webpack / esbuild / Rollup，模块合并、按需加载、Tree Shaking）→ 压缩与 Source Map
+- Vite 开发态利用浏览器原生 ESM 免打包，生产态用 Rollup 打包
+
+### 7. 类型补充
+
+- TypeScript 是 JS 的超集：编译期做类型检查后**擦除类型**产出普通 JS，运行时无任何类型信息（和 Java 泛型擦除同理）
+- 大型项目建议 TypeScript 或 JSDoc + ts-check，兼顾灵活性与可维护性
+`,
+      },
+      useCases: [
+        {
+          title: '前端 Web 开发',
+          desc: 'React / Vue / Angular 单页应用，所有浏览器原生支持',
+        },
+        {
+          title: '服务端与 BFF',
+          desc: 'Node.js / Nest / Express / Koa，SSR 与 API 网关，前后端同构',
+        },
+        {
+          title: '跨端移动应用',
+          desc: 'React Native、微信小程序、uni-app，一套代码多端运行',
+        },
+        {
+          title: '桌面应用',
+          desc: 'Electron（VS Code、Slack）、Tauri 的前端层',
+        },
+        {
+          title: 'Serverless 与边缘计算',
+          desc: 'Vercel / Cloudflare Workers，冷启动快、按量付费',
+        },
+        {
+          title: '工具链与自动化测试',
+          desc: '构建工具、CLI、npm 生态、Playwright / Cypress 端到端测试',
+        },
+        { title: '可视化与互动', desc: 'ECharts / D3 / Three.js 数据大屏与 3D 展示' },
+      ],
+    },
     sections: {
       syntax: `## 语法基础
 
@@ -1628,8 +2357,44 @@ function deepClone(source, map = new WeakMap()) {   // WeakMap 防循环引用
 
 // ==================== 便捷派生数据 ====================
 
-/** 语言导航清单（App.vue 顶部「计算机语言」下拉菜单） */
-export const languageMenu = languages.map((l) => ({ label: l.name, to: `/languages/${l.id}` }))
+/** 强调色 → 主题语义色变量（主页面卡片 / 子页面共用） */
+const accentVarMap = {
+  orange: 'var(--c-orange)',
+  blue: 'var(--c-blue)',
+  purple: 'var(--c-purple)',
+  amber: 'var(--c-amber)',
+  green: 'var(--c-green)',
+}
+
+export function getAccentVar(accent) {
+  return accentVarMap[accent] || 'var(--c-blue)'
+}
+
+/**
+ * 构造语言卡片数据（主页面 /languages 的 LanguageCard 使用）
+ * 卡片上只放标题级摘要（特性/场景的名称 + 编译原理一句话），
+ * 完整介绍（特性详解 / 流水线 / 长文）在子页面的「语言概览」里
+ */
+function buildLanguageCard(l) {
+  return {
+    label: l.name,
+    to: `/languages/${l.id}`,
+    icon: l.icon,
+    accent: l.accent,
+    accentVar: getAccentVar(l.accent),
+    tagline: l.tagline,
+    features: l.overview.features.map((f) => f.title),
+    compile: l.overview.compile.summary,
+    useCases: l.overview.useCases.map((u) => u.title),
+    interviewCount: l.interview.length,
+  }
+}
+
+/** 主页面卡片数据（顶部导航已不再做下拉弹框，因此只需这一份） */
+export const languageCards = languages.map(buildLanguageCard)
+
+/** 语言主页面地址（顶部一级菜单「计算机语言」的链接目标） */
+export const languageOverviewPath = '/languages'
 
 /** 详情页四个板块的元信息（顺序即展示顺序） */
 export const languageSections = [

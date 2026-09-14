@@ -2,7 +2,7 @@
 // 动态规划分类页：卡片列表 + 子分类筛选（数据来自单一数据源 data/algorithms.js）
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { categorySubCategories, dpAlgorithms } from '../../../data/algorithms'
+import { categorySubCategories, dpAlgorithms, algorithmOverviewPath } from '../../../data/algorithms'
 import ProgressMark from '../../common/ProgressMark.vue'
 
 const router = useRouter()
@@ -28,6 +28,11 @@ const filteredAlgorithms = computed(() =>
 
 <template>
   <div class="algorithm-page-container dp-page-container">
+    <nav class="algo-crumb" aria-label="面包屑">
+      <router-link :to="algorithmOverviewPath">← 算法总览</router-link>
+      <span class="crumb-sep">/</span>
+      <span class="crumb-current">动态规划</span>
+    </nav>
     <h1>动态规划</h1>
     <p class="page-description">
       动态规划（Dynamic Programming，DP）把问题拆成相互重叠的子问题，按「状态 + 转移方程」自底向上填表，

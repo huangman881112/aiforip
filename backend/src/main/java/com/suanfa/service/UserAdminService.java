@@ -36,7 +36,6 @@ public class UserAdminService {
     private static final Logger log = LoggerFactory.getLogger(UserAdminService.class);
 
     private static final Pattern USERNAME = Pattern.compile("^[\\w\\u4e00-\\u9fa5.-]{2,32}$");
-    private static final Pattern EMAIL = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     private static final int MIN_PASSWORD = 4;
 
     private final UserRepository userRepository;
@@ -218,12 +217,10 @@ public class UserAdminService {
         if (raw == null) {
             return null;
         }
-        String v = raw.trim();
-        if (v.isEmpty()) {
+        // 格式校验收口在 Emails（与注册共用同一套规则与提示文案）
+        String v = Emails.requireValid(raw);
+        if (v == null) {
             return null;
-        }
-        if (!EMAIL.matcher(v).matches()) {
-            throw new IllegalArgumentException("邮箱格式不正确");
         }
         if (userRepository.emailTaken(v, excludeId)) {
             throw new IllegalArgumentException("该邮箱已被其他账号绑定");

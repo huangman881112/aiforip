@@ -3,7 +3,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 // 单一数据源
-import { sortingAlgorithms } from '../../../data/algorithms'
+import { sortingAlgorithms, algorithmOverviewPath } from '../../../data/algorithms'
 import ProgressMark from '../../common/ProgressMark.vue'
 
 const router = useRouter()
@@ -44,6 +44,11 @@ const filteredAlgorithms = computed(() => {
 
 <template>
   <div class="sorting-page-container">
+    <nav class="algo-crumb" aria-label="面包屑">
+      <router-link :to="algorithmOverviewPath">← 算法总览</router-link>
+      <span class="crumb-sep">/</span>
+      <span class="crumb-current">排序算法</span>
+    </nav>
     <h1>排序算法</h1>
     <p class="page-description">
       排序算法是计算机科学中最基础且应用广泛的算法之一。它通过特定的规则将一组数据按照一定的顺序排列。以下是常见的排序算法分类和实现。

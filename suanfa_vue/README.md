@@ -77,15 +77,34 @@ npm run preview
 
 ## 计算机语言
 
-顶部导航「计算机语言」下拉菜单提供 Java、Python、C++、C、JavaScript 五门语言的系统学习页（`/languages/:lang`，总入口 `/languages` 重定向到 Java）。每门语言的详情页包含四个板块：
+顶部导航「计算机语言」就是一个**普通一级链接**（和「学习日历」「AI 助教」一样），点击直接进主页面 `/languages`：**不做下拉弹框、不做悬停展开**，也没有 caret 箭头与 `aria-haspopup`。各语言的介绍全部放在主页面的卡片上，不再在导航里重复一份。
 
+> 高亮用的是 `isLanguageSection`（`isActive('/languages')` 前缀判断）而不是 `router-link` 的 `active-class`：`/languages` 与 `/languages/:lang` 是**同级路由**（非嵌套），后者不会让前者自动带上 active 类，否则进子页面后一级菜单就不亮了。
+
+**卡片组件 `components/languages/LanguageCard.vue`**：整张卡片就是一个 `router-link`，内容分三行摘要 + 一行子页说明 + 「查看详情 →」：
+
+- **✨ 特性**：该语言全部特性名称，胶囊标签平铺（`languageCards` 给全量，不做截取）；
+- **⚙️ 原理**：`overview.compile.summary` 一句话，最多 3 行截断；
+- **🎯 场景**：该语言全部使用场景名称，胶囊标签平铺；
+- 底部虚线下一行说明「子页含：语言概览 · 语法基础 · 数据结构 · 常用架构 · 经典面试题（N 道）」，N 取自 `interview.length`。
+
+卡片自身的 hover 反馈（主色描边 + 上浮 2px + 阴影 + 箭头右移）保留，去掉的只是导航的悬停弹框。
+
+**主页面 `/languages`**（`components/languages/LanguageListPage.vue`）：页头说明 + 「选型速查」胶囊条（由各语言使用场景首条派生，不另写一份文案）+ 响应式卡片网格（`auto-fill minmax(340px, 1fr)`，宽屏 3 列 / 中屏 2 列 / 窄屏 1 列）。
+
+**5 张卡片等宽等高**：宽度靠 `1fr` 均分列宽（末行不满也与上面一致）；高度靠 `grid-auto-rows: 1fr`（所有隐式行都取最高那一行的高度）+ `align-items: stretch`，卡片内 `.lc-more { margin-top: auto }` 让「查看详情」统一贴底，不会因内容多少上下错落。实测 1440 / 1000 / 700 / 400 / 320px 下 5 张卡片尺寸均唯一（如 1440px 全为 383×438），且无横向溢出。
+
+**子页面 `/languages/:lang`**（`components/languages/LanguageDetail.vue`）：默认停在「🧭 语言概览」，**这里才是每门语言的完整介绍**（原本放在主页面的那部分内容）；顶部有「← 计算机语言总览」面包屑与语言切换器。五个板块：
+
+- **🧭 语言概览**：元信息（诞生 / 类型系统 / 范式 / 执行方式）+ 特性、编译原理流水线、使用场景三卡片，下方是「实现与编译原理」长文（javac/JVM/JIT、CPython/GIL、C++ 四阶段编译与链接、libc/系统调用/内存布局、V8 Ignition+TurboFan/事件循环）；
 - **📖 语法基础**：变量与类型、控制流、面向对象/函数式特性、代码示例；
 - **🧱 数据结构**：语言内置容器速查表（底层实现 + 复杂度）、典型用法与选用原则；
 - **🏗️ 常用架构**：主流框架与工程分层（如 Spring 三层、Django/FastAPI、STL、Node 中间件洋葱模型）；
 - **💼 经典面试题**：每语言 7 道高频面试题，点击卡片折叠展开参考答案。
 
-全部文案集中在 `src/data/languages.js` 单一数据源，页面组件只有一个通用的
-`components/languages/LanguageDetail.vue`（路由参数驱动 + 板块标签页切换）；新增语言只需在数据源追加一项，导航菜单自动出现。注意：该文件内 Markdown 代码块使用 `~~~` 围栏（避免与 JS 模板字符串的反引号冲突），marked 按 CommonMark 渲染，效果与 ``` 完全一致。
+全部文案集中在 `src/data/languages.js` 单一数据源：每门语言一个对象，`icon` + `overview`（meta / features / compile.summary / compile.pipeline / compile.detail / useCases）驱动主页面卡片与子页概览，`sections` + `interview` 驱动子页其余板块。卡片数据由 `buildLanguageCard(l)` 派生出 `languageCards`（只取标题级摘要：特性名 / 场景名 / 编译原理一句话），强调色由 `getAccentVar()` 统一映射；新增语言只需在数据源追加一项，主页面与子页面自动出现。注意：该文件内 Markdown 代码块使用 `~~~` 围栏（避免与 JS 模板字符串的反引号冲突），marked 按 CommonMark 渲染，效果与 ``` 完全一致。
+
+> 样式踩坑记录（已随弹框下线，但值得记住）：把子组件放进导航时，App.vue 的 scoped 规则 `.app-nav a[data-v-x]`（特异度 0-2-1）会压过子组件根元素自己的 `.lang-card[data-v-y]`（0-2-0）——因为父组件的 scope id 会落到子组件根节点上，导致卡片的 `display: flex`、padding、圆角全部失效。当时靠给这几条规则加 `:not(.lang-mini-card)` 排除解决；现在卡片不再进导航，排除已移除，但 App.vue 里保留了注释提醒。
 
 ## 目录结构
 
@@ -102,10 +121,10 @@ suanfa_vue/
     │   └── theme.css             # 全站配色 Design Tokens（深色主题）
     ├── assets/                   # 静态资源
     ├── data/
-    │   ├── algorithms.js         # 算法元数据单一数据源（离线兵底 + 分类表）
-│   ├── languages.js          # 计算机语言模块单一数据源（语法/数据结构/架构/面试题）
-│   ├── dpProblems.js         # 动态规划题目求解器：产出逐步 frame 序列
-│   ├── greedyProblems.js     # 贪心题目求解器：产出逐步决策 frame 序列
+        │   ├── algorithms.js         # 算法元数据单一数据源（离线兜底 + 分类表）
+    │   ├── languages.js          # 计算机语言单一数据源（概览/特性/编译原理/场景/语法/架构/面试题）
+    │   ├── dpProblems.js         # 动态规划题目求解器：产出逐步 frame 序列
+    │   ├── greedyProblems.js     # 贪心题目求解器：产出逐步决策 frame 序列
     │   └── trainingProblems.js   # 算法训练题库（静态）
     ├── api/
     │   └── client.js             # 后端 API 客户端（后端优先，失败降级本地数据）
@@ -115,6 +134,10 @@ suanfa_vue/
     │   └── index.js              # 路由配置
     └── components/
         ├── common/               # 首页、关于、登录、注册、修改密码、用户管理（仅管理员）、进度、学习日历、训练、AI 助教、评论等通用组件
+        ├── languages/
+        │   ├── LanguageCard.vue       # 语言卡片：主页面一张卡介绍一门语言（特性/原理/场景 + 查看详情）
+        │   ├── LanguageListPage.vue   # 计算机语言主页面 /languages（卡片网格 + 选型速查）
+        │   └── LanguageDetail.vue     # 语言子页面 /languages/:lang（概览/语法/数据结构/架构/面试题）
         └── algorithms/
             ├── algo-viz-common.css      # 可视化区公共外观（DP / 贪心共用）
             ├── sorting_algorithms/     # 排序：SortingPage 分类页 + 10 个 *Detail.vue 详情组件

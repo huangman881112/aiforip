@@ -2,7 +2,7 @@
 // 贪心算法分类页：卡片列表 + 子分类筛选
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { categorySubCategories, greedyAlgorithms } from '../../../data/algorithms'
+import { categorySubCategories, greedyAlgorithms, algorithmOverviewPath } from '../../../data/algorithms'
 import ProgressMark from '../../common/ProgressMark.vue'
 
 const router = useRouter()
@@ -28,6 +28,11 @@ const filteredAlgorithms = computed(() =>
 
 <template>
   <div class="algorithm-page-container greedy-page-container">
+    <nav class="algo-crumb" aria-label="面包屑">
+      <router-link :to="algorithmOverviewPath">← 算法总览</router-link>
+      <span class="crumb-sep">/</span>
+      <span class="crumb-current">贪心算法</span>
+    </nav>
     <h1>贪心算法</h1>
     <p class="page-description">
       贪心算法每一步都只挑「当前看起来最好」的选择，不回溯、不试错。它比动态规划更快、更省空间，

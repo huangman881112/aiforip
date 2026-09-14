@@ -10,7 +10,6 @@ import java.time.Duration;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 
 /**
  * 邮箱验证码：发送（含重发限流）与校验（含尝试次数上限、一次性消费）。
@@ -29,10 +28,11 @@ public class EmailCodeService {
 
     /** 用途：修改密码。验证码与用途绑定，防止跨场景复用。 */
     public static final String PURPOSE_CHANGE_PASSWORD = "change-password";
+    /** 用途：注册时验证邮箱真实性（未登录，key 只按邮箱维度）。 */
+    public static final String PURPOSE_REGISTER = "register";
+    /** 用途：修改绑定邮箱（需登录，验证码发往要绑定的新邮箱）。 */
+    public static final String PURPOSE_CHANGE_EMAIL = "change-email";
 
-    private static final Pattern EMAIL_PATTERN =
-            Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
-    private static final int MAX_EMAIL_LENGTH = 120;
     private static final int CODE_LENGTH = 6;
 
     private final MailService mailService;
@@ -45,22 +45,22 @@ public class EmailCodeService {
         this.props = props;
     }
 
+    /** 邮箱格式校验（规则收口在 {@link Emails}，与注册 / 用户管理共用同一套）。 */
     public static boolean isValidEmail(String email) {
-        return email != null && email.length() <= MAX_EMAIL_LENGTH
-                && EMAIL_PATTERN.matcher(email.trim()).matches();
+        return Emails.isValid(email);
     }
 
     /**
      * 发送验证码。
      *
-     * @param userId  当前登录用户
+     * @param userId  当前登录用户；注册场景传 null（key 按邮箱维度，冷却照常生效）
      * @param purpose 用途（见 {@code PURPOSE_*}）
      * @param email   收件邮箱
      * @return 发送结果（是否真实发信、开发模式下回传的验证码）
      * @throws IllegalArgumentException 邮箱格式非法 / 重发过于频繁
      * @throws MailService.MailSendException SMTP 已配置但发送失败
      */
-    public SendResult send(long userId, String purpose, String email) {
+    public SendResult send(Long userId, String purpose, String email) {
         String target = email == null ? "" : email.trim();
         if (!isValidEmail(target)) {
             throw new IllegalArgumentException("邮箱格式不正确");
@@ -86,7 +86,7 @@ public class EmailCodeService {
         boolean mailSent = false;
         if (mailService.isConfigured()) {
             try {
-                mailService.send(target, props.getSubject(), buildBody(code, ttl, target));
+                mailService.send(target, props.getSubject(), buildBody(code, ttl, target, purpose));
             } catch (MailService.MailSendException e) {
                 // 发信失败：抹掉刚落库的验证码，否则用户只能干等重发冷却
                 store.remove(key);
@@ -104,12 +104,32 @@ public class EmailCodeService {
     }
 
     /**
-     * 校验并消费验证码。
+     * 校验并消费验证码（一次性：正确即作废）。
      *
-     * @return true 表示通过（验证码同时作废）
+     * @return true 表示通过
      * @throws IllegalArgumentException 验证码已过期 / 错误（消息含剩余尝试次数）
      */
-    public boolean verify(long userId, String purpose, String email, String code) {
+    public boolean verify(Long userId, String purpose, String email, String code) {
+        Code entry = requireValidCode(userId, purpose, email, code);
+        store.remove(key(userId, purpose, email == null ? "" : email.trim()));
+        return entry != null;
+    }
+
+    /**
+     * 校验但不消费（注册页「输完 6 位即时反馈」的预检）。
+     *
+     * <p>与 {@link #verify} 同一套规则：错误仍计入尝试次数（防爆破），
+     * 正确不删除 —— 正式注册时再由 {@code verify} 消费，避免预检通过后换码/重用。
+     *
+     * @return true 表示正确（未过期且未被尝试次数上限锁死）
+     */
+    public boolean check(Long userId, String purpose, String email, String code) {
+        requireValidCode(userId, purpose, email, code);
+        return true;
+    }
+
+    /** 校验验证码的公共路径：格式 → 存在 → 未过期 → 匹配（错误计入尝试次数）。失败抛异常。 */
+    private Code requireValidCode(Long userId, String purpose, String email, String code) {
         String target = email == null ? "" : email.trim();
         if (!isValidEmail(target)) {
             throw new IllegalArgumentException("邮箱格式不正确");
@@ -136,8 +156,7 @@ public class EmailCodeService {
             }
             throw new IllegalArgumentException("验证码不正确，还可尝试 " + (max - entry.attempts) + " 次");
         }
-        store.remove(key);
-        return true;
+        return entry;
     }
 
     /** 主动作废某场景的验证码（如密码改完后清理）。 */
@@ -148,14 +167,19 @@ public class EmailCodeService {
         store.remove(key(userId, purpose, email.trim()));
     }
 
-    private String buildBody(String code, int ttl, String email) {
-        return """
-                你正在「小白学算法」为邮箱 %s 请求修改登录密码。
-
-                验证码：%s
-
-                有效期 %d 分钟。若这不是你本人的操作，请忽略本邮件，并尽快修改该邮箱的访问密码。
-                """.formatted(MailService.mask(email), code, Math.max(1, ttl / 60));
+    private String buildBody(String code, int ttl, String email, String purpose) {
+        String scene;
+        if (PURPOSE_REGISTER.equals(purpose)) {
+            scene = "你正在「小白学算法」注册新账号，并验证该邮箱的真实性。";
+        } else if (PURPOSE_CHANGE_EMAIL.equals(purpose)) {
+            scene = "你正在「小白学算法」将账号邮箱换绑为 " + MailService.mask(email) + "，请确认该邮箱属于你本人。";
+        } else {
+            scene = "你正在「小白学算法」为邮箱 " + MailService.mask(email) + " 请求修改登录密码。";
+        }
+        return scene
+                + "\n\n验证码：" + code
+                + "\n\n有效期 " + Math.max(1, ttl / 60)
+                + " 分钟。若这不是你本人的操作，请忽略本邮件。\n";
     }
 
     private String nextCode() {
@@ -170,7 +194,7 @@ public class EmailCodeService {
         store.entrySet().removeIf(e -> e.getValue().expiresAt < now);
     }
 
-    private static String key(long userId, String purpose, String email) {
+    private static String key(Long userId, String purpose, String email) {
         return userId + "|" + purpose + "|" + email.toLowerCase(Locale.ROOT);
     }
 

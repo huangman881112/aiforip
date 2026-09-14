@@ -792,6 +792,86 @@ export const algorithmCategories = [
   { key: 'greedy', label: '贪心算法', to: '/algorithms/greedy' },
 ]
 
+/** 算法总览页地址（顶部一级菜单「算法」的链接目标，与计算机语言 /languages 对齐） */
+export const algorithmOverviewPath = '/algorithms'
+
+/**
+ * 分类卡片静态文案：图标 / 主题色 / 定位 / 应用场景。
+ * 数量、难度分布、代表算法等都从 algorithms 派生，不在此处重复维护。
+ */
+const categoryCardMeta = {
+  sorting: {
+    icon: '🔢',
+    accentVar: 'var(--c-blue)',
+    tagline: '把数据排成有序',
+    useCases: ['语言运行时内排序', 'Top-K 与外排', '稳定性要求场景'],
+  },
+  searching: {
+    icon: '🔍',
+    accentVar: 'var(--c-green)',
+    tagline: '在 haystack 里找 needle',
+    useCases: ['有序表 / 区间查询', '哈希表与字典', '插值与近似匹配'],
+  },
+  graph: {
+    icon: '🕸️',
+    accentVar: 'var(--c-purple)',
+    tagline: '图上遍历与最优化的学问',
+    useCases: ['路网与导航', '依赖拓扑排序', '最小生成树与网络流'],
+  },
+  dp: {
+    icon: '🧩',
+    accentVar: 'var(--c-orange)',
+    tagline: '把大问题拆小，记住小问题',
+    useCases: ['背包与子序列', '区间 / 字符串 DP', '最短编辑距离'],
+  },
+  greedy: {
+    icon: '⚡',
+    accentVar: 'var(--c-amber)',
+    tagline: '每一步取局部最优',
+    useCases: ['区间调度', 'Huffman 编码', '贪心正确性论证'],
+  },
+}
+
+const ALGO_DIFFICULTY_ORDER = ['简单', '中等', '困难']
+
+/** 难度计数（「较难」归入「困难」），只保留非零档 */
+function countDifficulties(list) {
+  const counts = {}
+  for (const a of list) {
+    const d = a.difficulty === '较难' ? '困难' : a.difficulty
+    if (!d) continue
+    counts[d] = (counts[d] || 0) + 1
+  }
+  return ALGO_DIFFICULTY_ORDER.filter((label) => counts[label]).map((label) => ({
+    label,
+    count: counts[label],
+  }))
+}
+
+function buildAlgorithmCategoryCard(c) {
+  const list = algorithms.filter((a) => a.category === c.key)
+  const meta = categoryCardMeta[c.key] || {}
+  return {
+    key: c.key,
+    label: c.label,
+    to: c.to,
+    icon: meta.icon,
+    accentVar: meta.accentVar || 'var(--c-blue)',
+    tagline: meta.tagline || '',
+    subCategories: [...new Set(list.map((a) => a.subCategory).filter(Boolean))],
+    // 代表算法：取分类内前 3 个（数组顺序即教学顺序，靠前的是经典款）
+    representatives: list.slice(0, 3).map((a) => ({ name: a.name, complexity: a.complexity })),
+    useCases: meta.useCases || [],
+    count: list.length,
+    countUnit: '个算法',
+    difficulties: countDifficulties(list),
+    moreLabel: '查看算法',
+  }
+}
+
+/** 算法总览页卡片数据（顶部导航不再做下拉弹框，与计算机语言同一套模式） */
+export const algorithmCategoryCards = algorithmCategories.map(buildAlgorithmCategoryCard)
+
 /** 分类 -> 子分类（保持与卡片列表一致的展示顺序） */
 export const categorySubCategories = {
   dp: ['线性DP', '背包问题', '字符串DP', '区间DP'],

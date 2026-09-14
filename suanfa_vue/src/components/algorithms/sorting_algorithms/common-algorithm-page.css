@@ -171,3 +171,30 @@
 .detail-btn:hover {
   background-color: #389e70;
 }
+/* ---------- 面包屑：分类页返回算法总览（与计算机语言总览返回同一套模式） ---------- */
+.algo-crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-size: 0.88rem;
+}
+
+.algo-crumb a {
+  color: var(--text-3);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.algo-crumb a:hover {
+  color: var(--c-blue);
+}
+
+.algo-crumb .crumb-sep {
+  color: var(--text-3);
+}
+
+.algo-crumb .crumb-current {
+  color: var(--text-2);
+  font-weight: 600;
+}

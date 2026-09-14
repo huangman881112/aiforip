@@ -108,10 +108,37 @@ export async function fetchAlgorithmContent(id) {
 // 认证
 // ============================================================
 
-export async function register(username, password) {
+/**
+ * 注册。email 选填，但填了则必须传 code（由 sendRegisterEmailCode 下发）验证邮箱真实性；
+ * 后端校验失败（格式 / 占用 / 验证码错误）返回 400 + 中文提示。
+ */
+export async function register(username, password, email, code) {
   return request('/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ username, password, email: email || '', code: code || '' }),
+  })
+}
+
+/**
+ * 发送「注册邮箱验证码」（公开接口）：验证邮箱真实性。
+ * 返回 { sent, mailConfigured, maskedEmail, expiresInSeconds, cooldownSeconds, devCode? }
+ * ——devCode 仅在后端未配置 SMTP 时出现（本地开发用，自动回填输入框）。
+ */
+export async function sendRegisterEmailCode(email) {
+  return request('/auth/register/email-code', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  })
+}
+
+/**
+ * 即时校验注册验证码（不消费）：输完 6 位后自动调用，反馈验证码是否正确；
+ * 错误会计入后端尝试次数（5 次后作废需重发）。正确时不消耗 —— 正式注册时再校验消费。
+ */
+export async function verifyRegisterCode(email, code) {
+  return request('/auth/register/verify-code', {
+    method: 'POST',
+    body: JSON.stringify({ email, code }),
   })
 }
 
@@ -144,6 +171,46 @@ export async function changePassword({ email, code, oldPassword, newPassword }) 
   return request('/auth/password', {
     method: 'PUT',
     body: JSON.stringify({ email, code, oldPassword, newPassword }),
+  })
+}
+
+/**
+ * 发送「修改绑定邮箱」验证码（需登录）：验证码发往要绑定的新邮箱。
+ * 后端会先校验新邮箱合法 / 与当前不同 / 未被他人占用，再下发。
+ * 返回 { sent, mailConfigured, maskedEmail, expiresInSeconds, cooldownSeconds, devCode? }。
+ */
+export async function sendChangeEmailCode(newEmail) {
+  return request('/auth/email-code/change', {
+    method: 'POST',
+    body: JSON.stringify({ email: newEmail }),
+  })
+}
+
+/** 修改绑定邮箱（需登录 + 当前密码 + 新邮箱验证码），成功返回最新用户信息。 */
+export async function changeEmail({ email, code, password }) {
+  return request('/auth/email', {
+    method: 'PUT',
+    body: JSON.stringify({ email, code, password }),
+  })
+}
+
+// ============================================================
+// 个人中心（当前登录用户的资料：名称 / 性别 / 年龄 / 城市 / 职业 / 学习目的）
+// ============================================================
+
+/** 读取我的资料。返回 { username, email, displayName, gender, age, city, occupation, learningGoal, membershipActive, membershipExpireAt }。 */
+export async function fetchMyProfile() {
+  return request('/profile')
+}
+
+/**
+ * 更新我的资料（PUT 全量语义：六个字段都以本次提交为准，null/空串 = 清空该项）。
+ * 校验失败（性别/年龄非法、超长等）返回 400 + 中文提示。返回更新后的资料。
+ */
+export async function updateMyProfile(payload) {
+  return request('/profile', {
+    method: 'PUT',
+    body: JSON.stringify(payload),
   })
 }
 
@@ -393,6 +460,133 @@ export async function executeCode(language, code, stdin) {
   return request('/code/execute', {
     method: 'POST',
     body: JSON.stringify({ language, code, stdin }),
+  })
+}
+
+// ============================================================
+// 会员 / 支付 / 订单（后端优先，离线回退本地价格表；订单类操作需后端）
+// ============================================================
+
+/** 本地兑底价格表（与后端 DataInitializer 的种子一致；后端不可用时展示用）。 */
+const LOCAL_PLANS = [
+  {
+    id: 'monthly', name: '月度会员', priceCents: 1800, originalPriceCents: 2500, durationDays: 30,
+    description: '适合短期集中冲刺',
+    features: ['AI 助教提问额度 3 倍', '全站算法可视化无限回放', '专属会员标识'],
+    sortOrder: 1, active: true, monthlyAvgCents: 1800,
+  },
+  {
+    id: 'quarterly', name: '季度会员', priceCents: 4800, originalPriceCents: 7500, durationDays: 90,
+    description: '最受欢迎的进阶选择',
+    features: ['AI 助教提问额度 3 倍', '全站算法可视化无限回放', '专属会员标识', '刷题进度云端同步'],
+    sortOrder: 2, active: true, monthlyAvgCents: 1600,
+  },
+  {
+    id: 'yearly', name: '年度会员', priceCents: 15800, originalPriceCents: 30000, durationDays: 365,
+    description: '全年畅学，折合每月约 13 元',
+    features: ['AI 助教提问额度 3 倍', '全站算法可视化无限回放', '专属会员标识', '刷题进度云端同步', '新功能优先体验'],
+    sortOrder: 3, active: true, monthlyAvgCents: 1299,
+  },
+]
+
+/** 金额（分）→ 展示字符串：「¥18.00」/「¥158.00」。 */
+export function fmtCents(cents) {
+  return `¥${(Number(cents || 0) / 100).toFixed(2)}`
+}
+
+/**
+ * 套餐价格表（公开）。返回 { plans: [...], sandbox: bool }；后端不可用时回退本地价格表。
+ */
+export async function fetchMembershipPlans() {
+  if (await checkBackend()) {
+    try {
+      return await request('/membership/plans')
+    } catch {
+      // 旧版后端无此路由时降级本地
+    }
+  }
+  return { plans: LOCAL_PLANS, sandbox: true }
+}
+
+/** 我的会员状态：{ active, expireAt, daysLeft, rateMultiplier }；未登录（401）返回 null。 */
+export async function fetchMembershipStatus() {
+  try {
+    return await request('/membership/status')
+  } catch (err) {
+    if (err.status === 401) return null
+    throw err
+  }
+}
+
+/** 下单：{ planId, channel: 'mock'|'alipay'|'wechat' } → { order, sandbox, expiresInSeconds } */
+export async function createMembershipOrder(planId, channel) {
+  return request('/membership/orders', {
+    method: 'POST',
+    body: JSON.stringify({ planId, channel }),
+  })
+}
+
+/** 我的订单（最新 50 条）：{ total, orders: [...] }。 */
+export async function fetchMyOrders() {
+  return request('/membership/orders')
+}
+
+/** 订单详情（收银台轮询支付状态用）。 */
+export async function fetchOrder(orderNo) {
+  return request(`/membership/orders/${encodeURIComponent(orderNo)}`)
+}
+
+/** 取消待支付订单。 */
+export async function cancelMembershipOrder(orderNo) {
+  await request(`/membership/orders/${encodeURIComponent(orderNo)}/cancel`, { method: 'POST' })
+}
+
+/** 沙箱模拟支付（后端 sandbox=true 时可用），返回支付后的订单。 */
+export async function mockPayOrder(orderNo) {
+  return request(`/payment/mock/${encodeURIComponent(orderNo)}`, { method: 'POST' })
+}
+
+// ---------- 订单管理（仅管理员） ----------
+
+/**
+ * 订单列表：{ total, orders: [...] }。
+ * @param {object} q { keyword, status, page, size }
+ */
+export async function fetchAdminOrders(q = {}) {
+  const p = new URLSearchParams()
+  if (q.keyword) p.set('keyword', q.keyword)
+  if (q.status) p.set('status', q.status)
+  if (q.page) p.set('page', q.page)
+  if (q.size) p.set('size', q.size)
+  const qs = p.toString()
+  return request(`/admin/orders${qs ? `?${qs}` : ''}`)
+}
+
+/** 营收统计：{ revenueCents, paidCount, pendingCount, cancelledCount, expiredCount, refundedCount, totalOrders, last7Days: [{date,count,amountCents}] } */
+export async function fetchOrderStats() {
+  return request('/admin/orders/stats')
+}
+
+/** 手工确认支付（线下转账对账；幂等）。返回支付后的订单。 */
+export async function adminMarkOrderPaid(orderNo) {
+  return request(`/admin/orders/${encodeURIComponent(orderNo)}/mark-paid`, { method: 'POST' })
+}
+
+/** 标记退款（不回收已生效会员）。返回退款后的订单。 */
+export async function adminRefundOrder(orderNo) {
+  return request(`/admin/orders/${encodeURIComponent(orderNo)}/refund`, { method: 'POST' })
+}
+
+/** 全部套餐（含下架，管理端）。返回 PlanView 数组。 */
+export async function fetchAdminPlans() {
+  return request('/admin/membership/plans')
+}
+
+/** 改套餐：传 null/undefined 的字段表示不改；features 传数组（空数组 = 清空）。返回更新后的套餐。 */
+export async function adminUpdatePlan(id, payload) {
+  return request(`/admin/membership/plans/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
   })
 }
 

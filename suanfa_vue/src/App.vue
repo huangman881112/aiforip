@@ -2,67 +2,40 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from './stores/user.js'
-import { algorithmCategories } from './data/algorithms.js'
-import { languageMenu } from './data/languages.js'
+import { algorithmOverviewPath } from './data/algorithms.js'
+import { languageOverviewPath } from './data/languages.js'
 
 const userStore = useUserStore()
 const route = useRoute()
 
-// 算法相关子菜单：分类清单来自 data/algorithms.js，新增分类时这里自动出现
-const algorithmMenu = [
-  ...algorithmCategories.map((c) => ({ label: c.label, to: c.to })),
-  { label: '算法训练', to: '/training' },
-]
-
-const algoMenuOpen = ref(false)
-const algoMenuItemRef = ref(null)
-
-// 计算机语言子菜单：清单来自 data/languages.js，新增语言时这里自动出现
-const langMenuOpen = ref(false)
-const langMenuItemRef = ref(null)
+// 算法不再做下拉弹框（参考计算机语言）：一级菜单直接链到总览页 /algorithms，
+// 各分类（排序/搜索/图/DP/贪心）与「算法训练」全部在总览页卡片上展示，
+// 分类清单见 data/algorithms.js 的 algorithmCategoryCards，新增分类时那里自动多出一张卡片
 
 // 用户（个人中心）子菜单：登录后点开可看到「修改密码」等入口
 const userMenuOpen = ref(false)
 const userMenuItemRef = ref(null)
 
-// 当前是否处于算法相关页面（用于一级菜单高亮）
-const isAlgorithmSection = computed(() =>
-  algorithmMenu.some((item) => isActive(item.to))
+// 当前是否处于算法相关页面（用于一级菜单高亮）：
+// /algorithms 前缀覆盖总览/分类/详情页；「算法训练」已从下拉收进总览页，高亮仍算算法区
+const isAlgorithmSection = computed(
+  () => isActive(algorithmOverviewPath) || isActive('/training')
 )
 
 // 当前是否处于计算机语言相关页面（一级菜单高亮）
-const isLanguageSection = computed(() => isActive('/languages'))
+// 不用 router-link 的 active-class：/languages 与 /languages/:lang 是同级路由（非嵌套），
+// 子页面上它不会自动高亮，因此沿用与「算法」一致的前缀判断
+const isLanguageSection = computed(() => isActive(languageOverviewPath))
 
-// 当前是否处于个人中心相关页面（/account、/admin 都算管理员/个人中心子菜单高亮）
-const isAccountSection = computed(() => isActive('/account') || isActive('/admin'))
+// 当前是否处于个人中心相关页面（/account、/admin、/membership 都算个人中心子菜单高亮）
+const isAccountSection = computed(() => isActive('/account') || isActive('/admin') || isActive('/membership'))
 
 function isActive(path) {
   return route.path === path || route.path.startsWith(path + '/')
 }
 
-function toggleAlgoMenu() {
-  algoMenuOpen.value = !algoMenuOpen.value
-  userMenuOpen.value = false
-}
-
-function closeAlgoMenu() {
-  algoMenuOpen.value = false
-}
-
-function toggleLangMenu() {
-  langMenuOpen.value = !langMenuOpen.value
-  algoMenuOpen.value = false
-  userMenuOpen.value = false
-}
-
-function closeLangMenu() {
-  langMenuOpen.value = false
-}
-
 function toggleUserMenu() {
   userMenuOpen.value = !userMenuOpen.value
-  algoMenuOpen.value = false
-  langMenuOpen.value = false
 }
 
 function closeUserMenu() {
@@ -70,12 +43,6 @@ function closeUserMenu() {
 }
 
 function onDocumentClick(e) {
-  if (algoMenuOpen.value && algoMenuItemRef.value && !algoMenuItemRef.value.contains(e.target)) {
-    closeAlgoMenu()
-  }
-  if (langMenuOpen.value && langMenuItemRef.value && !langMenuItemRef.value.contains(e.target)) {
-    closeLangMenu()
-  }
   if (userMenuOpen.value && userMenuItemRef.value && !userMenuItemRef.value.contains(e.target)) {
     closeUserMenu()
   }
@@ -83,8 +50,6 @@ function onDocumentClick(e) {
 
 function onKeydown(e) {
   if (e.key === 'Escape') {
-    closeAlgoMenu()
-    closeLangMenu()
     closeUserMenu()
   }
 }
@@ -102,8 +67,6 @@ onBeforeUnmount(() => {
 
 // 路由切换后关闭下拉
 watch(() => route.fullPath, () => {
-  closeAlgoMenu()
-  closeLangMenu()
   closeUserMenu()
 })
 </script>
@@ -116,47 +79,19 @@ watch(() => route.fullPath, () => {
         <nav class="app-nav">
           <ul>
             <li><router-link to="/">首页</router-link></li>
-            <li class="nav-dropdown" ref="algoMenuItemRef">
-              <a
-                href="#"
-                class="nav-dropbtn"
+            <!-- 算法：不做下拉与悬停，直接进总览页（各分类卡片与算法训练在那里展示） -->
+            <li>
+              <router-link
+                :to="algorithmOverviewPath"
                 :class="{ 'active-link': isAlgorithmSection }"
-                :aria-expanded="algoMenuOpen ? 'true' : 'false'"
-                aria-haspopup="true"
-                @click.prevent="toggleAlgoMenu"
-              >
-                算法<span class="caret" :class="{ open: algoMenuOpen }">▾</span>
-              </a>
-              <ul class="dropdown-menu" v-show="algoMenuOpen">
-                <li v-for="item in algorithmMenu" :key="item.to">
-                  <router-link
-                    :to="item.to"
-                    :class="{ 'active-link': isActive(item.to) }"
-                    @click="closeAlgoMenu"
-                  >{{ item.label }}</router-link>
-                </li>
-              </ul>
+              >算法</router-link>
             </li>
-            <li class="nav-dropdown" ref="langMenuItemRef">
-              <a
-                href="#"
-                class="nav-dropbtn"
+            <!-- 计算机语言：不做下拉与悬停，直接进主页面（各语言卡片在那里展示） -->
+            <li>
+              <router-link
+                :to="languageOverviewPath"
                 :class="{ 'active-link': isLanguageSection }"
-                :aria-expanded="langMenuOpen ? 'true' : 'false'"
-                aria-haspopup="true"
-                @click.prevent="toggleLangMenu"
-              >
-                计算机语言<span class="caret" :class="{ open: langMenuOpen }">▾</span>
-              </a>
-              <ul class="dropdown-menu" v-show="langMenuOpen">
-                <li v-for="item in languageMenu" :key="item.to">
-                  <router-link
-                    :to="item.to"
-                    :class="{ 'active-link': isActive(item.to) }"
-                    @click="closeLangMenu"
-                  >{{ item.label }}</router-link>
-                </li>
-              </ul>
+              >计算机语言</router-link>
             </li>
             <li><router-link to="/calendar" active-class="active-link">学习日历</router-link></li>
             <li><router-link to="/ai" active-class="active-link">AI 助教</router-link></li>
@@ -172,11 +107,26 @@ watch(() => route.fullPath, () => {
                     aria-haspopup="true"
                     @click.prevent="toggleUserMenu"
                   >
-                    <span class="nav-user-name">{{ userStore.user.username }}</span>
+                    <span class="nav-user-name">{{ userStore.displayName }}</span>
                     <span v-if="userStore.isAdmin" class="nav-user-tag">管理员</span>
+                    <span v-else-if="userStore.isMember" class="nav-user-tag nav-user-vip">VIP</span>
                     <span class="caret" :class="{ open: userMenuOpen }">▾</span>
                   </a>
                   <ul class="dropdown-menu nav-user-menu" v-show="userMenuOpen">
+                    <li>
+                      <router-link
+                        to="/account/profile"
+                        :class="{ 'active-link': isActive('/account/profile') }"
+                        @click="closeUserMenu"
+                      >个人信息</router-link>
+                    </li>
+                    <li>
+                      <router-link
+                        to="/membership"
+                        :class="{ 'active-link': isActive('/membership') }"
+                        @click="closeUserMenu"
+                      >会员中心<span v-if="userStore.isMember" class="menu-mini-tag">会员中</span></router-link>
+                    </li>
                     <li>
                       <router-link
                         to="/account/password"
@@ -184,15 +134,29 @@ watch(() => route.fullPath, () => {
                         @click="closeUserMenu"
                       >修改密码</router-link>
                     </li>
+                    <li>
+                      <router-link
+                        to="/account/email"
+                        :class="{ 'active-link': isActive('/account/email') }"
+                        @click="closeUserMenu"
+                      >修改邮箱</router-link>
+                    </li>
                     <template v-if="userStore.isAdmin">
                       <li class="menu-divider" role="separator"></li>
                       <li class="menu-group">管理员</li>
                       <li>
                         <router-link
                           to="/admin/users"
-                          :class="{ 'active-link': isActive('/admin') }"
+                          :class="{ 'active-link': isActive('/admin/users') }"
                           @click="closeUserMenu"
                         >用户管理</router-link>
+                      </li>
+                      <li>
+                        <router-link
+                          to="/admin/orders"
+                          :class="{ 'active-link': isActive('/admin/orders') }"
+                          @click="closeUserMenu"
+                        >订单管理</router-link>
                       </li>
                       <li>
                         <router-link to="/ai" @click="closeUserMenu">AI 中转站配置</router-link>
@@ -202,7 +166,8 @@ watch(() => route.fullPath, () => {
                 </div>
                 <a href="#" class="nav-logout" @click.prevent="userStore.logout()">退出</a>
               </template>
-              <router-link v-else to="/login" class="nav-login" active-class="active-link">登录</router-link>
+              <!-- 带 mode=login：注册界面 URL 也是 /login，不带参数时 vue-router 会当作重复导航而忽略点击 -->
+              <router-link v-else :to="{ name: 'Login', query: { mode: 'login' } }" class="nav-login" active-class="active-link">登录</router-link>
             </li>
           </ul>
         </nav>
@@ -223,6 +188,7 @@ watch(() => route.fullPath, () => {
             <li><router-link to="/algorithms">算法总览</router-link></li>
             <li><router-link to="/languages">计算机语言</router-link></li>
             <li><router-link to="/training">算法训练</router-link></li>
+            <li><router-link to="/membership">会员中心</router-link></li>
             <li><router-link to="/ai">AI 助教</router-link></li>
             <li><router-link to="/about">关于我们</router-link></li>
           </ul>
@@ -317,6 +283,9 @@ watch(() => route.fullPath, () => {
   gap: 4px;
 }
 
+/* 语言卡片（LanguageCard）自带一整套样式；如果将来又把它放回导航里，
+   记得给下面这几条通用 a 规则加 :not() 排除——scoped 选择器（.app-nav a[data-v-x]）
+   的特异度会压过子组件根元素自己的 .lang-card[data-v-y] */
 .app-nav a {
   color: var(--nav-text);
   text-decoration: none;
@@ -500,6 +469,24 @@ watch(() => route.fullPath, () => {
   border-radius: 999px;
   background-color: var(--nav-active-bg);
   color: var(--nav-active-text);
+}
+
+/* 会员标识：琥珀色，与管理员的品牌蓝区分 */
+.nav-user-vip {
+  background-color: var(--tint-amber);
+  color: var(--c-amber);
+  font-weight: 700;
+}
+
+/* 用户菜单里「会员中心」行内的小徽标 */
+.menu-mini-tag {
+  float: right;
+  font-size: 0.68rem;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background-color: var(--tint-amber);
+  color: var(--c-amber);
 }
 
 /* 靠右边栏对齐，避免菜单超出视口 */

@@ -114,6 +114,16 @@ suanfa:
     compile-timeout-seconds: ${CODE_COMPILE_TIMEOUT:10}
     run-timeout-seconds: ${CODE_RUN_TIMEOUT:10}
     rate-per-minute: ${CODE_RATE_PER_MINUTE:15}
+  payment:
+    # 会员支付（演示 / 沙箱实现，未接真实网关）：
+    # sandbox=true 时开放「模拟支付」渠道与 POST /api/payment/mock/{orderNo} 调试端点；生产必须设为 false
+    sandbox: ${PAYMENT_SANDBOX:true}
+    # 待支付订单保留分钟数，超时自动置为 expired
+    order-expire-minutes: ${PAYMENT_ORDER_EXPIRE_MINUTES:30}
+    # 支付网关回调验签密钥（HMAC-SHA256，hex）。留空：沙箱放行并告警，生产直接拒绝回调
+    notify-secret: ${PAYMENT_NOTIFY_SECRET:}
+    # 收银台外部可达地址（拼「扫码支付」链接用，演示环境为占位）
+    cashier-base-url: ${PAYMENT_CASHIER_URL:http://localhost:5173}
 
 logging:
   level:

@@ -358,7 +358,16 @@ onUnmounted(stop)
             <span class="chat-avatar">{{ m.role === 'user' ? '我' : 'AI' }}</span>
             <div class="chat-bubble" :class="{ 'chat-bubble-err': m.error }">
               <template v-if="m.role === 'assistant'">
-                <MarkdownBlock v-if="m.content && !m.error" :source="m.content" />
+                <template v-if="m.content && !m.error">
+                  <MarkdownBlock :source="m.content" />
+                  <!-- 流式输出中的光标：与正文同气泡，不再另起一条 AI 消息（避免出现两个 AI 头标） -->
+                  <span v-if="sending && i === messages.length - 1" class="chat-caret">▍</span>
+                </template>
+                <!-- 等待首字：思考提示与停止按钮渲染在本条气泡内，不另开一条 AI 消息 -->
+                <div v-else-if="sending && i === messages.length - 1 && !m.error" class="chat-thinking">
+                  <span>{{ reasoningHint ? '兜底模型推理较慢，正在生成首字，请稍候…' : '正在检索站内资料并思考…' }}</span>
+                  <button class="chat-stop-btn" @click="stop">停止</button>
+                </div>
                 <p v-else class="chat-text">{{ m.content }}</p>
                 <div v-if="m.refs && m.refs.length" class="chat-refs">
                   <span class="chat-refs-label">站内参考</span>
@@ -378,16 +387,7 @@ onUnmounted(stop)
             </div>
           </div>
 
-          <div v-if="sending" class="chat-row chat-row-ai">
-            <span class="chat-avatar">AI</span>
-            <div class="chat-bubble chat-thinking">
-              <span v-if="!messages[messages.length - 1]?.content">
-                {{ reasoningHint ? '兜底模型推理较慢，正在生成首字，请稍候…' : '正在检索站内资料并思考…' }}
-              </span>
-              <span v-else class="chat-caret">▍</span>
-              <button class="chat-stop-btn" @click="stop">停止</button>
-            </div>
-          </div>
+          <!-- 思考提示已并入上方 assistant 消息气泡，不再单独渲染一条 AI 消息行 -->
         </div>
 
         <footer class="ai-input-bar">
@@ -675,6 +675,11 @@ onUnmounted(stop)
 .chat-caret {
   color: var(--c-blue);
   animation: chat-blink 1s steps(2, start) infinite;
+}
+
+/* 思考提示在气泡内：与停止按钮同行排布 */
+.chat-bubble .chat-thinking {
+  margin: -2px 0;
 }
 
 @keyframes chat-blink {

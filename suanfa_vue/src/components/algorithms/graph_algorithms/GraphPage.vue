@@ -3,7 +3,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 // 单一数据源
-import { graphAlgorithms } from '../../../data/algorithms'
+import { graphAlgorithms, algorithmOverviewPath } from '../../../data/algorithms'
 import ProgressMark from '../../common/ProgressMark.vue'
 
 const router = useRouter()
@@ -47,6 +47,11 @@ const filteredAlgorithms = computed(() => {
 
 <template>
   <div class="graph-page-container">
+    <nav class="algo-crumb" aria-label="面包屑">
+      <router-link :to="algorithmOverviewPath">← 算法总览</router-link>
+      <span class="crumb-sep">/</span>
+      <span class="crumb-current">图算法</span>
+    </nav>
     <h1>图算法</h1>
     <p class="page-description">
       图算法是用于解决图结构相关问题的算法。图是由顶点和边组成的数据结构，广泛应用于计算机网络、社交网络、路由算法等领域。以下是常见的图算法分类和实现。

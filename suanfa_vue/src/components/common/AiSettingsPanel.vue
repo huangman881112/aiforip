@@ -124,6 +124,7 @@ watch(
   (v) => {
     if (v) {
       infoMsg.value = ''
+      selectedToken.value = ''
       Object.keys(testResults).forEach((k) => delete testResults[k])
       reload()
     }
@@ -153,6 +154,9 @@ function removeModel(p, i) {
 
 /** 主模型全局唯一：前端就保证只勾一个，后端也会兜底只留第一个。 */
 function setPrimary(p, i) {
+  // 旧默认若是未覆盖的环境变量模型，先转为数据库覆盖并摘掉 ★，避免出现两个 ★
+  const cur = effective.value.find((x) => x.primary && !findRuntimeDraft(x))
+  if (cur) overrideFromEnv(cur, false)
   providers.value.forEach((pp) => pp.models.forEach((m) => { m.primary = false }))
   if (p.models[i]) p.models[i].primary = true
 }
@@ -183,6 +187,126 @@ function dropHeader(p, key) {
   const next = { ...(p.headers || {}) }
   delete next[key]
   p.headers = next
+}
+
+// ------------------------------------------------------------ 当前生效表格：选中行 → 独立编辑卡片
+
+/** 当前选中的 effective 模型（用 token 唯一定位；空串 = 未选中，编辑卡片隐藏）。 */
+const selectedToken = ref('')
+/** 滚动定位后短暂高亮的中转站卡片 id */
+const flashProviderId = ref('')
+let flashTimer = null
+
+function select(m) {
+  selectedToken.value = selectedToken.value === m.token ? '' : m.token
+}
+
+/** 在页面配置草稿里找当前生效模型对应的可编辑对象（runtime 同 id 同名即同一模型）。 */
+function findRuntimeDraft(eff) {
+  const pid = (eff.provider || '').trim()
+  const name = (eff.name || '').trim()
+  for (const p of providers.value) {
+    if ((p.id || '').trim() !== pid) continue
+    const idx = p.models.findIndex((mm) => (mm.name || '').trim() === name)
+    if (idx >= 0) return { p, m: p.models[idx], index: idx }
+  }
+  return null
+}
+
+/** 编辑卡片数据：生效模型 + 对应的页面配置草稿（null = 环境变量来源，需先转为数据库设置）。 */
+const selected = computed(() => {
+  if (!selectedToken.value) return null
+  const eff = effective.value.find((x) => x.token === selectedToken.value)
+  if (!eff) return null
+  return { eff, draft: findRuntimeDraft(eff) }
+})
+
+/**
+ * 当前是否默认模型（含未保存的草稿态）：已覆盖的看草稿 primary，否则看生效值。
+ * 列表 ★ 与「设为默认」按钮都用它，保存前就能看到切换结果。
+ */
+function isPrimaryNow(m) {
+  const d = findRuntimeDraft(m)
+  return d ? !!d.m.primary : !!m.primary
+}
+
+/**
+ * 环境变量模型 → 转为数据库（页面）配置草稿：同 id 中转站 + 同名模型优先于环境变量。
+ * @param primaryOverride 显式指定 primary；不传则沿用当前生效值
+ * @returns 转换后（或已存在的）草稿定位 { p, m, index }
+ */
+function overrideFromEnv(eff, primaryOverride) {
+  const pid = (eff.provider || 'default').trim()
+  let p = providers.value.find((pp) => (pp.id || '').trim() === pid)
+  if (!p) {
+    p = {
+      id: pid,
+      label: eff.providerLabel || pid,
+      baseUrl: eff.baseUrl || '',
+      apiKey: '', // 留空：后端对 requireKey 的 provider 会继承全局 AI_API_KEY
+      apiKeySet: false,
+      apiKeyMasked: '',
+      enabled: true,
+      requireKey: true,
+      headers: {},
+      maxTokens: null,
+      timeoutSeconds: null,
+      models: [],
+      origin: 'runtime',
+    }
+    providers.value.push(p)
+  }
+  let idx = p.models.findIndex((mm) => (mm.name || '').trim() === (eff.name || '').trim())
+  if (idx < 0) {
+    p.models.push({
+      ...blankModel(),
+      name: eff.name,
+      label: eff.name,
+      // 生效值已是继承后的结果，转为显式值保存
+      maxTokens: eff.maxTokens ?? null,
+      timeoutSeconds: eff.timeoutSeconds ?? null,
+      reasoningEffort: eff.reasoningEffort || '',
+      primary: primaryOverride === undefined ? !!eff.primary : primaryOverride,
+    })
+    idx = p.models.length - 1
+  }
+  return { p, m: p.models[idx], index: idx }
+}
+
+/** 编辑卡片里点「转为数据库设置」：转换后卡片自动切换为可编辑表单。 */
+function convertSelected() {
+  if (!selected.value) return
+  const eff = selected.value.eff
+  overrideFromEnv(eff) // primary 沿用当前生效值，转换本身不改变默认地位
+  infoMsg.value = `「${eff.name}」已转为数据库设置（同名模型优先于环境变量），改动点「保存并生效」后热加载`
+}
+
+/**
+ * 一键切换默认模型（列表「设为默认」与编辑卡片共用）。
+ * 环境变量来源的模型会先转为数据库覆盖；旧默认若是未覆盖的 env 模型也一并转过去摘掉 ★
+ * （setPrimary 内处理），保证全局唯一默认 —— 后端只认第一个 primary。
+ */
+function setDefault(eff) {
+  if (isPrimaryNow(eff)) return
+  const target = findRuntimeDraft(eff) || overrideFromEnv(eff, false)
+  setPrimary(target.p, target.index)
+  infoMsg.value = `默认模型已切换为「${eff.name}」，点「保存并生效」后热加载`
+}
+
+/** 滚动定位到某个中转站卡片并闪烁提示（provider id 允许字母数字-_，其余替换成 _）。 */
+function gotoProvider(pid) {
+  flashProviderId.value = ''
+  requestAnimationFrame(() => {
+    flashProviderId.value = pid
+    const el = document.getElementById(
+      'cfg-provider-' + String(pid || '').replace(/[^A-Za-z0-9_-]/g, '_'),
+    )
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    clearTimeout(flashTimer)
+    flashTimer = setTimeout(() => {
+      flashProviderId.value = ''
+    }, 1800)
+  })
 }
 
 // ------------------------------------------------------------ 测试连接
@@ -340,18 +464,26 @@ const canReset = computed(() => hasDraft.value || hasRuntime.value)
 
         <section class="cfg-section">
           <h4>当前生效的模型（调用顺序 = 降级顺序）</h4>
+          <p class="cfg-eff-tip">点击行在下方编辑；「设为默认」一键切换默认模型（环境变量来源会自动转为数据库设置）。</p>
           <table v-if="effective.length" class="cfg-table">
             <thead>
               <tr>
-                <th>模型</th><th>中转站</th><th>地址</th><th>来源</th><th>max_tokens</th><th>超时</th><th>状态</th><th>用户可选</th>
+                <th>模型</th><th>中转站</th><th>地址</th><th>来源</th><th>max_tokens</th><th>超时</th><th>状态</th><th>用户可选</th><th>操作</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="m in effective" :key="m.token">
-                <td><code>{{ m.name }}</code><span v-if="m.primary" class="cfg-star">★默认</span></td>
+              <tr
+                v-for="m in effective"
+                :key="m.token"
+                class="cfg-eff-row"
+                :class="{ 'cfg-eff-active': selectedToken === m.token }"
+                title="点击在下方编辑该模型"
+                @click="select(m)"
+              >
+                <td><code>{{ m.name }}</code></td>
                 <td>{{ m.providerLabel }}</td>
                 <td class="cfg-url">{{ m.baseUrl }}</td>
-                <td>{{ m.fromRuntime ? '页面配置' : '环境变量' }}</td>
+                <td>{{ m.fromRuntime ? '数据库' : '环境变量' }}</td>
                 <td>{{ m.maxTokens }}</td>
                 <td>{{ m.timeoutSeconds }}s</td>
                 <td :class="m.usable ? (m.cooldownSeconds > 0 ? 'cfg-warn' : 'cfg-ok') : 'cfg-bad'">
@@ -360,10 +492,90 @@ const canReset = computed(() => hasDraft.value || hasRuntime.value)
                 <td :class="m.userVisible === false ? 'cfg-muted' : 'cfg-ok'">
                   {{ m.userVisible === false ? '仅管理员' : '开放' }}
                 </td>
+                <td @click.stop>
+                  <span v-if="isPrimaryNow(m)" class="cfg-star">★默认</span>
+                  <button
+                    v-else
+                    class="cfg-btn cfg-btn-ghost cfg-btn-xs"
+                    title="设为默认模型（首个调用 / 降级起点）；环境变量模型会自动转为数据库设置"
+                    @click="setDefault(m)"
+                  >设为默认</button>
+                </td>
               </tr>
             </tbody>
           </table>
           <p v-else class="cfg-empty">还没有任何可用上游模型，下面配一个中转站吧。</p>
+
+          <!-- 独立编辑卡片：与列表隔离，点行切换 / ✕ 关闭 -->
+          <div v-if="selected" class="cfg-eff-card">
+            <div class="cfg-eff-card-head">
+              <span class="cfg-eff-card-title">
+                编辑模型 <code>{{ selected.eff.name }}</code>
+                <span v-if="isPrimaryNow(selected.eff)" class="cfg-star">★默认</span>
+              </span>
+              <span class="cfg-muted">
+                {{ selected.eff.providerLabel }} · {{ selected.eff.fromRuntime ? '数据库配置' : '环境变量（只读）' }}
+              </span>
+              <span class="cfg-eff-card-gap"></span>
+              <button v-if="selected.draft" class="cfg-link" @click="gotoProvider(selected.draft.p.id)">所属中转站 ↘</button>
+              <button class="cfg-eff-close" title="关闭编辑" @click="selectedToken = ''">✕</button>
+            </div>
+
+            <template v-if="selected.draft">
+              <div class="cfg-eff-grid">
+                <label>模型名（中转站路由名）
+                  <input v-model="selected.draft.m.name" class="cfg-input cfg-input-mono" placeholder="deepseek-chat" />
+                </label>
+                <label>展示名
+                  <input v-model="selected.draft.m.label" class="cfg-input" placeholder="留空同模型名" />
+                </label>
+                <label>max_tokens
+                  <input v-model="selected.draft.m.maxTokens" class="cfg-input" type="number" min="0" placeholder="继承" />
+                </label>
+                <label>超时(s)
+                  <input v-model="selected.draft.m.timeoutSeconds" class="cfg-input" type="number" min="0" placeholder="继承" />
+                </label>
+                <label>reasoning effort
+                  <select v-model="selected.draft.m.reasoningEffort" class="cfg-input" :title="REASONING_HINT">
+                    <option v-for="e in EFFORTS" :key="e.value" :value="e.value">{{ e.label }}</option>
+                  </select>
+                </label>
+                <label>备注
+                  <input v-model="selected.draft.m.note" class="cfg-input" placeholder="如：额度独立 / 内测" />
+                </label>
+              </div>
+              <div class="cfg-eff-checks">
+                <label class="cfg-check" title="勾掉 = 屏蔽该模型（同名环境变量模型也会一并屏蔽）">
+                  <input v-model="selected.draft.m.enabled" type="checkbox" /> 启用
+                </label>
+                <label class="cfg-check" title="取消勾选 = 仅管理员可选，不出现在普通用户的下拉与降级链">
+                  <input v-model="selected.draft.m.userVisible" type="checkbox" /> 对用户开放
+                </label>
+                <label class="cfg-check" title="设为默认模型（首个调用 / 降级起点）；点击后其它模型的 ★ 会自动摘除">
+                  <input
+                    type="checkbox"
+                    :checked="selected.draft.m.primary"
+                    @change="setDefault(selected.eff)"
+                  /> 默认模型
+                </label>
+              </div>
+              <p class="cfg-tip">改动已同步到下方中转站表格，点底部「保存并生效」后热加载。</p>
+            </template>
+
+            <div v-else class="cfg-eff-convert">
+              <dl class="cfg-eff-readonly">
+                <div><dt>地址</dt><dd class="cfg-url">{{ selected.eff.baseUrl || '—' }}</dd></div>
+                <div><dt>max_tokens</dt><dd>{{ selected.eff.maxTokens }}</dd></div>
+                <div><dt>超时</dt><dd>{{ selected.eff.timeoutSeconds }}s</dd></div>
+                <div><dt>reasoning</dt><dd>{{ selected.eff.reasoningEffort || '不传（默认）' }}</dd></div>
+              </dl>
+              <p class="cfg-tip">
+                该模型来自 .env / yml，页面上改不了。转为数据库设置后：参数可编辑、可勾掉「启用」屏蔽，
+                同名模型优先于环境变量；若该中转站需要专属 token，转换后请在下方卡片里补填。
+              </p>
+              <button class="cfg-btn cfg-btn-primary" @click="convertSelected">转为数据库设置</button>
+            </div>
+          </div>
         </section>
 
         <section v-if="env" class="cfg-section cfg-env">
@@ -398,7 +610,13 @@ const canReset = computed(() => hasDraft.value || hasRuntime.value)
             还没有页面配置。点「添加中转站」开始；不填则继续使用上面的环境变量配置。
           </p>
 
-          <div v-for="(p, pi) in providers" :key="pi" class="cfg-provider">
+          <div
+            v-for="(p, pi) in providers"
+            :key="pi"
+            :id="'cfg-provider-' + String(p.id || '').replace(/[^A-Za-z0-9_-]/g, '_')"
+            class="cfg-provider"
+            :class="{ 'is-flash': flashProviderId === (p.id || '').trim() }"
+          >
             <div class="cfg-row cfg-provider-head">
               <input v-model="p.label" class="cfg-input cfg-input-sm" placeholder="展示名，如 中转站 A" />
               <input v-model="p.id" class="cfg-input cfg-input-xs" placeholder="id（字母数字-_）" />
@@ -661,6 +879,152 @@ const canReset = computed(() => hasDraft.value || hasRuntime.value)
   margin: 0;
   font-size: 0.88em;
   color: var(--text-2);
+}
+
+/* ---------- 当前生效表格 + 独立编辑卡片 ---------- */
+.cfg-eff-tip {
+  margin: -2px 0 8px;
+  font-size: 0.8em;
+  color: var(--text-3);
+}
+
+.cfg-eff-row {
+  cursor: pointer;
+}
+
+.cfg-eff-row:hover td {
+  background: var(--surface-muted);
+}
+
+.cfg-eff-active td {
+  background: var(--tint-blue);
+}
+
+.cfg-btn-xs {
+  padding: 2px 8px;
+  font-size: 0.78em;
+}
+
+/* 独立编辑卡片：与上方列表明确隔离 */
+.cfg-eff-card {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--brand-400);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+}
+
+.cfg-eff-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-1);
+}
+
+.cfg-eff-card-title {
+  font-size: 0.95em;
+  color: var(--text-1);
+  font-weight: 600;
+}
+
+.cfg-eff-card-gap {
+  flex: 1;
+}
+
+.cfg-eff-close {
+  border: none;
+  background: none;
+  color: var(--text-2);
+  font-size: 0.95em;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.cfg-eff-close:hover {
+  color: var(--text-1);
+  background: var(--surface-muted);
+}
+
+.cfg-eff-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px 12px;
+}
+
+.cfg-eff-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.78em;
+  color: var(--text-3);
+}
+
+.cfg-eff-grid .cfg-input {
+  min-width: 0;
+  width: 100%;
+  flex: none;
+}
+
+.cfg-eff-checks {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.cfg-eff-card .cfg-tip {
+  margin: 10px 0 0;
+}
+
+/* 环境变量模型：只读参数 + 转换按钮 */
+.cfg-eff-readonly {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 6px 16px;
+  margin: 0 0 10px;
+}
+
+.cfg-eff-readonly > div {
+  display: flex;
+  gap: 8px;
+  font-size: 0.85em;
+}
+
+.cfg-eff-readonly dt {
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.cfg-eff-readonly dd {
+  margin: 0;
+  color: var(--text-1);
+  word-break: break-all;
+}
+
+.cfg-eff-convert .cfg-btn {
+  margin-top: 4px;
+}
+
+/* 滚动定位到的中转站卡片闪烁提示 */
+.cfg-provider.is-flash {
+  border-color: var(--brand-400);
+  animation: cfg-flash 1.6s ease;
+}
+
+@keyframes cfg-flash {
+  0%, 60% {
+    box-shadow: 0 0 0 3px var(--tint-blue);
+  }
+
+  100% {
+    box-shadow: none;
+  }
 }
 
 .cfg-table {

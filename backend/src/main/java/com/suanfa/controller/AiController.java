@@ -10,6 +10,7 @@ import com.suanfa.service.AiChatService;
 import com.suanfa.service.AiKnowledgeService;
 import com.suanfa.service.AiRateLimiter;
 import com.suanfa.service.AiSettingsService;
+import com.suanfa.service.OrderService;
 import jakarta.annotation.PreDestroy;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -64,6 +65,8 @@ public class AiController {
     private final AiRateLimiter rateLimiter;
     private final AiProperties aiProperties;
     private final AiSettingsService aiSettingsService;
+    /** 会员权益：AI 提问限流倍数按会员身份放大（判定见 OrderService.isMember）。 */
+    private final OrderService orderService;
     /** 流式对话会长时间占用线程，池子小且队列直连（SynchronousQueue），满了就 503 而不是排队。 */
     private final ExecutorService streamPool = new ThreadPoolExecutor(
             2, 8, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
@@ -74,11 +77,12 @@ public class AiController {
             });
 
     public AiController(AiChatService aiChatService, AiRateLimiter rateLimiter, AiProperties aiProperties,
-                        AiSettingsService aiSettingsService) {
+                        AiSettingsService aiSettingsService, OrderService orderService) {
         this.aiChatService = aiChatService;
         this.rateLimiter = rateLimiter;
         this.aiProperties = aiProperties;
         this.aiSettingsService = aiSettingsService;
+        this.orderService = orderService;
     }
 
     @PreDestroy
@@ -105,7 +109,7 @@ public class AiController {
         body.put("defaultModel", models.stream().filter(AiModelInfo::available)
                 .findFirst().map(AiModelInfo::token).orElse(null));
         body.put("providers", providerInfos(models, privileged));
-        body.put("ratePerMinute", rateLimiter.limit());
+        body.put("ratePerMinute", rateLimiter.limit() * orderService.rateMultiplier(currentUserId));
         // 管理员才看得到「中转站配置」入口（写入接口在 AiSettingsController 里同样会校验）
         body.put("canManage", privileged);
         return body;
@@ -416,9 +420,11 @@ public class AiController {
                     ? "未知模型：" + model + "（请刷新模型列表或改用自动选择）"
                     : "该模型未对你开放，请刷新模型列表或改用「自动」"));
         }
-        if (!rateLimiter.tryAcquire(currentUserId)) {
+        int multiplier = orderService.rateMultiplier(currentUserId);
+        if (!rateLimiter.tryAcquire(currentUserId, multiplier)) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(new ErrorResponse(
-                    "提问太频繁了，每分钟最多 " + rateLimiter.limit() + " 次，休息一下再看会儿可视化吧 🙂"));
+                    "提问太频繁了，每分钟最多 " + (rateLimiter.limit() * multiplier)
+                            + " 次，休息一下再看会儿可视化吧 🙂"));
         }
         return null;
     }

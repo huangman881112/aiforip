@@ -26,7 +26,24 @@ public class UserRepository {
             rs.getString("password_hash"),
             nullableString(rs, "email"),
             rs.getString("created_at"),
-            nullableString(rs, "role"));
+            nullableString(rs, "role"),
+            nullableString(rs, "membership_expire_at"),
+            nullableString(rs, "display_name"),
+            nullableString(rs, "gender"),
+            nullableInt(rs, "age"),
+            nullableString(rs, "city"),
+            nullableString(rs, "occupation"),
+            nullableString(rs, "learning_goal"));
+
+    /** 兼容老库缺列的窗口期，避免 RowMapper 直接抛 SQLException。 */
+    private static Integer nullableInt(ResultSet rs, String col) {
+        try {
+            int v = rs.getInt(col);
+            return rs.wasNull() ? null : v;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     /** 兼容尚未迁移 email / role 列的旧库（迁移在 DataInitializer 里做）。 */
     private static String nullableString(ResultSet rs, String column) {
@@ -105,6 +122,26 @@ public class UserRepository {
     public int updateRole(long id, String role) {
         return jdbc.update("UPDATE users SET role = ? WHERE id = ?",
                 User.ROLE_ADMIN.equalsIgnoreCase(role) ? User.ROLE_ADMIN : User.ROLE_USER, id);
+    }
+
+    /**
+     * 写入会员到期时间（UTC 'YYYY-MM-DD HH:MM:SS'）。传 null = 清空会员（一般不用：
+     * 正常续费是顺延，退款不回收已生效会员，见 OrderService）。
+     */
+    public int updateMembershipExpire(long id, String expireAt) {
+        return jdbc.update("UPDATE users SET membership_expire_at = ? WHERE id = ?", expireAt, id);
+    }
+
+    /**
+     * 保存个人中心资料（PUT 全量语义：六个字段都以本次提交为准，传 null = 清空该项）。
+     * 各字段的合法性校验收口在 {@code ProfileService}。
+     */
+    public int updateProfile(long id, String displayName, String gender, Integer age,
+                             String city, String occupation, String learningGoal) {
+        return jdbc.update("""
+                UPDATE users SET display_name = ?, gender = ?, age = ?, city = ?, occupation = ?, learning_goal = ?
+                 WHERE id = ?
+                """, displayName, gender, age, city, occupation, learningGoal, id);
     }
 
     /** 用户名是否被占用（excludeId 用于改名时排除自己，传 null 表示不排除）。 */

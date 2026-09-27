@@ -1,6 +1,6 @@
 schema_version: 1
 module_path: frontend/app_shell/languages_module
-title: 编程语言内容模块与详情页
+title: 编程语言知识模块（多语言详情与列表）
 scope:
     - suanfa_vue/src/data/languages.js
     - suanfa_vue/src/components/languages/

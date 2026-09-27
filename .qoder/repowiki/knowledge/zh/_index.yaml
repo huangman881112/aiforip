@@ -3,7 +3,7 @@ schema_version: 1
 locale: zh-CN
 branch: main
 nodes_managed: true
-exported_at: "2026-09-13T01:47:41Z"
+exported_at: "2026-09-14T15:23:51Z"
 modules:
     "":
         dir_name: 算法学习站多子模块编排根
@@ -45,8 +45,8 @@ modules:
             - path: frontend/app_shell/languages_module
             - path: scripts
     backend/email_service:
-        dir_name: 邮箱验证码与 SMTP 发信服务
-        title: 邮箱验证码与 SMTP 发信服务
+        dir_name: 邮箱验证码服务（SMTP 发信与验证码编排）
+        title: 邮箱验证码服务（SMTP 发信与验证码编排）
         scope:
             - backend/src/main/java/com/suanfa/service/MailService.java
             - backend/src/main/java/com/suanfa/service/EmailCodeService.java
@@ -72,8 +72,8 @@ modules:
         related_to:
             - path: backend/email_service
     frontend:
-        dir_name: 小白学算法前端应用
-        title: 小白学算法前端应用
+        dir_name: 算法学习前端应用（Vue3+Vite）
+        title: 算法学习前端应用（Vue3+Vite）
         scope:
             - suanfa_vue/
         source_files: []
@@ -86,8 +86,8 @@ modules:
         depends_on: []
         related_to: []
     frontend/app_shell:
-        dir_name: 小白学算法前端应用壳
-        title: 小白学算法前端应用壳
+        dir_name: 算法学习前端应用壳（Vue3+Vite）
+        title: 算法学习前端应用壳（Vue3+Vite）
         scope:
             - suanfa_vue/src/
             - suanfa_vue/index.html
@@ -100,8 +100,8 @@ modules:
             - path: backend
             - path: scripts
     frontend/app_shell/languages_module:
-        dir_name: 编程语言内容模块与详情页
-        title: 编程语言内容模块与详情页
+        dir_name: 编程语言知识模块（多语言详情与列表）
+        title: 编程语言知识模块（多语言详情与列表）
         scope:
             - suanfa_vue/src/data/languages.js
             - suanfa_vue/src/components/languages/

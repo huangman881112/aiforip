@@ -1,6 +1,6 @@
 schema_version: 1
 module_path: frontend
-title: 小白学算法前端应用
+title: 算法学习前端应用（Vue3+Vite）
 scope:
     - suanfa_vue/
 source_files: []

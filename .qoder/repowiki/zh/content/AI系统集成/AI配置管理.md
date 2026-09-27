@@ -11,7 +11,16 @@
 - [AiSettingsController.java](file://backend/src/main/java/com/suanfa/controller/AiSettingsController.java)
 - [JwtService.java](file://backend/src/main/java/com/suanfa/security/JwtService.java)
 - [GlobalExceptionHandler.java](file://backend/src/main/java/com/suanfa/config/GlobalExceptionHandler.java)
+- [AiSettingsPanel.vue](file://suanfa_vue/src/components/common/AiSettingsPanel.vue)
+- [client.js](file://suanfa_vue/src/api/client.js)
 </cite>
+
+## 更新摘要
+**变更内容**
+- 新增交互式模型选择系统，支持点击行直接编辑模型配置
+- 实现一键转换环境变量配置为数据库配置功能
+- 优化错误处理和视觉反馈，提供实时测试连接和状态显示
+- 增强用户界面，支持模型优先级管理和可视化配置
 
 ## 目录
 1. [简介](#简介)
@@ -28,12 +37,15 @@
 ## 简介
 本文件面向AI系统配置管理，覆盖多模型提供商（中转站）配置、环境变量管理、运行时配置更新、配置优先级规则、热重载机制与安全密钥管理。文档基于后端代码实现，提供从设计到部署维护的完整指导，帮助在生产环境中稳定运行多上游、可降级、可观测的AI助教能力。
 
+**更新** 新增了交互式模型选择系统和一键配置转换功能，大幅提升了配置管理的用户体验和操作效率。
+
 ## 项目结构
 AI配置相关的关键位置如下：
 - 配置类与默认值：AiProperties、application.yml
 - 运行时配置存储与热加载：AppSettingsRepository、AiSettingsService
 - 配置合并与生效模型清单：AiChatService
 - 管理员配置接口：AiSettingsController
+- **新增** 交互式配置面板：AiSettingsPanel.vue
 - 安全与鉴权：JwtService、全局异常处理：GlobalExceptionHandler
 
 ```mermaid
@@ -44,15 +56,19 @@ D --> E["AiChatService.reload()<br/>热重建模型清单"]
 B --> E
 F["AiSettingsController<br/>/api/ai/settings*"] --> D
 G["AiChatService<br/>模型合并/熔断/调用"] --> H["上游OpenAI兼容端点"]
+I["AiSettingsPanel.vue<br/>交互式配置界面"] --> F
+J["client.js<br/>API客户端"] --> I
 ```
 
-图表来源
+**图表来源**
 - [application.yml:18-92](file://backend/src/main/resources/application.yml#L18-L92)
 - [AiProperties.java:25-57](file://backend/src/main/java/com/suanfa/config/AiProperties.java#L25-L57)
 - [AppSettingsRepository.java:15-44](file://backend/src/main/java/com/suanfa/repository/AppSettingsRepository.java#L15-L44)
 - [AiSettingsService.java:35-67](file://backend/src/main/java/com/suanfa/service/AiSettingsService.java#L35-L67)
 - [AiChatService.java:80-129](file://backend/src/main/java/com/suanfa/service/AiChatService.java#L80-L129)
 - [AiSettingsController.java:34-46](file://backend/src/main/java/com/suanfa/controller/AiSettingsController.java#L34-L46)
+- [AiSettingsPanel.vue:1-1327](file://suanfa_vue/src/components/common/AiSettingsPanel.vue#L1-L1327)
+- [client.js:631-668](file://suanfa_vue/src/api/client.js#L631-L668)
 
 章节来源
 - [application.yml:18-92](file://backend/src/main/resources/application.yml#L18-L92)
@@ -67,8 +83,9 @@ G["AiChatService<br/>模型合并/熔断/调用"] --> H["上游OpenAI兼容端�
 - Provider与Model：Provider描述一个中转站（地址、密钥、头、预算等），Model描述该中转站下的具体模型（标签、可见性、默认、推理档位等）。
 - AppSettingsRepository：持久化页面配置（key-value JSON），支持upsert与更新时间戳。
 - AiSettingsService：管理员配置入口的服务层，负责校验、保存、重置、视图组装与热加载。
-- AiChatService：合并所有来源的配置生成“当前生效模型清单”，提供熔断、降级、流式调用与测试连接能力。
+- AiChatService：合并所有来源的配置生成"当前生效模型清单"，提供熔断、降级、流式调用与测试连接能力。
 - AiSettingsController：暴露管理员API（查看、保存、重置、测试连接），并做登录与白名单门禁。
+- **新增** AiSettingsPanel：交互式配置面板，支持模型选择、一键转换、实时测试等功能。
 - JwtService：JWT签发与解析，用于用户身份识别（含username），配合白名单控制配置权限。
 - GlobalExceptionHandler：统一错误响应，确保方法不匹配、参数缺失等错误以正确状态码返回。
 
@@ -78,6 +95,8 @@ G["AiChatService<br/>模型合并/熔断/调用"] --> H["上游OpenAI兼容端�
 - [AiSettingsService.java:35-67](file://backend/src/main/java/com/suanfa/service/AiSettingsService.java#L35-L67)
 - [AiChatService.java:80-129](file://backend/src/main/java/com/suanfa/service/AiChatService.java#L80-L129)
 - [AiSettingsController.java:34-46](file://backend/src/main/java/com/suanfa/controller/AiSettingsController.java#L34-L46)
+- [AiSettingsPanel.vue:1-1327](file://suanfa_vue/src/components/common/AiSettingsPanel.vue#L1-L1327)
+- [client.js:631-668](file://suanfa_vue/src/api/client.js#L631-L668)
 - [JwtService.java:14-56](file://backend/src/main/java/com/suanfa/security/JwtService.java#L14-L56)
 - [GlobalExceptionHandler.java:21-69](file://backend/src/main/java/com/suanfa/config/GlobalExceptionHandler.java#L21-L69)
 
@@ -92,26 +111,37 @@ G["AiChatService<br/>模型合并/熔断/调用"] --> H["上游OpenAI兼容端�
 - 管理员保存或重置配置后，服务层将JSON写入数据库，随后调用 AiChatService.reload() 在内存中重建模型清单，无需重启。
 - 启动时应用就绪事件会尝试加载已保存的配置，失败则回退到yml/环境变量。
 
+**更新** 新增交互式配置流程，支持实时预览和即时验证配置有效性。
+
 ```mermaid
 sequenceDiagram
 participant Admin as "管理员"
+participant Panel as "AiSettingsPanel"
 participant Ctrl as "AiSettingsController"
 participant Svc as "AiSettingsService"
 participant Repo as "AppSettingsRepository"
 participant Chat as "AiChatService"
-Admin->>Ctrl : PUT /api/ai/settings {providers}
-Ctrl->>Svc : save(providers)
-Svc->>Repo : put("ai.providers", json)
-Svc->>Svc : applySaved()
-Svc->>Chat : reload(runtimeProviders)
-Chat-->>Admin : 新的有效模型清单(热生效)
+Admin->>Panel : 打开配置面板
+Panel->>Ctrl : GET /api/ai/settings
+Ctrl->>Svc : view()
+Svc->>Repo : 读取配置
+Svc->>Chat : effective()
+Panel-->>Admin : 显示配置界面
+Admin->>Panel : 修改配置/测试连接
+Panel->>Ctrl : PUT/POST /api/ai/settings
+Ctrl->>Svc : save/reset/test
+Svc->>Repo : 保存/删除配置
+Svc->>Chat : reload()
+Chat-->>Panel : 新的有效模型清单(热生效)
+Panel-->>Admin : 实时更新界面
 ```
 
-图表来源
+**图表来源**
 - [AiSettingsController.java:54-76](file://backend/src/main/java/com/suanfa/controller/AiSettingsController.java#L54-L76)
 - [AiSettingsService.java:172-205](file://backend/src/main/java/com/suanfa/service/AiSettingsService.java#L172-L205)
 - [AppSettingsRepository.java:24-33](file://backend/src/main/java/com/suanfa/repository/AppSettingsRepository.java#L24-L33)
 - [AiChatService.java:117-129](file://backend/src/main/java/com/suanfa/service/AiChatService.java#L117-L129)
+- [AiSettingsPanel.vue:105-132](file://suanfa_vue/src/components/common/AiSettingsPanel.vue#L105-L132)
 
 ## 详细组件分析
 
@@ -141,20 +171,51 @@ Model 规格设置
 - [AiChatService.java:180-262](file://backend/src/main/java/com/suanfa/service/AiChatService.java#L180-L262)
 - [AiSettingsService.java:185-205](file://backend/src/main/java/com/suanfa/service/AiSettingsService.java#L185-L205)
 
+### 交互式模型选择系统
+**新增功能** 提供了完整的交互式模型选择和管理界面：
+
+- **点击行编辑**：在生效模型表格中点击任意行，可在下方卡片中直接编辑该模型的配置
+- **一键转换**：环境变量中的模型可以一键转换为数据库配置，支持保留原有设置
+- **实时预览**：修改后立即在界面中预览效果，无需保存即可看到变化
+- **优先级管理**：支持设置默认模型，自动处理主模型唯一性约束
+- **状态可视化**：显示模型可用性、冷却状态、用户可见性等关键信息
+
+章节来源
+- [AiSettingsPanel.vue:192-310](file://suanfa_vue/src/components/common/AiSettingsPanel.vue#L192-L310)
+- [AiSettingsPanel.vue:465-579](file://suanfa_vue/src/components/common/AiSettingsPanel.vue#L465-L579)
+
+### 一键转换环境变量配置
+**新增功能** 实现了环境变量配置到数据库配置的无缝转换：
+
+- **智能转换**：自动识别环境变量中的模型配置，转换为对应的数据库格式
+- **保留设置**：转换过程中保留原有的maxTokens、timeoutSeconds、reasoningEffort等设置
+- **优先级处理**：转换后的配置优先于环境变量，同名模型会自动覆盖
+- **批量操作**：支持单个模型转换和全部模型批量转换
+- **撤销支持**：转换后可随时清空页面配置，回退到环境变量
+
+章节来源
+- [AiSettingsPanel.vue:233-282](file://suanfa_vue/src/components/common/AiSettingsPanel.vue#L233-L282)
+- [AiSettingsPanel.vue:565-577](file://suanfa_vue/src/components/common/AiSettingsPanel.vue#L565-L577)
+
 ### 运行时配置更新与热重载
 - 管理员通过 /api/ai/settings 保存providers，服务层校验并持久化到 app_settings，然后触发 reload() 重建内存中的模型清单。
 - 启动时监听 ApplicationReadyEvent，加载已保存配置；若解析失败则忽略并继续使用yml/环境变量。
 - 重置操作删除页面配置，回退到出厂配置。
 
+**更新** 前端界面提供实时反馈，保存成功后立即刷新显示最新配置状态。
+
 章节来源
 - [AiSettingsService.java:69-77](file://backend/src/main/java/com/suanfa/service/AiSettingsService.java#L69-L77)
 - [AiSettingsService.java:172-205](file://backend/src/main/java/com/suanfa/service/AiSettingsService.java#L172-L205)
 - [AiChatService.java:117-129](file://backend/src/main/java/com/suanfa/service/AiChatService.java#L117-L129)
+- [AiSettingsPanel.vue:403-420](file://suanfa_vue/src/components/common/AiSettingsPanel.vue#L403-L420)
 
 ### 安全密钥管理与访问控制
 - 配置页接口受登录与白名单保护：仅 admin-usernames 白名单内的用户可访问。
 - 任何响应不回显完整 api-key，仅显示脱敏后的片段（保留首尾各4位与长度）。
 - JWT签名密钥来自 suanfa.jwt.secret，生产环境必须通过环境变量覆盖。
+
+**更新** 前端界面提供更友好的密钥管理体验，支持密钥显示/隐藏切换和清除操作。
 
 章节来源
 - [AiSettingsController.java:48-124](file://backend/src/main/java/com/suanfa/controller/AiSettingsController.java#L48-L124)
@@ -169,6 +230,8 @@ Model 规格设置
 - maxTokens范围0~200,000，timeoutSeconds范围0~600；primary全站唯一（保留第一个）。
 - 非法输入抛出 IllegalArgumentException，由全局异常处理器转为400响应。
 
+**更新** 前端界面提供实时校验和友好的错误提示，减少配置错误。
+
 章节来源
 - [AiSettingsService.java:46-49](file://backend/src/main/java/com/suanfa/service/AiSettingsService.java#L46-L49)
 - [AiSettingsService.java:218-332](file://backend/src/main/java/com/suanfa/service/AiSettingsService.java#L218-L332)
@@ -179,9 +242,12 @@ Model 规格设置
 - 候选模型选择：优先用户指定模型，其次跳过冷却中的模型；全部冷却时退化到最快恢复的模型。
 - 冷却时间根据错误类型动态设定（如30秒网络异常、特定业务错误更长）。
 
+**更新** 前端界面直观显示模型冷却状态，帮助用户理解降级行为。
+
 章节来源
 - [AiChatService.java:90-92](file://backend/src/main/java/com/suanfa/service/AiChatService.java#L90-L92)
 - [AiChatService.java:574-668](file://backend/src/main/java/com/suanfa/service/AiChatService.java#L574-L668)
+- [AiSettingsPanel.vue:489-491](file://suanfa_vue/src/components/common/AiSettingsPanel.vue#L489-L491)
 
 ### API概览（管理员）
 - GET /api/ai/settings：获取当前配置（页面+出厂+生效模型，token脱敏）
@@ -189,8 +255,11 @@ Model 规格设置
 - POST /api/ai/settings/reset：清空页面配置，回退yml/环境变量
 - POST /api/ai/settings/test：测试连接（可传未保存草稿），拉模型清单并试小对话
 
+**更新** 新增测试连接功能，支持实时验证配置有效性。
+
 章节来源
 - [AiSettingsController.java:48-109](file://backend/src/main/java/com/suanfa/controller/AiSettingsController.java#L48-L109)
+- [client.js:631-668](file://suanfa_vue/src/api/client.js#L631-L668)
 
 ## 依赖关系分析
 ```mermaid
@@ -257,6 +326,14 @@ class AiSettingsController {
 +reset(userId) Response
 +test(req,userId) Response
 }
+class AiSettingsPanel {
++select(m) void
++convertSelected() void
++testOne(p) Promise
++save() Promise
++reset() Promise
+}
+AiSettingsPanel --> AiSettingsController : "调用API"
 AiSettingsController --> AiSettingsService : "调用"
 AiSettingsService --> AppSettingsRepository : "读写"
 AiSettingsService --> AiChatService : "热重载"
@@ -265,12 +342,13 @@ AiProperties --> Provider : "包含"
 Provider --> Model : "包含"
 ```
 
-图表来源
+**图表来源**
 - [AiProperties.java:25-267](file://backend/src/main/java/com/suanfa/config/AiProperties.java#L25-L267)
 - [AiSettingsService.java:35-67](file://backend/src/main/java/com/suanfa/service/AiSettingsService.java#L35-L67)
 - [AppSettingsRepository.java:15-44](file://backend/src/main/java/com/suanfa/repository/AppSettingsRepository.java#L15-L44)
 - [AiChatService.java:80-129](file://backend/src/main/java/com/suanfa/service/AiChatService.java#L80-L129)
 - [AiSettingsController.java:34-46](file://backend/src/main/java/com/suanfa/controller/AiSettingsController.java#L34-L46)
+- [AiSettingsPanel.vue:1-1327](file://suanfa_vue/src/components/common/AiSettingsPanel.vue#L1-L1327)
 
 章节来源
 - [AiProperties.java:25-267](file://backend/src/main/java/com/suanfa/config/AiProperties.java#L25-L267)
@@ -284,6 +362,8 @@ Provider --> Model : "包含"
 - 熔断冷却：避免频繁重试坏上游，降低无效流量与延迟抖动。
 - 流式SSE：使用HTTP/1.1与SSE流式传输，减少首字节延迟，提升交互体验。
 - 连接超时与请求超时：客户端连接超时10秒，请求超时按模型/全局配置，避免长尾阻塞。
+
+**更新** 前端界面采用懒加载和增量更新策略，提升大数据量配置场景下的响应性能。
 
 章节来源
 - [AiSettingsService.java:46-49](file://backend/src/main/java/com/suanfa/service/AiSettingsService.java#L46-L49)
@@ -299,7 +379,7 @@ Provider --> Model : "包含"
   - 关注400错误信息（非法字段、重复id、URL格式错误、超出上限等）。
   - 检查全局异常处理器是否正确返回状态码。
 - 配置未生效
-  - 确认保存成功后是否触发了 reload()；查看日志中“已热加载”提示。
+  - 确认保存成功后是否触发了 reload()；查看日志中"已热加载"提示。
   - 若页面配置为空但仍有旧行为，可能是墓碑未生效或同名模型未禁用。
 - 模型不可用或频繁失败
   - 查看生效模型列表中的 cooldownSecondsLeft，判断是否处于冷却期。
@@ -308,19 +388,23 @@ Provider --> Model : "包含"
   - 响应中只显示脱敏后的密钥片段；如需确认是否配置，检查 hasApiKey 与 apiKeySet。
   - 生产环境务必通过环境变量覆盖 suanfa.jwt.secret。
 
+**更新** 前端界面提供更详细的错误信息和调试工具，支持实时测试连接和配置验证。
+
 章节来源
 - [AiSettingsController.java:48-124](file://backend/src/main/java/com/suanfa/controller/AiSettingsController.java#L48-L124)
 - [GlobalExceptionHandler.java:26-51](file://backend/src/main/java/com/suanfa/config/GlobalExceptionHandler.java#L26-L51)
 - [AiSettingsService.java:172-205](file://backend/src/main/java/com/suanfa/service/AiSettingsService.java#L172-L205)
 - [AiChatService.java:574-668](file://backend/src/main/java/com/suanfa/service/AiChatService.java#L574-L668)
 - [JwtService.java:14-56](file://backend/src/main/java/com/suanfa/security/JwtService.java#L14-L56)
+- [AiSettingsPanel.vue:319-342](file://suanfa_vue/src/components/common/AiSettingsPanel.vue#L319-L342)
 
 ## 结论
-本系统通过分层配置与热重载机制，实现了灵活的多模型提供商接入与运行时调整。配置优先级清晰、校验严格、安全可控，结合熔断与降级策略，保障在高可用场景下的稳定性。建议在生产环境中：
+本系统通过分层配置与热重载机制，实现了灵活的多模型提供商接入与运行时调整。配置优先级清晰、校验严格、安全可控，结合熔断与降级策略，保障在高可用场景下的稳定性。**新增的交互式配置界面和一键转换功能**进一步简化了配置管理流程，提升了运维效率。建议在生产环境中：
 - 使用环境变量管理敏感密钥与关键参数
 - 通过页面配置进行灰度与快速切换
 - 定期使用测试连接与生效模型视图进行健康检查
 - 合理设置超时与预算，避免思考型模型耗尽配额
+- 利用交互式界面快速诊断和修复配置问题
 
 ## 附录：配置示例与最佳实践
 
@@ -340,15 +424,20 @@ Provider --> Model : "包含"
 - 使用墓碑（enabled=false）屏蔽env中的坏兜底模型，无需改.env
 - 保存前使用测试连接验证地址、token、模型清单与小对话
 
+**更新** 推荐使用交互式界面进行配置管理，利用一键转换功能快速迁移环境变量配置。
+
 章节来源
 - [AiSettingsService.java:218-332](file://backend/src/main/java/com/suanfa/service/AiSettingsService.java#L218-L332)
 - [AiSettingsDto.java:20-128](file://backend/src/main/java/com/suanfa/dto/AiSettingsDto.java#L20-L128)
+- [AiSettingsPanel.vue:1-1327](file://suanfa_vue/src/components/common/AiSettingsPanel.vue#L1-L1327)
 
 ### 安全与运维建议
 - 生产环境必须通过环境变量覆盖 suanfa.jwt.secret
 - 限制 admin-usernames 为最小必要集合
 - 定期审查生效模型与冷却状态，避免长期不可用模型被误用
 - 记录并监控测试连接结果，建立告警阈值（如连续失败次数）
+
+**更新** 利用前端界面的实时监控功能，及时发现和解决配置问题。
 
 章节来源
 - [application.yml:18-27](file://backend/src/main/resources/application.yml#L18-L27)

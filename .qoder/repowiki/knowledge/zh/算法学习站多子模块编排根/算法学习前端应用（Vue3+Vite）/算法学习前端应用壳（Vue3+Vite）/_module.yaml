@@ -1,6 +1,6 @@
 schema_version: 1
 module_path: frontend/app_shell
-title: 小白学算法前端应用壳
+title: 算法学习前端应用壳（Vue3+Vite）
 scope:
     - suanfa_vue/src/
     - suanfa_vue/index.html

@@ -179,7 +179,7 @@ function goToday() {
 }
 
 .calendar-container {
-  max-width: 860px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 

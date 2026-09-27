@@ -281,7 +281,8 @@ public class AiController {
             return guard;
         }
         try {
-            AiChatService.Outcome out = aiChatService.chat(req.messages(), model, privileged);
+            AiChatService.Outcome out = aiChatService.chat(req.messages(), model, privileged,
+                    AiChatService.parseScene(req.scene()));
             return ResponseEntity.ok(toResponse(out, privileged));
         } catch (IllegalArgumentException e) {
             rateLimiter.refund(currentUserId);
@@ -322,7 +323,8 @@ public class AiController {
 
         try {
             streamPool.execute(
-                    () -> runStream(req.messages(), model, privileged, emitter, cancelled, currentUserId));
+                    () -> runStream(req.messages(), model, privileged,
+                            AiChatService.parseScene(req.scene()), emitter, cancelled, currentUserId));
         } catch (RejectedExecutionException e) {
             rateLimiter.refund(currentUserId);
             sendQuiet(emitter, "error", new ErrorResponse("AI 并发请求过多，请稍后再试"));
@@ -332,11 +334,11 @@ public class AiController {
     }
 
     private void runStream(List<ChatRequest.ChatMessage> messages, String model, boolean privileged,
-                           SseEmitter emitter, AtomicBoolean cancelled, Long userId) {
+                           AiChatService.Scene scene, SseEmitter emitter, AtomicBoolean cancelled, Long userId) {
         boolean[] reasoningHintSent = {false};
         boolean[] delivered = {false}; // 已向用户输出过增量：这种情况不退还限流额度
         try {
-            aiChatService.chatStream(messages, model, privileged, new AiChatService.StreamHandler() {
+            aiChatService.chatStream(messages, model, privileged, scene, new AiChatService.StreamHandler() {
                 @Override
                 public void onMeta(String model, List<AiKnowledgeService.Ref> refs) {
                     sendQuiet(emitter, "meta", Map.of("refs", toRefs(refs)));

@@ -11,6 +11,7 @@ const ChangeEmailPage = () => import('../components/common/ChangeEmailPage.vue')
 const CalendarPage = () => import('../components/common/CalendarPage.vue')
 const TrainingPage = () => import('../components/common/TrainingPage.vue')
 const AiChatPage = () => import('../components/common/AiChatPage.vue')
+const AiLanguageChatPage = () => import('../components/common/AiLanguageChatPage.vue')
 const SortingPage = () => import('../components/algorithms/sorting_algorithms/SortingPage.vue')
 const SearchingPage = () => import('../components/algorithms/searching_algorithms/SearchingPage.vue')
 const GraphPage = () => import('../components/algorithms/graph_algorithms/GraphPage.vue')
@@ -21,6 +22,10 @@ const AlgorithmListPage = () => import('../components/algorithms/AlgorithmListPa
 const AlgorithmDetailPage = () => import('../components/algorithms/AlgorithmDetailPage.vue')
 const LanguageListPage = () => import('../components/languages/LanguageListPage.vue')
 const LanguageDetail = () => import('../components/languages/LanguageDetail.vue')
+const LanguageOverviewSection = () => import('../components/languages/sections/LanguageOverviewSection.vue')
+const LanguageCompileSection = () => import('../components/languages/sections/LanguageCompileSection.vue')
+const LanguageSectionPage = () => import('../components/languages/sections/LanguageSectionPage.vue')
+const LanguageInterviewSection = () => import('../components/languages/sections/LanguageInterviewSection.vue')
 const UserManagePage = () => import('../components/common/UserManagePage.vue')
 const MembershipPage = () => import('../components/common/MembershipPage.vue')
 const AdminOrdersPage = () => import('../components/common/AdminOrdersPage.vue')
@@ -108,6 +113,13 @@ const routes = [
     component: AiChatPage
   },
   {
+    // AI 计算机语言助教：与算法助教共用后端代理/限流/中转站配置，
+    // 通过 scene=language 切换后端人设与语言知识库；支持 ?lang=java 预选语言、?ask= 直接提问
+    path: '/ai/language',
+    name: 'AiLanguageChatPage',
+    component: AiLanguageChatPage
+  },
+  {
     // 算法总览页：每个分类一张卡片（组成 / 代表算法 / 应用），「算法训练」收在末尾；
     // 顶部导航「算法」直接链到本页，与 /languages 同一套模式（不再做下拉、不再 redirect 到 sorting）
     path: '/algorithms',
@@ -157,11 +169,25 @@ const routes = [
     component: LanguageListPage
   },
   {
-    // 语言详情页：语言概览 / 语法 / 数据结构 / 常用架构 / 经典面试题，数据在 data/languages.js
+    // 语言详情布局页：页头 + 左侧导航固定，各板块通过子路由独立成页
+    // （每个板块有自己的 URL，可直达 / 收藏 / 前进后退），数据在 data/languages.js
     path: '/languages/:lang',
-    name: 'LanguageDetail',
-    component: LanguageDetail
-  }
+    component: LanguageDetail,
+    children: [
+      // 🧭 语言概览（默认页）
+      { path: '', name: 'LanguageOverview', component: LanguageOverviewSection },
+      // ⚙️ 实现与编译原理
+      { path: 'compile', name: 'LanguageCompile', component: LanguageCompileSection },
+      // 📖 语法基础 / 🧱 数据结构 / 🏗️ 常用架构：共用一个 Markdown 页组件，按路由名区分板块
+      { path: 'syntax', name: 'LanguageSyntax', component: LanguageSectionPage },
+      { path: 'data-structures', name: 'LanguageDataStructures', component: LanguageSectionPage },
+      { path: 'architecture', name: 'LanguageArchitecture', component: LanguageSectionPage },
+      // 💼 经典面试题
+      { path: 'interview', name: 'LanguageInterview', component: LanguageInterviewSection },
+      // 未知板块回落到语言概览
+      { path: ':pathMatch(.*)*', redirect: (to) => `/languages/${to.params.lang}` },
+    ],
+  },
 ]
 
 // 创建路由实例

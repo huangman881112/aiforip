@@ -59,7 +59,7 @@ const cards = [...algorithmCategoryCards, trainingCard]
 
 <style scoped>
 .algo-list-container {
-  max-width: 1180px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 24px 20px 48px;
   text-align: left;

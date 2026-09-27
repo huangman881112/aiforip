@@ -6,6 +6,7 @@
 
 import { algorithms } from '../data/algorithms.js'
 import { algorithmVideos } from '../data/videos.js'
+import { languages } from '../data/languages.js'
 
 const API_BASE = '/api'
 
@@ -300,6 +301,67 @@ export async function deleteNote(userId, algorithmId) {
     return
   }
   localStorage.removeItem(localNoteKey(algorithmId))
+}
+
+// ============================================================
+// 页面笔记（全站每个页面的速记便签，按「路由路径 × 用户」存后端；离线回退 localStorage）
+// ============================================================
+
+const localPageNotesKey = (userId, path) => `suanfa:page-notes:${userId}:${path}`
+
+/** 拉取我在某页面的笔记列表（时间正序）。未登录返回空数组。 */
+export async function fetchPageNotes(userId, path) {
+  if (await checkBackend()) {
+    try {
+      return await request(`/page-notes?path=${encodeURIComponent(path)}`)
+    } catch (err) {
+      if (err.status === 401) return []
+      throw err
+    }
+  }
+  if (userId == null) return []
+  return JSON.parse(localStorage.getItem(localPageNotesKey(userId, path)) || '[]')
+}
+
+/** 在某页面新增一条笔记。返回创建后的笔记对象。 */
+export async function addPageNote(userId, path, menuPath, content) {
+  if (await checkBackend()) {
+    return request('/page-notes', {
+      method: 'POST',
+      body: JSON.stringify({ path, menuPath, content }),
+    })
+  }
+  const note = {
+    id: `local-${Date.now()}`,
+    pagePath: path,
+    menuPath: menuPath || '',
+    userId,
+    content,
+    creator: '本地缓存',
+    createdAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
+  }
+  const key = localPageNotesKey(userId, path)
+  const list = JSON.parse(localStorage.getItem(key) || '[]')
+  list.push(note)
+  localStorage.setItem(key, JSON.stringify(list))
+  recordLocalActivity()
+  return note
+}
+
+/** 删除一条页面笔记（仅能删自己的）。 */
+export async function deletePageNote(userId, noteId) {
+  if (await checkBackend()) {
+    await request(`/page-notes/${noteId}`, { method: 'DELETE' })
+    return
+  }
+  const keyPrefix = `suanfa:page-notes:${userId}:`
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i)
+    if (!k || !k.startsWith(keyPrefix)) continue
+    const list = JSON.parse(localStorage.getItem(k) || '[]')
+      .filter((n) => String(n.id) !== String(noteId))
+    localStorage.setItem(k, JSON.stringify(list))
+  }
 }
 
 // ============================================================
@@ -710,10 +772,15 @@ async function httpError(res) {
 /** 后端限制单次请求条数，长会话只带最近若干轮（更早内容对本轮回答价值低）。 */
 const AI_MAX_TURNS = 24
 
-export async function aiChatStream(rawMessages, { model, onDelta, onMeta, onReasoning, signal } = {}) {
+/** 场景常量：算法助教（默认）/ 计算机语言助教。后端据此切换人设与站内知识库。 */
+export const AI_SCENE_ALGORITHM = 'algorithm'
+export const AI_SCENE_LANGUAGE = 'language'
+
+export async function aiChatStream(rawMessages, { model, scene, onDelta, onMeta, onReasoning, signal } = {}) {
   const messages = rawMessages.slice(-AI_MAX_TURNS)
+  const localAnswer = () => (scene === AI_SCENE_LANGUAGE ? localLanguageAnswer(messages) : localAiAnswer(messages))
   if (!(await checkBackend())) {
-    return { reply: localAiAnswer(messages), source: 'local', refs: [] }
+    return { reply: localAnswer(), source: 'local', refs: [] }
   }
   let res
   try {
@@ -721,7 +788,7 @@ export async function aiChatStream(rawMessages, { model, onDelta, onMeta, onReas
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
-      body: JSON.stringify({ messages, model: model || undefined }),
+      body: JSON.stringify({ messages, model: model || undefined, scene: scene || undefined }),
       signal,
     })
   } catch (err) {
@@ -731,14 +798,14 @@ export async function aiChatStream(rawMessages, { model, onDelta, onMeta, onReas
 
   if (res.status === 404 || res.status === 405) {
     // 旧版后端无 stream 路由
-    const out = await aiChat(messages, { model })
+    const out = await aiChat(messages, { model, scene })
     if (onDelta && out.reply) onDelta(out.reply)
     return out
   }
   if (res.status === 401 || res.status === 403) {
     // 未登录：保持可用，降级本地答疑并提示
     return {
-      reply: `${localAiAnswer(messages)}\n\n> 你尚未登录，当前为本地答疑模式；[登录](/login) 后可解锁 AI 助教自由对话。`,
+      reply: `${localAnswer()}\n\n> 你尚未登录，当前为本地答疑模式；[登录](/login) 后可解锁 AI 助教自由对话。`,
       source: 'local',
       refs: [],
       needLogin: true,
@@ -746,7 +813,7 @@ export async function aiChatStream(rawMessages, { model, onDelta, onMeta, onReas
   }
   if (res.status === 503) {
     // 后端未配 AI_API_KEY / 上游不可用
-    return { reply: localAiAnswer(messages), source: 'local', refs: [] }
+    return { reply: localAnswer(), source: 'local', refs: [] }
   }
   if (!res.ok || !res.body) {
     throw await httpError(res)
@@ -790,19 +857,19 @@ export async function aiChatStream(rawMessages, { model, onDelta, onMeta, onReas
       err.status = 502
       throw err
     }
-    return { reply: localAiAnswer(messages), source: 'local', refs: [] }
+    return { reply: localAnswer(), source: 'local', refs: [] }
   }
   return { reply: full, source: 'ai', refs, model: usedModel, note: errMsg || undefined }
 }
 
 /** 一次性（非流式）提问，保留给不支持 fetch 流的场景。 */
-export async function aiChat(rawMessages, { model } = {}) {
+export async function aiChat(rawMessages, { model, scene } = {}) {
   const messages = rawMessages.slice(-AI_MAX_TURNS)
   if (await checkBackend()) {
     try {
       const res = await request('/ai/chat', {
         method: 'POST',
-        body: JSON.stringify({ messages, model: model || undefined }),
+        body: JSON.stringify({ messages, model: model || undefined, scene: scene || undefined }),
       })
       return { reply: res.reply, source: 'ai', refs: res.refs || [], model: res.model || '' }
     } catch (err) {
@@ -810,7 +877,11 @@ export async function aiChat(rawMessages, { model } = {}) {
       // 401/503/502 等：降级本地答疑
     }
   }
-  return { reply: localAiAnswer(messages), source: 'local', refs: [] }
+  return {
+    reply: scene === AI_SCENE_LANGUAGE ? localLanguageAnswer(messages) : localAiAnswer(messages),
+    source: 'local',
+    refs: [],
+  }
 }
 
 /** 本地答疑的算法同义词（中英/缩写），与后端 AiKnowledgeService 保持一致的思路。 */
@@ -963,6 +1034,92 @@ function localAiAnswer(messages) {
     '',
     `👉 详情页：${top.route}（有交互动画）`,
   ].join('\n')
+}
+
+// ============================================================
+// 本地答疑（计算机语言场景）：后端不可用/未登录时，用 languages.js 的资料拼答案
+// ============================================================
+
+/** 语言同义词（中英/缩写/生态关键词），与后端 AiLanguageKnowledgeService 保持一致的思路。 */
+const LOCAL_LANG_ALIASES = {
+  java: ['java', 'jvm', 'jdk', 'jre', 'spring', '面向对象', '泛型', '字节码', '垃圾回收', '虚拟线程'],
+  python: ['python', 'gil', 'pip', 'django', 'flask', '爬虫', '装饰器', '生成器', '人工智能', '数据科学'],
+  cpp: ['c++', 'cpp', 'stl', '模板', 'raii', '智能指针', '虚函数', '构造函数', '移动语义', '引用'],
+  c: ['c语言', 'c 语言', '指针', 'malloc', 'gcc', '嵌入式', '单片机', '驱动', 'linux内核'],
+  js: ['javascript', 'js', 'es6', 'node', '前端', 'dom', 'vue', 'react', '闭包', '事件循环', 'promise', '原型链', 'typescript'],
+}
+
+function localLangHits(q) {
+  return languages
+    .map((l) => {
+      let score = 0
+      const aliases = new Set([
+        l.name.toLowerCase(),
+        l.id,
+        ...(LOCAL_LANG_ALIASES[l.id] || []),
+      ])
+      for (const alias of aliases) if (alias.length >= 2 && q.includes(alias)) score += Math.min(8, alias.length)
+      return { l, score }
+    })
+    .filter((x) => x.score > 0)
+    .sort((x, y) => y.score - x.score)
+    .map((x) => x.l)
+}
+
+/** 语言各板块的标题与路由（与后端 SECTION_ROUTES 同源）。 */
+const LANG_SECTIONS = [
+  { label: '语言概览', slug: '' },
+  { label: '实现与编译原理', slug: 'compile' },
+  { label: '语法基础', slug: 'syntax' },
+  { label: '数据结构', slug: 'data-structures' },
+  { label: '常用架构', slug: 'architecture' },
+  { label: '经典面试题', slug: 'interview' },
+]
+
+function langSectionLinks(l) {
+  return LANG_SECTIONS.map((s) => `[${s.label}](/languages/${l.id}${s.slug ? '/' + s.slug : ''})`).join(' · ')
+}
+
+/** 本地答疑（语言场景）：检索 languages.js 资料拼答案。 */
+function localLanguageAnswer(messages) {
+  const last = [...messages].reverse().find((m) => m.role === 'user')
+  const q = (last?.content || '').toLowerCase()
+  if (!q) {
+    return '你好！我是小白学算法的本地答疑助手，试试问：“Python 的 GIL 是什么？”或“Java 和 JavaScript 有什么区别？”'
+  }
+
+  const hits = localLangHits(q)
+
+  if (!hits.length) {
+    return [
+      '（后端 AI 不可达，当前为**本地答疑模式**）',
+      '',
+      `我能检索本站收录的 ${languages.length} 门语言资料（${languages.map((l) => l.name).join(' / ')}），但无法自由推理。换个问法试试，例如：`,
+      '- Python 的 GIL 是什么？',
+      '- Java 的 HashMap 底层原理？',
+      '- C++ 智能指针怎么用？',
+      '- JavaScript 的事件循环讲一下',
+      '',
+      '若你是站点维护者：在后端配好 `AI_API_KEY` 即可解锁自由对话。',
+    ].join('\n')
+  }
+
+  const top = hits[0]
+  return [
+    `### ${top.icon} ${top.name}（本地答疑模式）`,
+    '',
+    `> ${top.tagline}`,
+    '',
+    top.intro || '',
+    '',
+    `**站内板块**：${langSectionLinks(top)}`,
+    '',
+    hits.length > 1
+      ? `也命中：${hits.slice(1).map((l) => `[${l.icon} ${l.name}](/languages/${l.id})`).join('、')}，可对比着看。`
+      : '',
+  ]
+    .filter((s) => s !== '')
+    .join('\n')
 }
 
 export { checkBackend }

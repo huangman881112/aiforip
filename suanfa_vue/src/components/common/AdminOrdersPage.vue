@@ -297,7 +297,7 @@ const maxDayAmount = computed(() =>
 
 <style scoped>
 .admin-orders {
-  max-width: 1180px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 28px 20px 48px;
 }

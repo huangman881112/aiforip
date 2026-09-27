@@ -77,9 +77,30 @@ public class AiChatService {
             【本站算法清单】（名称(路由)）
             """;
 
+    /** 计算机语言助教人设：与算法助教共用上游与限流，但知识面/话术聚焦五门语言教学。 */
+    private static final String LANGUAGE_PERSONA = """
+            你是「小白学算法」网站（面向初学者的编程学习平台，收录 Java/Python/C++/C/JavaScript 五门语言的系统化教程）的 AI 计算机语言助教。
+
+            回答规则：
+            1. 简体中文，面向初学者：先给结论，再讲原因，最后给可动手的小练习。
+            2. 使用 Markdown：小标题分点、列表、`行内代码`、带语言标注的代码块；关键结论加粗。
+            3. 讲语言概念时按「是什么 → 为什么这样设计 → 最小可运行示例 → 常见坑」组织；
+               涉及编译/解释、内存模型、并发等底层机制时与站内「实现与编译原理」板块保持一致。
+            4. 问代码为什么错时，先复述你理解的意图，再指出问题行，给出修正片段；不要整段重写。
+            5. 多语言对比（如 Java vs Python）用表格列维度，突出适用场景而不是贬低任何一门。
+            6. 提到站内语言板块时给出链接，格式：[Java 语法基础](/languages/java/syntax)、[Python 实现与编译原理](/languages/python/compile)。
+            7. 用户没说清用哪门语言时，先按其问题里出现的语言回答；完全没有线索就问一句「你在学哪门语言？」。
+            8. 与编程语言学习无关的问题，一句话礼貌拒绝并拉回主题。
+            9. 篇幅克制：单次回答控制在 500 字以内（含代码），需要展开时主动问「要不要继续讲下一部分」。
+
+            【本站语言板块清单】（语言(路由)与子板块）
+            """;
+
     private final HttpClient client;
     private final ObjectMapper objectMapper;
     private final AiKnowledgeService knowledge;
+    /** 计算机语言板块知识库（静态数据，与前端 data/languages.js 同源）。 */
+    private final AiLanguageKnowledgeService languageKnowledge;
     private final AiProperties props;
     /** 生效的模型清单（yml/环境变量 + 页面热配置合并结果）；页面保存配置后整体重建。 */
     private volatile List<ModelSpec> models;
@@ -90,10 +111,12 @@ public class AiChatService {
     /** 模型熔断表：{@code provider/name} -> 恢复时间（nanoTime）。中转站的额度限制是持续的，避免每次请求都撞一遍坏模型。 */
     private final ConcurrentHashMap<String, Long> cooldown = new ConcurrentHashMap<>();
 
-    public AiChatService(AiProperties props, ObjectMapper objectMapper, AiKnowledgeService knowledge) {
+    public AiChatService(AiProperties props, ObjectMapper objectMapper, AiKnowledgeService knowledge,
+                         AiLanguageKnowledgeService languageKnowledge) {
         this.props = props;
         this.objectMapper = objectMapper;
         this.knowledge = knowledge;
+        this.languageKnowledge = languageKnowledge;
         this.knowledgeEnabled = props.isKnowledgeEnabled();
         this.envProviders = List.copyOf(props.getProviders());
         this.models = resolveModels(props, objectMapper, List.of());
@@ -559,13 +582,29 @@ public class AiChatService {
         }
     }
 
+    /** 助教场景：算法（默认）或计算机语言；决定 system prompt 人设与注入的站内知识库。 */
+    public enum Scene {
+        ALGORITHM, LANGUAGE
+    }
+
+    /** 解析前端传来的 scene 字段：未知/缺省一律回落算法场景（宽松处理，不报错）。 */
+    public static Scene parseScene(String raw) {
+        return raw != null && "language".equalsIgnoreCase(raw.trim()) ? Scene.LANGUAGE : Scene.ALGORITHM;
+    }
+
     /**
      * 非流式对话（内部仍走 SSE，聚合后返回）。
      *
      * @param privileged false = 普通用户，只能使用/降级到管理员开放给自己的模型
      */
     public Outcome chat(List<ChatRequest.ChatMessage> history, String requestedModel, boolean privileged) {
-        return chatStream(history, requestedModel, privileged, new StreamHandler() {
+        return chat(history, requestedModel, privileged, Scene.ALGORITHM);
+    }
+
+    /** 非流式对话（指定场景：算法 / 计算机语言）。 */
+    public Outcome chat(List<ChatRequest.ChatMessage> history, String requestedModel, boolean privileged,
+                        Scene scene) {
+        return chatStream(history, requestedModel, privileged, scene, new StreamHandler() {
             @Override
             public void onDelta(String text) {
                 // 非流式调用方只需要聚合结果
@@ -587,15 +626,24 @@ public class AiChatService {
      */
     public Outcome chatStream(List<ChatRequest.ChatMessage> history, String requestedModel,
                               boolean privileged, StreamHandler handler) {
+        return chatStream(history, requestedModel, privileged, Scene.ALGORITHM, handler);
+    }
+
+    /**
+     * 流式对话（指定场景）：算法助教或计算机语言助教，人设与注入的站内资料不同，上游链路完全共用。
+     *
+     * @param scene ALGORITHM = 算法知识库；LANGUAGE = 五门语言的板块知识库
+     */
+    public Outcome chatStream(List<ChatRequest.ChatMessage> history, String requestedModel,
+                              boolean privileged, Scene scene, StreamHandler handler) {
         if (!isConfigured(privileged)) {
             throw new AiException(privileged
                     ? "AI 助教未配置：请设置 AI_API_KEY 或 suanfa.ai.providers"
                     : "AI 助教暂未对普通用户开放，请联系管理员在「中转站配置」里开放至少一个模型");
         }
-        List<AiKnowledgeService.Entry> hits = knowledgeEnabled
-                ? knowledge.recall(lastQuestion(history)) : List.of();
-        List<AiKnowledgeService.Ref> refs = knowledge.refs(hits);
-        List<Map<String, String>> messages = buildMessages(history, hits);
+        String lastQ = lastQuestion(history);
+        List<AiKnowledgeService.Ref> refs = refsFor(scene, lastQ);
+        List<Map<String, String>> messages = buildMessages(history, systemPrompt(scene, lastQ));
         handler.onMeta(null, refs);
 
         ModelSpec requested = findModel(requestedModel, privileged);
@@ -1118,17 +1166,9 @@ public class AiChatService {
     // ============================================================ Prompt 组装
 
     private List<Map<String, String>> buildMessages(List<ChatRequest.ChatMessage> history,
-                                                    List<AiKnowledgeService.Entry> hits) {
-        StringBuilder system = new StringBuilder(PERSONA);
-        if (knowledgeEnabled) {
-            system.append(knowledge.catalog()).append('\n');
-            String ctx = knowledge.contextBlock(hits);
-            if (!ctx.isBlank()) {
-                system.append("\n").append(ctx).append('\n');
-            }
-        }
+                                                    String system) {
         List<Map<String, String>> messages = new ArrayList<>();
-        messages.add(Map.of("role", "system", "content", system.toString()));
+        messages.add(Map.of("role", "system", "content", system));
 
         List<ChatRequest.ChatMessage> valid = new ArrayList<>();
         for (ChatRequest.ChatMessage m : history) {
@@ -1148,6 +1188,41 @@ public class AiChatService {
             messages.add(Map.of("role", m.role(), "content", clip(m.content())));
         }
         return messages;
+    }
+
+    /** 按场景组装 system prompt：人设 + 站内清单 + 召回摘录。 */
+    private String systemPrompt(Scene scene, String lastQuestion) {
+        StringBuilder system = new StringBuilder(scene == Scene.LANGUAGE ? LANGUAGE_PERSONA : PERSONA);
+        if (!knowledgeEnabled) {
+            return system.toString();
+        }
+        if (scene == Scene.LANGUAGE) {
+            system.append(languageKnowledge.catalog()).append('\n');
+            String ctx = languageKnowledge.contextBlock(languageKnowledge.recall(lastQuestion));
+            if (!ctx.isBlank()) {
+                system.append('\n').append(ctx).append('\n');
+            }
+        } else {
+            system.append(knowledge.catalog()).append('\n');
+            String ctx = knowledge.contextBlock(knowledge.recall(lastQuestion));
+            if (!ctx.isBlank()) {
+                system.append('\n').append(ctx).append('\n');
+            }
+        }
+        return system.toString();
+    }
+
+    /** 按场景召回站内引用（前端渲染成「站内参考」链接，统一收口成算法侧的 Ref 形状）。 */
+    private List<AiKnowledgeService.Ref> refsFor(Scene scene, String lastQuestion) {
+        if (!knowledgeEnabled) {
+            return List.of();
+        }
+        if (scene == Scene.LANGUAGE) {
+            return languageKnowledge.refs(languageKnowledge.recall(lastQuestion)).stream()
+                    .map(r -> new AiKnowledgeService.Ref(r.id(), r.name(), r.route()))
+                    .toList();
+        }
+        return knowledge.refs(knowledge.recall(lastQuestion));
     }
 
     private static String clip(String s) {

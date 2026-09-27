@@ -2,8 +2,8 @@
 // 计算机语言主页面：/languages
 // 顶部导航「计算机语言」直接链到本页（不再做下拉弹框与悬停），
 // 每门语言一张卡片，介绍 ✨特性 / ⚙️实现与编译原理 / 🎯使用场景；
-// 点卡片「查看详情」进入 /languages/:id 子页面，子页默认停在「🧭 语言概览」，
-// 那里才是每门语言的完整介绍（元信息 / 特性详解 / 编译原理流水线 + 长文 / 使用场景）。
+// 点卡片「查看详情」进入 /languages/:id 子页面，每个板块（语言概览 / 实现与编译原理 /
+// 语法基础 / 数据结构 / 常用架构 / 经典面试题）各自独立一页，通过子路由切换。
 // 数据来自 data/languages.js 单一数据源，新增语言时自动多出一张卡片。
 import { languageCards } from '../../data/languages.js'
 import LanguageCard from './LanguageCard.vue'
@@ -19,7 +19,7 @@ import LanguageCard from './LanguageCard.vue'
         <strong>⚙️ 实现与编译原理</strong> 明白它为什么快（或为什么慢），
         <strong>🎯 使用场景</strong> 判断该学哪门。
         点卡片「查看详情」进入该语言的主页——默认打开「🧭 语言概览」完整介绍，
-        再往下是语法基础、数据结构、常用架构与经典面试题。
+        左侧导航可切换语法基础、数据结构、常用架构与经典面试题等独立子页。
       </p>
       <!-- 选型速查：由各语言「使用场景」首条派生，不另写一份文案 -->
       <ul class="pick-hint">
@@ -30,6 +30,15 @@ import LanguageCard from './LanguageCard.vue'
           <span>{{ c.useCases[0] }}</span>
         </li>
       </ul>
+
+      <!-- AI 计算机语言助教入口：语法/底层/选型问题随问随答 -->
+      <div class="ai-entry">
+        <div class="ai-entry-text">
+          <strong>🤖 AI 计算机语言助教</strong>
+          <span>语法讲解 · 底层原理 · 代码 Debug · 入门路线规划，支持 Java / Python / C++ / C / JavaScript 提问</span>
+        </div>
+        <router-link class="ai-entry-btn" to="/ai/language">去提问 →</router-link>
+      </div>
     </header>
 
     <!-- 语言卡片 -->
@@ -41,7 +50,7 @@ import LanguageCard from './LanguageCard.vue'
 
 <style scoped>
 .lang-list-container {
-  max-width: 1180px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 24px 20px 48px;
   text-align: left;
@@ -97,6 +106,52 @@ import LanguageCard from './LanguageCard.vue'
 
 .pick-arrow {
   color: var(--text-3);
+}
+
+/* AI 语言助教入口横幅 */
+.ai-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding: 12px 18px;
+  border: 1px solid var(--tint-blue-border);
+  border-radius: 12px;
+  background: var(--tint-blue);
+}
+
+.ai-entry-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ai-entry-text strong {
+  color: var(--c-blue);
+  font-size: 0.98rem;
+}
+
+.ai-entry-text span {
+  color: var(--text-2);
+  font-size: 0.84rem;
+}
+
+.ai-entry-btn {
+  flex-shrink: 0;
+  padding: 8px 18px;
+  color: #fff;
+  background: #1e88e5;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.ai-entry-btn:hover {
+  background: #1976d2;
 }
 
 /* ---------- 卡片网格 ---------- */

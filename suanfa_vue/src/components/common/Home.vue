@@ -74,6 +74,11 @@ const complexityCompareRows = [
           <router-link to="/ai">开始对话</router-link>
         </div>
         <div class="category-card">
+          <h3>🗣️ AI 计算机语言助教</h3>
+          <p>Java / Python / C++ / C / JavaScript 的语法讲解、底层原理、代码 Debug 与入门路线规划。</p>
+          <router-link to="/ai/language">开始对话</router-link>
+        </div>
+        <div class="category-card">
           <h3>💬 算法评论</h3>
           <p>在每个算法详情页与同学们交流学习心得、答疑补充。</p>
           <router-link to="/algorithms/sorting">去讨论</router-link>

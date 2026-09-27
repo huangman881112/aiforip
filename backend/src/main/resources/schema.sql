@@ -53,6 +53,20 @@ CREATE TABLE IF NOT EXISTS notes (
     UNIQUE (user_id, algorithm_id)
 );
 
+-- 页面笔记（全站每个页面均可添加的速记便签：按「页面路由路径 + 用户」归属，右侧笔记面板用）
+CREATE TABLE IF NOT EXISTS page_notes (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    page_path  TEXT NOT NULL,                          -- 当前页面菜单路径对应的路由（页面唯一标识，如 /algorithms/sorting）
+    menu_path  TEXT,                                   -- 菜单路径展示名（如「算法 / 排序算法」，创建时快照）
+    user_id    INTEGER NOT NULL,                       -- 用户（笔记归属者，关联 users.id）
+    content    TEXT NOT NULL,                          -- 笔记内容，上限 20000 字符
+    creator    TEXT NOT NULL,                          -- 创建人（用户名快照，改名后仍可追溯）
+    created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_page_notes_user_page ON page_notes (user_id, page_path, created_at);
+
 -- 算法评论（一个用户可对同一算法发多条评论）
 CREATE TABLE IF NOT EXISTS comments (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,

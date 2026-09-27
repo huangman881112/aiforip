@@ -467,7 +467,7 @@ watch(
 
 <style scoped>
 .member-page {
-  max-width: 1080px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 28px 20px 48px;
 }

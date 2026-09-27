@@ -2396,12 +2396,39 @@ export const languageCards = languages.map(buildLanguageCard)
 /** 语言主页面地址（顶部一级菜单「计算机语言」的链接目标） */
 export const languageOverviewPath = '/languages'
 
-/** 详情页四个板块的元信息（顺序即展示顺序） */
+/** 详情页中间三个板块的元信息（顺序即展示顺序） */
 export const languageSections = [
   { key: 'syntax', label: '语法基础', icon: '📖' },
   { key: 'dataStructures', label: '数据结构', icon: '🧱' },
   { key: 'architecture', label: '常用架构', icon: '🏗️' },
 ]
+
+/** 板块 key → 子页路由 slug（每个板块独立一页：/languages/:lang/:slug） */
+export const languageSectionSlugMap = {
+  syntax: 'syntax',
+  dataStructures: 'data-structures',
+  architecture: 'architecture',
+}
+
+/**
+ * 详情页全部子页（顺序即阅读顺序），每个板块独立成页、有自己的 URL：
+ * slug 为空串表示默认页（语言概览）。左侧导航 / 面包屑 / 上一页下一页均以此为准。
+ */
+export const languageSectionPages = [
+  { slug: '', label: '语言概览', icon: '🧭' },
+  { slug: 'compile', label: '实现与编译原理', icon: '⚙️' },
+  ...languageSections.map((s) => ({
+    slug: languageSectionSlugMap[s.key],
+    label: s.label,
+    icon: s.icon,
+  })),
+  { slug: 'interview', label: '经典面试题', icon: '💼' },
+]
+
+/** 拼子页地址：slug 为空回落到语言默认页（语言概览） */
+export function languageSectionPath(langId, slug) {
+  return slug ? `/languages/${langId}/${slug}` : `/languages/${langId}`
+}
 
 /** 按语义 id 查找语言 */
 export function getLanguageById(id) {

@@ -138,11 +138,12 @@ public class UserAdminService {
         // SQLite 连接默认不启用外键级联，这里显式清干净，避免留下孤儿数据
         int progress = jdbc.update("DELETE FROM progress WHERE user_id = ?", id);
         int notes = jdbc.update("DELETE FROM notes WHERE user_id = ?", id);
+        int pageNotes = jdbc.update("DELETE FROM page_notes WHERE user_id = ?", id);
         int comments = jdbc.update("DELETE FROM comments WHERE user_id = ?", id);
         int training = jdbc.update("DELETE FROM training WHERE user_id = ?", id);
         userRepository.deleteById(id);
-        log.info("管理员（id={}）删除用户 {}（id={}）：进度 {} 条、笔记 {} 条、评论 {} 条、刷题 {} 条",
-                actorId, target.username(), id, progress, notes, comments, training);
+        log.info("管理员（id={}）删除用户 {}（id={}）：进度 {} 条、笔记 {} 条、页面笔记 {} 条、评论 {} 条、刷题 {} 条",
+                actorId, target.username(), id, progress, notes, pageNotes, comments, training);
     }
 
     // ------------------------------------------------------------ 内部工具

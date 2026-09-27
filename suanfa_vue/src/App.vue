@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { useUserStore } from './stores/user.js'
 import { algorithmOverviewPath } from './data/algorithms.js'
 import { languageOverviewPath } from './data/languages.js'
+import PageNotePanel from './components/common/PageNotePanel.vue'
 
 const userStore = useUserStore()
 const route = useRoute()
@@ -26,6 +27,9 @@ const isAlgorithmSection = computed(
 // 不用 router-link 的 active-class：/languages 与 /languages/:lang 是同级路由（非嵌套），
 // 子页面上它不会自动高亮，因此沿用与「算法」一致的前缀判断
 const isLanguageSection = computed(() => isActive(languageOverviewPath))
+
+// 完整页脚只在主页展示，其余页面收缩为一行版权（不占屏、也避免与内容重叠）
+const isHome = computed(() => route.name === 'Home')
 
 // 当前是否处于个人中心相关页面（/account、/admin、/membership 都算个人中心子菜单高亮）
 const isAccountSection = computed(() => isActive('/account') || isActive('/admin') || isActive('/membership'))
@@ -176,8 +180,11 @@ watch(() => route.fullPath, () => {
     <main class="app-main">
       <router-view></router-view>
     </main>
-    <footer class="app-footer">
-      <div class="footer-content">
+    <!-- 页面笔记面板：全站每个页面右侧贴边可用（按当前路由路径 × 用户存后端） -->
+    <PageNotePanel />
+    <footer class="app-footer" :class="{ collapsed: !isHome }">
+      <!-- 三栏完整页脚仅主页展示；其他页面收缩为一条版权线 -->
+      <div v-if="isHome" class="footer-content">
         <div class="footer-logo">
           <h3>小白学算法</h3>
           <p>致力于提供高质量的算法学习资源，帮助开发者掌握各类算法的原理和应用。</p>
@@ -534,6 +541,16 @@ watch(() => route.fullPath, () => {
   background-color: var(--footer-bg);
   color: var(--footer-text);
   padding: 40px 0 20px;
+}
+
+/* 非主页：收缩成一行版权，不展示三栏内容 */
+.app-footer.collapsed {
+  padding: 10px 0 8px;
+}
+
+.app-footer.collapsed .footer-copyright {
+  padding-top: 0;
+  font-size: 0.8rem;
 }
 
 .footer-content {
